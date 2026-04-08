@@ -1,8 +1,11 @@
-package com.academico.service;
+package com.academico.calificaciones;
 
-import com.academico.dao.*;
-import com.academico.model.*;
-
+import com.academico.academia.Unidad;
+import com.academico.academia.UnidadDAO;
+import com.academico.inscripciones.Alumno;
+import com.academico.inscripciones.AlumnoDAO;
+import com.academico.inscripciones.Inscripcion;
+import com.academico.inscripciones.InscripcionDAO;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
