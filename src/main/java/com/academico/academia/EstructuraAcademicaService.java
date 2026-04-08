@@ -1,7 +1,7 @@
-package com.academico.service;
+package com.academico.academia;
 
-import com.academico.dao.ActividadGrupoDAO;
-import com.academico.model.ActividadGrupo;
+import com.academico.calificaciones.ActividadGrupo;
+import com.academico.calificaciones.ActividadGrupoDAO;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
