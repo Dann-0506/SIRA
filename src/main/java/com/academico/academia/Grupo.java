@@ -1,4 +1,4 @@
-package com.academico.model;
+package com.academico.academia;
 
 public class Grupo {
     private int id;
