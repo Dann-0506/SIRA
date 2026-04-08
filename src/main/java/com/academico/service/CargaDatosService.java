@@ -1,14 +1,18 @@
 package com.academico.service;
 
 import com.academico.dao.AlumnoDAO;
+import com.academico.dao.GrupoDAO;
+import com.academico.dao.InscripcionDAO;
 import com.academico.dao.MateriaDAO;
 import com.academico.model.Alumno;
+import com.academico.model.Grupo;
+import com.academico.model.Inscripcion;
 import com.academico.model.Materia;
 import com.academico.util.CsvUtil;
 import com.opencsv.exceptions.CsvValidationException;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +21,14 @@ public class CargaDatosService {
 
     private final AlumnoDAO alumnoDAO;
     private final MateriaDAO materiaDAO;
+    private final GrupoDAO grupoDAO;
+    private final InscripcionDAO inscripcionDAO;
 
     public CargaDatosService() {
         this.alumnoDAO = new AlumnoDAO();
         this.materiaDAO = new MateriaDAO();
+        this.grupoDAO = new GrupoDAO();
+        this.inscripcionDAO = new InscripcionDAO();
     }
 
     public List<String> importarAlumnosCsv(InputStream is) throws IOException, CsvValidationException, SQLException {
@@ -28,7 +36,6 @@ public class CargaDatosService {
         List<Alumno> alumnos = new ArrayList<>();
 
         for (String[] fila : lineas) {
-            // Ignorar filas vacías o mal formateadas
             if (fila.length >= 2) {
                 Alumno alumno = new Alumno();
                 alumno.setMatricula(fila[0].trim());
@@ -41,8 +48,7 @@ public class CargaDatosService {
                 alumnos.add(alumno);
             }
         }
-
-        return alumnoDAO.insertarLote(alumnos);
+        return alumnoDAO.insertarLote(alumnos); // Lista de matrículas ya existentes que no se insertaron
     }
 
     public List<String> importarMateriasCsv(InputStream is) throws IOException, CsvValidationException, SQLException {
@@ -63,7 +69,49 @@ public class CargaDatosService {
                 }
             }
         }
+        return materiaDAO.insertarLote(materias); // Lista de claves que ya existian y fueron ignoradas.
+    }
 
-        return materiaDAO.insertarLote(materias);
+    public List<String> importarGruposCsv(InputStream is) throws IOException, CsvValidationException, SQLException {
+        List<String[]> lineas = CsvUtil.leerCsv(is);
+        List<Grupo> grupos = new ArrayList<>();
+
+        for (String[] fila : lineas) {
+            if (fila.length >= 4) {
+                try {
+                    Grupo grupo = new Grupo();
+                    grupo.setMateriaId(Integer.parseInt(fila[0].trim()));
+                    grupo.setMaestroId(Integer.parseInt(fila[1].trim()));
+                    grupo.setClave(fila[2].trim());
+                    grupo.setSemestre(fila[3].trim());
+                    grupo.setActivo(true);
+                    
+                    grupos.add(grupo);
+                } catch (NumberFormatException e) {
+                    System.err.println("Error de formato numérico en la fila del grupo: " + fila[2]);
+                }
+            }
+        }
+        return grupoDAO.insertarLote(grupos); // Lista de claves de grupo que ya existían y no se insertaron
+    }
+
+    public List<String> importarInscripcionesCsv(InputStream is) throws IOException, CsvValidationException, SQLException {
+        List<String[]> lineas = CsvUtil.leerCsv(is);
+        List<Inscripcion> inscripciones = new ArrayList<>();
+
+        for (String[] fila : lineas) {
+            if (fila.length >= 2) {
+                try {
+                    Inscripcion inscripcion = new Inscripcion();
+                    inscripcion.setAlumnoId(Integer.parseInt(fila[0].trim()));
+                    inscripcion.setGrupoId(Integer.parseInt(fila[1].trim()));
+                    
+                    inscripciones.add(inscripcion);
+                } catch (NumberFormatException e) {
+                    System.err.println("Error de formato numérico en la inscripción.");
+                }
+            }
+        }
+        return inscripcionDAO.insertarLote(inscripciones); // Lista de duplicados que fueron ignoradas
     }
 }
