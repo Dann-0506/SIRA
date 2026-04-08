@@ -31,6 +31,13 @@ public class CargaDatosService {
         this.inscripcionDAO = new InscripcionDAO();
     }
 
+    public CargaDatosService(AlumnoDAO alumnoDAO, MateriaDAO materiaDAO, GrupoDAO grupoDAO, InscripcionDAO inscripcionDAO) {
+        this.alumnoDAO = alumnoDAO;
+        this.materiaDAO = materiaDAO;
+        this.grupoDAO = grupoDAO;
+        this.inscripcionDAO = inscripcionDAO;
+    }
+
     public List<String> importarAlumnosCsv(InputStream is) throws IOException, CsvValidationException, SQLException {
         List<String[]> lineas = CsvUtil.leerCsv(is);
         List<Alumno> alumnos = new ArrayList<>();
