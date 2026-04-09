@@ -1,8 +1,8 @@
 package com.academico.inscripciones;
 
-import com.academico.academia.GrupoDAO;
-import com.academico.academia.Materia;
-import com.academico.academia.MateriaDAO;
+import com.academico.academia.dao.GrupoDAO;
+import com.academico.academia.dao.MateriaDAO;
+import com.academico.academia.model.Materia;
 import com.opencsv.exceptions.CsvValidationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

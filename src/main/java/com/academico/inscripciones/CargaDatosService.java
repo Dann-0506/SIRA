@@ -1,9 +1,9 @@
 package com.academico.inscripciones;
 
-import com.academico.academia.Grupo;
-import com.academico.academia.GrupoDAO;
-import com.academico.academia.Materia;
-import com.academico.academia.MateriaDAO;
+import com.academico.academia.dao.GrupoDAO;
+import com.academico.academia.dao.MateriaDAO;
+import com.academico.academia.model.Grupo;
+import com.academico.academia.model.Materia;
 import com.academico.core.util.CsvUtil;
 import com.opencsv.exceptions.CsvValidationException;
 
