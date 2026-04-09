@@ -2,7 +2,7 @@ package com.academico.auth.ui;
 
 import com.academico.auth.AuthService;
 import com.academico.auth.Usuario;
-import com.academico.core.MainApp;
+import com.academico.core.util.NavegationUtil;
 import com.academico.core.util.SessionManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -71,12 +71,8 @@ public class LoginController {
 
     private void navegarSegunRol(String rol) {
         switch (rol) {
-            case "admin"   -> MainApp.navegarA(
-                "/com/academico/core/ui/dashboard.fxml", "Panel Principal");
-            case "maestro" -> MainApp.navegarA(
-                "/com/academico/core/ui/dashboard.fxml", "Panel Principal");
-            default        -> mostrarError(errorGeneral,
-                "Rol no reconocido. Contacta al administrador.");
+            case "admin", "maestro" -> NavegationUtil.irA(NavegationUtil.DASHBOARD);
+            default -> mostrarError(errorGeneral, "Rol no reconocido. Contacta al administrador.");
         }
     }
 
