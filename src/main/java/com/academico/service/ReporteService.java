@@ -1,17 +1,18 @@
-package com.academico.calificaciones.service;
+package com.academico.service;
 
-import com.academico.academia.dao.UnidadDAO;
-import com.academico.academia.model.Unidad;
-import com.academico.calificaciones.dao.BonusDAO;
-import com.academico.calificaciones.dao.ResultadoDAO;
-import com.academico.calificaciones.model.Bonus;
-import com.academico.calificaciones.model.CalificacionFinal;
-import com.academico.calificaciones.model.Resultado;
-import com.academico.calificaciones.model.ResultadoUnidad;
-import com.academico.inscripciones.Alumno;
-import com.academico.inscripciones.AlumnoDAO;
-import com.academico.inscripciones.Inscripcion;
-import com.academico.inscripciones.InscripcionDAO;
+import com.academico.dao.AlumnoDAO;
+import com.academico.dao.BonusDAO;
+import com.academico.dao.InscripcionDAO;
+import com.academico.dao.ResultadoDAO;
+import com.academico.dao.UnidadDAO;
+import com.academico.model.Alumno;
+import com.academico.model.Bonus;
+import com.academico.model.CalificacionFinal;
+import com.academico.model.Inscripcion;
+import com.academico.model.Resultado;
+import com.academico.model.ResultadoUnidad;
+import com.academico.model.Unidad;
+
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;

@@ -1,15 +1,15 @@
-package com.academico.calificaciones.service;
-
-import com.academico.academia.model.Unidad;
-import com.academico.calificaciones.model.ActividadGrupo;
-import com.academico.calificaciones.model.CalificacionFinal;
-import com.academico.calificaciones.model.Resultado;
-import com.academico.calificaciones.model.ResultadoUnidad;
-import com.academico.inscripciones.Alumno;
+package com.academico.service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
+
+import com.academico.model.ActividadGrupo;
+import com.academico.model.Alumno;
+import com.academico.model.CalificacionFinal;
+import com.academico.model.Resultado;
+import com.academico.model.ResultadoUnidad;
+import com.academico.model.Unidad;
 
 public class CalificacionService {
 
