@@ -1,4 +1,4 @@
-module com.academico.core {
+module com.academico {
     requires javafx.controls;
     requires javafx.fxml;
     requires atlantafx.base;
