@@ -1,4 +1,4 @@
-package com.academico.core.util;
+package com.academico.util;
 
 import java.io.File;
 import java.io.IOException;
