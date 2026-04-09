@@ -1,6 +1,8 @@
 package com.academico.calificaciones;
 
-import com.academico.academia.EstadoUnidadService;
+import com.academico.academia.service.EstadoUnidadService;
+import com.academico.calificaciones.dao.ResultadoDAO;
+import com.academico.calificaciones.service.RegistroResultadoService;
 import com.academico.inscripciones.Inscripcion;
 import com.academico.inscripciones.InscripcionDAO;
 
