@@ -12,6 +12,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import com.academico.calificaciones.model.ActividadGrupo;
+import com.academico.calificaciones.model.CalificacionFinal;
+import com.academico.calificaciones.model.Resultado;
+import com.academico.calificaciones.model.ResultadoUnidad;
+import com.academico.calificaciones.service.CalificacionService;
 import com.academico.inscripciones.Alumno;
 
 class CalificacionServiceTest {
