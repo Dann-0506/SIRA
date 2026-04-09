@@ -1,17 +1,14 @@
 package com.academico.core.ui;
 
 import com.academico.auth.Usuario;
-import com.academico.core.MainApp;
 import com.academico.core.util.SessionManager;
+import com.academico.core.util.NavegationUtil;
+
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-
-import java.io.IOException;
 
 public class DashboardController {
 
@@ -28,7 +25,7 @@ public class DashboardController {
     public void initialize() {
         Usuario usuario = SessionManager.getUsuarioActual();
         if (usuario == null) {
-            MainApp.navegarA("/com/academico/auth/ui/login.fxml", "Iniciar Sesión");
+            NavegationUtil.irA(NavegationUtil.LOGIN);
             return;
         }
 
@@ -44,26 +41,26 @@ public class DashboardController {
 
         if ("admin".equals(rol)) {
             agregarSeccion("CATÁLOGOS");
-            agregarBoton("Alumnos",      "/com/academico/inscripciones/ui/alumnos.fxml");
-            agregarBoton("Materias",     "/com/academico/academia/ui/materias.fxml");
-            agregarBoton("Maestros",     "/com/academico/academia/ui/maestros.fxml");
-            agregarBoton("Grupos",       "/com/academico/academia/ui/grupos.fxml");
-            agregarBoton("Inscripciones","/com/academico/inscripciones/ui/inscripciones.fxml");
+            agregarBoton("Alumnos",       NavegationUtil.ALUMNOS);
+            agregarBoton("Materias",      NavegationUtil.MATERIAS);
+            agregarBoton("Maestros",      NavegationUtil.MAESTROS);
+            agregarBoton("Grupos",        NavegationUtil.GRUPOS);
+            agregarBoton("Inscripciones", NavegationUtil.INSCRIPCIONES);
 
             agregarSeccion("SISTEMA");
-            agregarBoton("Configuración","/com/academico/core/ui/configuracion.fxml");
-            agregarBoton("Utilerías",    "/com/academico/core/ui/utileria.fxml");
+            agregarBoton("Configuración", NavegationUtil.CONFIGURACION);
+            agregarBoton("Utilerías",     NavegationUtil.UTILERIA);
         }
 
         if ("maestro".equals(rol)) {
             agregarSeccion("MIS GRUPOS");
-            agregarBoton("Actividades",  "/com/academico/calificaciones/ui/actividades.fxml");
-            agregarBoton("Calificaciones","/com/academico/calificaciones/ui/calificaciones.fxml");
-            agregarBoton("Reportes",     "/com/academico/calificaciones/ui/reportes.fxml");
+            agregarBoton("Actividades",    NavegationUtil.ACTIVIDADES);
+            agregarBoton("Calificaciones", NavegationUtil.CALIFICACIONES);
+            agregarBoton("Reportes",       NavegationUtil.REPORTES);
 
             agregarSeccion("CUENTA");
-            agregarBoton("Mi perfil",    "/com/academico/core/ui/perfil.fxml");
-        }
+            agregarBoton("Mi perfil",      NavegationUtil.PERFIL);
+}
     }
 
     private void agregarSeccion(String titulo) {
@@ -72,42 +69,30 @@ public class DashboardController {
         menuNavegacion.getChildren().add(label);
     }
 
+    // Después
     private void agregarBoton(String texto, String rutaFxml) {
         Button boton = new Button(texto);
         boton.getStyleClass().add("sidebar-boton");
         boton.setMaxWidth(Double.MAX_VALUE);
-        boton.setOnAction(e -> cargarVista(rutaFxml, boton));
+        boton.setOnAction(e -> {
+            actualizarBotonActivo(boton);
+            NavegationUtil.cargarEnArea(areaPrincipal, rutaFxml);
+        });
         menuNavegacion.getChildren().add(boton);
     }
 
-    private void cargarVista(String rutaFxml, Button botonOrigen) {
-        try {
-            // Actualiza el estilo del botón activo
-            if (botonActivo != null) {
-                botonActivo.getStyleClass().remove("sidebar-boton-activo");
-            }
-            botonActivo = botonOrigen;
-            botonActivo.getStyleClass().add("sidebar-boton-activo");
-
-            // Carga el FXML en el área principal
-            FXMLLoader loader = new FXMLLoader(
-                getClass().getResource(rutaFxml));
-            Node vista = loader.load();
-            areaPrincipal.getChildren().setAll(vista);
-
-        } catch (IOException e) {
-            // Vista aún no construida — muestra mensaje temporal
-            Label placeholder = new Label(
-                "Vista en construcción: " + rutaFxml);
-            placeholder.setStyle("-fx-text-fill: -color-fg-muted;");
-            areaPrincipal.getChildren().setAll(placeholder);
+    private void actualizarBotonActivo(Button boton) {
+        if (botonActivo != null) {
+            botonActivo.getStyleClass().remove("sidebar-boton-activo");
         }
+        botonActivo = boton;
+        botonActivo.getStyleClass().add("sidebar-boton-activo");
     }
 
     @FXML
     private void handleCerrarSesion() {
         SessionManager.cerrarSesion();
-        MainApp.navegarA("/com/academico/auth/ui/login.fxml", "Iniciar Sesión");
+        NavegationUtil.irA(NavegationUtil.LOGIN);
     }
 
     private String formatearRol(String rol) {
