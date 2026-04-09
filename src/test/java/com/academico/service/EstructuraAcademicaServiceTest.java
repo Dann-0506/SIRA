@@ -1,10 +1,7 @@
-package com.academico.academia;
+package com.academico.service;
 
 import com.academico.dao.ActividadGrupoDAO;
 import com.academico.model.ActividadGrupo;
-import com.academico.service.EstadoUnidadService;
-import com.academico.service.EstructuraAcademicaService;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

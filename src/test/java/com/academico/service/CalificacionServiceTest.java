@@ -1,4 +1,4 @@
-package com.academico.calificaciones;
+package com.academico.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -17,7 +17,6 @@ import com.academico.model.Alumno;
 import com.academico.model.CalificacionFinal;
 import com.academico.model.Resultado;
 import com.academico.model.ResultadoUnidad;
-import com.academico.service.CalificacionService;
 
 class CalificacionServiceTest {
 
