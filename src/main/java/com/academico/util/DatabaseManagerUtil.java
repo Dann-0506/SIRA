@@ -1,4 +1,4 @@
-package com.academico.core.util;
+package com.academico.util;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -10,7 +10,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class DatabaseManager {
+public class DatabaseManagerUtil {
 
     private static HikariDataSource dataSource;
 
@@ -54,7 +54,7 @@ public class DatabaseManager {
 
     private static void createSchemaIfNeeded() {
         try (Connection conn = getConnection();
-            InputStream is = DatabaseManager.class
+            InputStream is = DatabaseManagerUtil.class
                     .getResourceAsStream("/com/academico/core/db/schema.sql")) {
 
             if (is == null) {

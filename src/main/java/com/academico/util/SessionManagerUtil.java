@@ -1,8 +1,8 @@
-package com.academico.core.util;
+package com.academico.util;
 
-import com.academico.auth.Usuario;
+import com.academico.model.Usuario;
 
-public class SessionManager {
+public class SessionManagerUtil {
 
     private static Usuario usuarioActual;
 

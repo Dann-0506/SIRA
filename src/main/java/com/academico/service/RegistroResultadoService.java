@@ -2,7 +2,7 @@ package com.academico.service;
 
 import com.academico.model.Inscripcion;
 import com.academico.model.Resultado;
-import com.academico.core.util.DatabaseManager;
+import com.academico.util.DatabaseManagerUtil;
 import com.academico.dao.InscripcionDAO;
 import com.academico.dao.ResultadoDAO;
 
@@ -38,7 +38,7 @@ public class RegistroResultadoService {
     }
 
     public void guardarLoteCalificaciones(int grupoId, int unidadId, List<Resultado> resultados) throws SQLException {
-    try (Connection conn = DatabaseManager.getConnection()) {
+    try (Connection conn = DatabaseManagerUtil.getConnection()) {
         conn.setAutoCommit(false);
         try {
             String lockSql = """
@@ -68,6 +68,7 @@ public class RegistroResultadoService {
 }
     
     public void aplicarOverrideMateria(int inscripcionId, BigDecimal calificacionManual, String justificacion) throws SQLException {
+        @SuppressWarnings("unused")
         Inscripcion inscripcion = inscripcionDAO.findById(inscripcionId)
                 .orElseThrow(() -> new IllegalArgumentException("La inscripción no existe."));
         
