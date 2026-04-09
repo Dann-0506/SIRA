@@ -1,6 +1,7 @@
 module com.academico {
     requires javafx.controls;
     requires javafx.fxml;
+    requires javafx.graphics;
     requires atlantafx.base;
     requires java.sql;
     requires com.zaxxer.hikari;
