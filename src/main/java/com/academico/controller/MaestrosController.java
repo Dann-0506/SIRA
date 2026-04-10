@@ -35,6 +35,8 @@ public class MaestrosController {
     @FXML private Label errorEmail;
     @FXML private Label errorNombre;
     @FXML private Label errorMatricula;
+    @FXML private Label labelNotaPassword;
+    @FXML private Button btnRestablecerPassword;
 
     private final MaestroService maestroService = new MaestroService();
     private final CargaDatosService cargaDatosService = new CargaDatosService();
@@ -166,10 +168,16 @@ public class MaestrosController {
 
     private void abrirEdicion(Maestro m) {
         maestroEnEdicion = m;
+        
         campoNumEmpleado.setText(m.getNumEmpleado());
         campoNombre.setText(m.getNombre());
         campoEmail.setText(m.getEmail());
+        
         labelTituloFormulario.setText("Editar Docente");
+        labelNotaPassword.setText("Nota: Si el usuario olvidó su acceso, puedes restablecer su contraseña.");
+        btnRestablecerPassword.setVisible(true);
+        btnRestablecerPassword.setManaged(true);
+
         panelFormulario.setVisible(true);
         panelFormulario.setManaged(true);
     }
@@ -219,15 +227,42 @@ public class MaestrosController {
     @FXML 
     private void handleNuevo() { 
         maestroEnEdicion = null; 
-        limpiar(); 
+        limpiar();
+        
+        labelTituloFormulario.setText("Nuevo Docente");
+        labelNotaPassword.setText("Nota: Los docentes nuevos se crean con la contraseña predeterminada '123456'.");
+        btnRestablecerPassword.setVisible(false);
+        btnRestablecerPassword.setManaged(false);
+
         panelFormulario.setVisible(true); 
         panelFormulario.setManaged(true); 
-    
     }
+
     @FXML 
     private void handleCancelar() { 
         panelFormulario.setVisible(false); 
         panelFormulario.setManaged(false); 
+    }
+
+    @FXML
+    private void handleRestablecerPassword() {
+        if (maestroEnEdicion == null) return;
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Restablecer Contraseña");
+        alert.setHeaderText("¿Deseas restablecer la contraseña de " + maestroEnEdicion.getNombre() + "?");
+        alert.setContentText("Su contraseña volverá a ser '123456' temporalmente.");
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                maestroService.restablecerPassword(maestroEnEdicion.getId());
+                mostrarNotificacion("Contraseña restablecida a '123456'.", false);
+                handleCancelar();
+            } catch (Exception e) {
+                mostrarNotificacion(e.getMessage(), true);
+            }
+        }
     }
 
     private void limpiar() { 
