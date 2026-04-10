@@ -64,9 +64,9 @@
                         </placeholder>
                         <columns>
                             <TableColumn fx:id="colMatricula" text="Matrícula" prefWidth="150" reorderable="false"/>
-                            <TableColumn fx:id="colNombre" text="Nombre" prefWidth="250" reorderable="false"/>
+                            <TableColumn fx:id="colNombre" text="Nombre" prefWidth="300" reorderable="false"/>
                             <TableColumn fx:id="colEmail" text="Correo Electrónico" prefWidth="300" reorderable="false"/>
-                            <TableColumn fx:id="colAcciones" text="Acciones" prefWidth="180" reorderable="false" style="-fx-alignment: CENTER;"/>
+                            <TableColumn fx:id="colAcciones" text="Acciones" prefWidth="260" reorderable="false" style="-fx-alignment: CENTER;"/>
                         </columns>
                         <columnResizePolicy>
                             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN"/>
