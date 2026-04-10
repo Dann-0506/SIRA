@@ -23,4 +23,21 @@ public class UnidadService {
             throw new Exception("Error al cargar las unidades del grupo.");
         }
     }
+
+    public List<Unidad> listarPorMateria(int materiaId) throws Exception {
+        try {
+            return unidadDAO.findByMateria(materiaId);
+        } catch (SQLException e) {
+            throw new Exception("Error al cargar las unidades de la materia.");
+        }
+    }
+
+    public void actualizarNombre(int id, String nombre) throws Exception {
+        if (nombre == null || nombre.isBlank()) throw new Exception("El nombre no puede estar vacío.");
+        try {
+            unidadDAO.actualizarNombre(id, nombre);
+        } catch (SQLException e) {
+            throw new Exception("Error al actualizar la unidad.");
+        }
+    }
 }

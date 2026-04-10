@@ -75,7 +75,16 @@ public class CargaDatosService {
             List<String[]> lineas = CsvUtil.leerCsv(is);
             for (int i = 0; i < lineas.size(); i++) {
                 String[] fila = lineas.get(i);
-                if (fila.length < 3) continue;
+                
+                // 1. Detección automática para saltar el encabezado
+                if (i == 0 && (fila[0].toLowerCase().contains("clave") || fila[1].toLowerCase().contains("nombre"))) {
+                    continue; 
+                }
+
+                if (fila.length < 3) {
+                    errores.add("Línea " + (i + 1) + ": Faltan columnas.");
+                    continue;
+                }
 
                 try {
                     Materia m = new Materia();
@@ -83,7 +92,10 @@ public class CargaDatosService {
                     m.setNombre(fila[1].trim());
                     m.setTotalUnidades(Integer.parseInt(fila[2].trim()));
 
-                    materiaService.guardar(m);
+                    // 2. Le pasamos 'false' para indicarle al servicio que es una materia nueva
+                    materiaService.guardar(m, false); 
+                } catch (NumberFormatException e) {
+                    errores.add("Línea " + (i + 1) + ": El total de unidades debe ser un número entero.");
                 } catch (Exception e) {
                     errores.add("Línea " + (i + 1) + ": " + e.getMessage());
                 }
