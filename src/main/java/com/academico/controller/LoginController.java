@@ -55,6 +55,10 @@ public class LoginController {
             if (resultado.isPresent()) {
                 Usuario usuario = resultado.get();
                 SessionManagerUtil.iniciarSesion(usuario);
+
+                javafx.stage.Stage stage = (javafx.stage.Stage) botonLogin.getScene().getWindow();
+                stage.setMaximized(true);
+
                 navegarSegunRol(usuario.getRol());
             } else {
                 mostrarError(errorGeneral,

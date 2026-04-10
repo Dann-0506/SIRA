@@ -2,17 +2,22 @@ package com.academico.controller;
 
 import com.academico.model.Alumno;
 import com.academico.service.individuals.AlumnoService;
+import com.academico.service.CargaDatosService;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.scene.layout.Region;
 import javafx.util.Callback;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,9 +43,11 @@ public class AlumnosController {
     @FXML private Button botonGuardar;
 
     private AlumnoService alumnoService = new AlumnoService();
+    private CargaDatosService cargaDatosService = new CargaDatosService();
     private ObservableList<Alumno> listaAlumnos = FXCollections.observableArrayList();
+    private FilteredList<Alumno> alumnosFiltrados;
     private Alumno alumnoEnEdicion = null;
-    private final int FILAS_POR_PAGINA = 10;
+    private final int FILAS_POR_PAGINA = 14;
 
     @FXML
     public void initialize() {
@@ -48,6 +55,10 @@ public class AlumnosController {
         tablaAlumnos.getColumns().forEach(column -> column.setReorderable(false));
     
         tablaAlumnos.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+
+        tablaAlumnos.setFixedCellSize(50);
+
+        alumnosFiltrados = new FilteredList<>(listaAlumnos, p -> true);
 
         configurarColumnas();
         cargarDatos();
@@ -85,26 +96,27 @@ public class AlumnosController {
         try {
             List<Alumno> alumnos = alumnoService.listarTodos();
             listaAlumnos.setAll(alumnos);
-            configurarPaginacion();
+            handleBusqueda();
         } catch (Exception e) {
             mostrarNotificacion(e.getMessage(), true);
         }
     }
 
     private void configurarPaginacion() {
-        int totalPaginas = (int) Math.ceil((double) listaAlumnos.size() / FILAS_POR_PAGINA);
+        int totalFilas = alumnosFiltrados.size();
+        int totalPaginas = (int) Math.ceil((double) totalFilas / FILAS_POR_PAGINA);
+
         paginacionAlumnos.setPageCount(totalPaginas > 0 ? totalPaginas : 1);
         
         paginacionAlumnos.setPageFactory(pageIndex -> {
             int desde = pageIndex * FILAS_POR_PAGINA;
-            int hasta = Math.min(desde + FILAS_POR_PAGINA, listaAlumnos.size());
+            int hasta = Math.min(desde + FILAS_POR_PAGINA, totalFilas);
             
-            if (desde < listaAlumnos.size()) {
-                tablaAlumnos.setItems(FXCollections.observableArrayList(listaAlumnos.subList(desde, hasta)));
+            if (desde < totalFilas) {
+                tablaAlumnos.setItems(FXCollections.observableArrayList(alumnosFiltrados.subList(desde, hasta)));
             } else {
                 tablaAlumnos.setItems(FXCollections.observableArrayList());
             }
-            // Devolvemos un Region vacío para que no interfiera con la tabla del FXML
             return new Region(); 
         });
     }
@@ -210,6 +222,58 @@ public class AlumnosController {
         fade.play();
     }
 
-    @FXML private void handleBusqueda() {}
-    @FXML private void handleImportarCsv() {}
+    @FXML private void handleBusqueda() {
+        String textoFiltro = campoBusqueda.getText().toLowerCase().trim();
+
+        alumnosFiltrados.setPredicate(alumno -> {
+            if (textoFiltro.isEmpty()) return true;
+
+            return alumno.getNombre().toLowerCase().contains(textoFiltro) ||
+                   alumno.getMatricula().toLowerCase().contains(textoFiltro);
+        });
+
+        configurarPaginacion();
+    }
+
+
+    @FXML
+    private void handleImportarCsv() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Seleccionar archivo de Alumnos (CSV)");
+        fileChooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("Archivos CSV", "*.csv")
+        );
+
+        // Abrir el selector de archivos
+        File archivo = fileChooser.showOpenDialog(tablaAlumnos.getScene().getWindow());
+
+        if (archivo != null) {
+            try (FileInputStream fis = new FileInputStream(archivo)) {
+                // Llamamos al orquestador
+                List<String> errores = cargaDatosService.importarAlumnosCsv(fis);
+
+                if (errores.isEmpty()) {
+                    mostrarNotificacion("¡Todos los alumnos importados con éxito!", false);
+                } else {
+                    // Si hubo errores parciales, mostramos un resumen y los detalles
+                    int fallidos = errores.size();
+                    mostrarNotificacion("Importación completada con " + fallidos + " errores.", true);
+                    
+                    // Opcional: Mostrar detalles en un Alert para que el usuario sepa qué filas fallaron
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Detalle de errores en CSV");
+                    alert.setHeaderText("Algunas filas no pudieron procesarse:");
+                    alert.setContentText(String.join("\n", errores));
+                    alert.showAndWait();
+                }
+
+                // Refrescamos la tabla para ver los nuevos datos
+                cargarDatos(); 
+
+            } catch (Exception e) {
+                mostrarNotificacion("Error crítico al procesar el archivo.", true);
+                e.printStackTrace();
+            }
+        }
+    }
 }
