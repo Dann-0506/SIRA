@@ -41,11 +41,12 @@ public class DashboardController {
 
         if ("admin".equals(rol)) {
             agregarSeccion("CATÁLOGOS");
-            agregarBoton("Alumnos",       NavegationUtil.ALUMNOS);
-            agregarBoton("Materias",      NavegationUtil.MATERIAS);
-            agregarBoton("Maestros",      NavegationUtil.MAESTROS);
-            agregarBoton("Grupos",        NavegationUtil.GRUPOS);
-            agregarBoton("Inscripciones", NavegationUtil.INSCRIPCIONES);
+            agregarBoton("Administradores", NavegationUtil.ADMINS);
+            agregarBoton("Alumnos",         NavegationUtil.ALUMNOS);
+            agregarBoton("Materias",        NavegationUtil.MATERIAS);
+            agregarBoton("Maestros",        NavegationUtil.MAESTROS);
+            agregarBoton("Grupos",          NavegationUtil.GRUPOS);
+            agregarBoton("Inscripciones",   NavegationUtil.INSCRIPCIONES);
 
             agregarSeccion("SISTEMA");
             agregarBoton("Configuración", NavegationUtil.CONFIGURACION);
