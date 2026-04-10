@@ -41,11 +41,11 @@ public class MaestrosController {
     private final ObservableList<Maestro> listaMaestros = FXCollections.observableArrayList();
     private FilteredList<Maestro> maestrosFiltrados;
     private Maestro maestroEnEdicion = null;
-    private final int FILAS_POR_PAGINA = 14;
+    private final int FILAS_POR_PAGINA = 15;
 
     @FXML
     public void initialize() {
-        tablaMaestros.setFixedCellSize(50);
+        tablaMaestros.setFixedCellSize(48);
         configurarColumnas();
         cargarDatos();
     }
