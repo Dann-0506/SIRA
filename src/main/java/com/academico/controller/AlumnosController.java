@@ -40,6 +40,8 @@ public class AlumnosController {
     @FXML private TextField campoEmail;
     @FXML private Label mensajeGeneral;
     @FXML private Button botonGuardar;
+    @FXML private Label labelNotaPassword;
+    @FXML private Button btnRestablecerPassword;
 
     private AlumnoService alumnoService = new AlumnoService();
     private CargaDatosService cargaDatosService = new CargaDatosService();
@@ -157,10 +159,16 @@ public class AlumnosController {
 
     private void abrirEdicion(Alumno a) {
         alumnoEnEdicion = a;
+        
         campoMatricula.setText(a.getMatricula());
         campoNombre.setText(a.getNombre());
         campoEmail.setText(a.getEmail());
+        
         labelTituloFormulario.setText("Editar Alumno");
+        labelNotaPassword.setText("Nota: Si el usuario olvidó su acceso, puedes restablecer su contraseña.");
+        btnRestablecerPassword.setVisible(true);
+        btnRestablecerPassword.setManaged(true);
+
         panelFormulario.setVisible(true);
         panelFormulario.setManaged(true);
     }
@@ -208,12 +216,18 @@ public class AlumnosController {
         }
     }
 
-    @FXML private void handleNuevo() { 
-        alumnoEnEdicion = null;
+    @FXML 
+    private void handleNuevo() { 
+        alumnoEnEdicion = null; 
         limpiarFormulario();
+        
         labelTituloFormulario.setText("Nuevo Alumno");
-        panelFormulario.setVisible(true);
-        panelFormulario.setManaged(true);
+        labelNotaPassword.setText("Nota: Los alumnos nuevos se crean con la contraseña predeterminada '123456'.");
+        btnRestablecerPassword.setVisible(false);
+        btnRestablecerPassword.setManaged(false);
+
+        panelFormulario.setVisible(true); 
+        panelFormulario.setManaged(true); 
     }
 
     @FXML private void handleCancelar() { 
@@ -305,6 +319,27 @@ public class AlumnosController {
             } catch (Exception e) {
                 mostrarNotificacion("Error crítico al procesar el archivo.", true);
                 e.printStackTrace();
+            }
+        }
+    }
+
+    @FXML
+    private void handleRestablecerPassword() {
+        if (alumnoEnEdicion == null) return;
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Restablecer Contraseña");
+        alert.setHeaderText("¿Deseas restablecer la contraseña de " + alumnoEnEdicion.getNombre() + "?");
+        alert.setContentText("Su contraseña volverá a ser '123456' temporalmente.");
+
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                alumnoService.restablecerPassword(alumnoEnEdicion.getId());
+                mostrarNotificacion("Contraseña restablecida a '123456'.", false);
+                handleCancelar();
+            } catch (Exception e) {
+                mostrarNotificacion(e.getMessage(), true);
             }
         }
     }
