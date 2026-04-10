@@ -33,11 +33,11 @@ public class AdminsController {
     private final ObservableList<Usuario> listaAdmins = FXCollections.observableArrayList();
     private FilteredList<Usuario> adminsFiltrados;
     private Usuario adminEnEdicion = null;
-    private final int FILAS_POR_PAGINA = 14;
+    private final int FILAS_POR_PAGINA = 15;
 
     @FXML
     public void initialize() {
-        tablaAdmins.setFixedCellSize(50);
+        tablaAdmins.setFixedCellSize(48);
         configurarColumnas();
         cargarDatos();
     }

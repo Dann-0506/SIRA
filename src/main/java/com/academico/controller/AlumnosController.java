@@ -46,11 +46,11 @@ public class AlumnosController {
     private ObservableList<Alumno> listaAlumnos = FXCollections.observableArrayList();
     private FilteredList<Alumno> alumnosFiltrados;
     private Alumno alumnoEnEdicion = null;
-    private final int FILAS_POR_PAGINA = 14;
+    private final int FILAS_POR_PAGINA = 15;
 
     @FXML
     public void initialize() {
-        tablaAlumnos.setFixedCellSize(50);
+        tablaAlumnos.setFixedCellSize(48);
         alumnosFiltrados = new FilteredList<>(listaAlumnos, p -> true);
 
         configurarColumnas();
