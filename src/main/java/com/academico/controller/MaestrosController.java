@@ -162,17 +162,27 @@ public class MaestrosController {
 
     @FXML
     private void handleImportarCsv() {
-        FileChooser fc = new FileChooser();
-        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV", "*.csv"));
-        File file = fc.showOpenDialog(tablaMaestros.getScene().getWindow());
-        if (file != null) {
-            try (FileInputStream fis = new FileInputStream(file)) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Seleccionar archivo de Docentes (CSV)");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos CSV", "*.csv"));
+
+        File archivo = fileChooser.showOpenDialog(tablaMaestros.getScene().getWindow());
+
+        if (archivo != null) {
+            try (FileInputStream fis = new FileInputStream(archivo)) {
                 List<String> errores = cargaDatosService.importarMaestrosCsv(fis);
-                if (errores.isEmpty()) mostrarNotificacion("Importación exitosa", false);
-                else mostrarNotificacion("Completado con " + errores.size() + " errores.", true);
-                cargarDatos();
+
+                if (errores.isEmpty()) {
+                    mostrarNotificacion("¡Todos los docentes importados con éxito!", false);
+                } else {
+                    mostrarNotificacion("Importación completada con " + errores.size() + " errores.", true);
+                    mostrarDetallesErrores(errores, tablaMaestros.getScene().getWindow()); // Usamos el nuevo método
+                }
+                
+                cargarDatos(); 
+                
             } catch (Exception e) {
-                mostrarNotificacion("Error al procesar archivo", true);
+                mostrarNotificacion("Error crítico al procesar el archivo.", true);
             }
         }
     }
@@ -332,5 +342,25 @@ public class MaestrosController {
             accionPendiente.run(); 
         }
         handleCancelarConfirmacion();
+    }
+
+    private void mostrarDetallesErrores(List<String> errores, javafx.stage.Window ventanaPadre) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+
+        alert.initOwner(ventanaPadre); 
+        
+        alert.setTitle("Detalle de la Importación");
+        alert.setHeaderText("Algunas filas no pudieron procesarse:");
+
+        TextArea textArea = new TextArea(String.join("\n", errores));
+        textArea.setEditable(false);
+        textArea.setWrapText(false);
+        
+        textArea.setPrefWidth(550);
+        textArea.setPrefHeight(250);
+
+        alert.getDialogPane().setContent(textArea);
+        
+        alert.showAndWait();
     }
 }

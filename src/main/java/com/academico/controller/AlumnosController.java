@@ -289,39 +289,25 @@ public class AlumnosController {
     private void handleImportarCsv() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Seleccionar archivo de Alumnos (CSV)");
-        fileChooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Archivos CSV", "*.csv")
-        );
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Archivos CSV", "*.csv"));
 
-        // Abrir el selector de archivos
         File archivo = fileChooser.showOpenDialog(tablaAlumnos.getScene().getWindow());
 
         if (archivo != null) {
             try (FileInputStream fis = new FileInputStream(archivo)) {
-                // Llamamos al orquestador
                 List<String> errores = cargaDatosService.importarAlumnosCsv(fis);
 
                 if (errores.isEmpty()) {
                     mostrarNotificacion("¡Todos los alumnos importados con éxito!", false);
                 } else {
-                    // Si hubo errores parciales, mostramos un resumen y los detalles
-                    int fallidos = errores.size();
-                    mostrarNotificacion("Importación completada con " + fallidos + " errores.", true);
-                    
-                    // Opcional: Mostrar detalles en un Alert para que el usuario sepa qué filas fallaron
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setTitle("Detalle de errores en CSV");
-                    alert.setHeaderText("Algunas filas no pudieron procesarse:");
-                    alert.setContentText(String.join("\n", errores));
-                    alert.showAndWait();
+                    mostrarNotificacion("Importación completada con " + errores.size() + " errores.", true);
+                    mostrarDetallesErrores(errores, tablaAlumnos.getScene().getWindow()); // Usamos el nuevo método
                 }
-
-                // Refrescamos la tabla para ver los nuevos datos
+                
                 cargarDatos(); 
 
             } catch (Exception e) {
                 mostrarNotificacion("Error crítico al procesar el archivo.", true);
-                e.printStackTrace();
             }
         }
     }
@@ -379,5 +365,25 @@ public class AlumnosController {
             accionPendiente.run(); 
         }
         handleCancelarConfirmacion();
+    }
+
+    private void mostrarDetallesErrores(List<String> errores, javafx.stage.Window ventanaPadre) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+
+        alert.initOwner(ventanaPadre); 
+        
+        alert.setTitle("Detalle de la Importación");
+        alert.setHeaderText("Algunas filas no pudieron procesarse:");
+
+        TextArea textArea = new TextArea(String.join("\n", errores));
+        textArea.setEditable(false);
+        textArea.setWrapText(false);
+
+        textArea.setPrefWidth(550);
+        textArea.setPrefHeight(250);
+
+        alert.getDialogPane().setContent(textArea);
+        
+        alert.showAndWait();
     }
 }
