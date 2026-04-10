@@ -50,13 +50,7 @@ public class AlumnosController {
 
     @FXML
     public void initialize() {
-
-        tablaAlumnos.getColumns().forEach(column -> column.setReorderable(false));
-    
-        tablaAlumnos.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
-
         tablaAlumnos.setFixedCellSize(50);
-
         alumnosFiltrados = new FilteredList<>(listaAlumnos, p -> true);
 
         configurarColumnas();
