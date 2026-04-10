@@ -56,7 +56,7 @@ class CargaDatosServiceTest {
         InputStream is = crearCsvStream(csvFalso);
 
         // Simulamos que el servicio detecta un error (ej. clave duplicada)
-        doThrow(new Exception("La clave ya existe")).when(materiaService).guardar(any(Materia.class));
+        doThrow(new Exception("La clave ya existe")).when(materiaService).guardar(any(Materia.class), false);
 
         List<String> errores = cargaDatosService.importarMateriasCsv(is);
 

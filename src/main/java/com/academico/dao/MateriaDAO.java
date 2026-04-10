@@ -10,8 +10,6 @@ import java.util.Optional;
 
 public class MateriaDAO {
 
-    // === Mapeo de ResultSet a Materia ===
-
     private Materia mapear(ResultSet rs) throws SQLException {
         return new Materia(
                 rs.getInt("id"),
@@ -20,9 +18,6 @@ public class MateriaDAO {
                 rs.getInt("total_unidades")
         );
     }
-
-
-    // === Consulta ===
 
     public Optional<Materia> findById(int id) throws SQLException {
         String sql = "SELECT * FROM materia WHERE id = ?";
@@ -46,70 +41,41 @@ public class MateriaDAO {
         return lista;
     }
 
-
-    // === Escritura ===
-
     public Materia insertar(Materia m) throws SQLException {
-        String sql = """
-                INSERT INTO materia (clave, nombre, total_unidades)
-                VALUES (?, ?, ?)
-                RETURNING id
-                """;
+        String sql = "INSERT INTO materia (clave, nombre, total_unidades) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseManagerUtil.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            
             ps.setString(1, m.getClave());
             ps.setString(2, m.getNombre());
             ps.setInt(3, m.getTotalUnidades());
-            try (ResultSet rs = ps.executeQuery()) {
-                rs.next();
-                m.setId(rs.getInt("id"));
+            ps.executeUpdate();
+            
+            // Recuperamos el ID generado
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) m.setId(rs.getInt(1));
             }
         }
         return m;
     }
-
-    public List<String> insertarLote(List<Materia> materias) throws SQLException {
-        List<String> duplicados = new ArrayList<>();
-        String sql = """
-                INSERT INTO materia (clave, nombre, total_unidades)
-                VALUES (?, ?, ?)
-                ON CONFLICT (clave) DO NOTHING
-                """;
-        try (Connection conn = DatabaseManagerUtil.getConnection()) {
-            conn.setAutoCommit(false);
-            try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                for (Materia m : materias) {
-                    ps.setString(1, m.getClave());
-                    ps.setString(2, m.getNombre());
-                    ps.setInt(3, m.getTotalUnidades());
-                    if (ps.executeUpdate() == 0) duplicados.add(m.getClave());
-                }
-                conn.commit();
-            } catch (SQLException e) {
-                conn.rollback();
-                throw e;
-            } finally {
-                conn.setAutoCommit(true);
-            }
-        }
-        return duplicados;
-    }
-
-
-    // === Actualización ===
-
+    
     public void actualizar(Materia m) throws SQLException {
-        String sql = """
-                UPDATE materia
-                SET clave = ?, nombre = ?, total_unidades = ?
-                WHERE id = ?
-                """;
+        String sql = "UPDATE materia SET clave = ?, nombre = ?, total_unidades = ? WHERE id = ?";
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, m.getClave());
             ps.setString(2, m.getNombre());
             ps.setInt(3, m.getTotalUnidades());
             ps.setInt(4, m.getId());
+            ps.executeUpdate();
+        }
+    }
+
+    public void eliminar(int id) throws SQLException {
+        String sql = "DELETE FROM materia WHERE id = ?";
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
             ps.executeUpdate();
         }
     }

@@ -66,20 +66,15 @@ public class UnidadDAO {
 
     // === Escritura ===
 
-    public Unidad insertar(Unidad u) throws SQLException {
-        String sql = "INSERT INTO unidad (materia_id, numero, nombre) VALUES (?, ?, ?) RETURNING id";
+    public void insertar(Unidad u) throws SQLException {
+        String sql = "INSERT INTO unidad (materia_id, numero, nombre) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, u.getMateriaId());
             ps.setInt(2, u.getNumero());
             ps.setString(3, u.getNombre());
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    u.setId(rs.getInt("id"));
-                }
-            }
+            ps.executeUpdate();
         }
-        return u;
     }
 
     // === Actualización ===
@@ -103,6 +98,36 @@ public class UnidadDAO {
         try (Connection conn = DatabaseManagerUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
+            ps.executeUpdate();
+        }
+    }
+
+    public List<Unidad> findByMateria(int materiaId) throws SQLException {
+        String sql = "SELECT * FROM unidad WHERE materia_id = ? ORDER BY numero";
+        List<Unidad> lista = new ArrayList<>();
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, materiaId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Unidad u = new Unidad();
+                    u.setId(rs.getInt("id"));
+                    u.setMateriaId(rs.getInt("materia_id"));
+                    u.setNumero(rs.getInt("numero"));
+                    u.setNombre(rs.getString("nombre"));
+                    lista.add(u);
+                }
+            }
+        }
+        return lista;
+    }
+
+    public void actualizarNombre(int id, String nombre) throws SQLException {
+        String sql = "UPDATE unidad SET nombre = ? WHERE id = ?";
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, nombre);
+            ps.setInt(2, id);
             ps.executeUpdate();
         }
     }
