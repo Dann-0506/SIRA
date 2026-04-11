@@ -18,9 +18,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.TextAlignment;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class GrupoConcentradoController {
@@ -28,49 +26,53 @@ public class GrupoConcentradoController {
     // === SERVICIOS ===
     private final UnidadService unidadService = new UnidadService();
     private final CalificacionService calificacionService = new CalificacionService();
-    private final ReporteService reporteService = new ReporteService(); // Nuevo orquestador
+    private final ReporteService reporteService = new ReporteService();
+    private final InscripcionService inscripcionService = new InscripcionService();
+    private final GrupoService grupoService = new GrupoService();
 
     // === ELEMENTOS UI ===
     @FXML private Label lblEstadoCurso;
     @FXML private Button btnCerrarCurso;
     @FXML private TextField campoBusqueda;
-    @FXML private TableView<CalificacionFinal> tablaConcentrado; // Usamos el DTO directamente
+    @FXML private TableView<CalificacionFinal> tablaConcentrado;
     
     @FXML private VBox panelOverride;
     @FXML private Label lblNombreOverride;
     @FXML private TextField campoCalificacionManual;
     @FXML private TextField campoMotivoOverride;
     @FXML private Label lblMensajeOverride;
+    @FXML private Label lblInstrucciones;
 
     // === ESTADO ===
     private Grupo grupoActual;
-    private CalificacionFinal alumnoSeleccionado; // Tipo actualizado
+    private CalificacionFinal alumnoSeleccionado;
     private boolean cursoCerrado = false; 
     
     private final ObservableList<CalificacionFinal> listaDatos = FXCollections.observableArrayList();
     private FilteredList<CalificacionFinal> datosFiltrados;
     private List<Unidad> unidadesGrupo;
 
-    private final Map<Integer, BigDecimal> bdOverridesValor = new HashMap<>();
-    private final Map<Integer, String> bdOverridesMotivo = new HashMap<>();
-
     @FXML
     public void initialize() {
         if (DashboardMaestroController.instancia != null) {
             grupoActual = DashboardMaestroController.instancia.getGrupoSeleccionado();
+            this.cursoCerrado = grupoActual.isCerrado();
         }
         actualizarUICursoCerrado();
         cargarDatos();
     }
 
     private void actualizarUICursoCerrado() {
-        if (cursoCerrado) {
-            lblEstadoCurso.setText("CERRADO");
-            lblEstadoCurso.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #cf222e; -fx-background-color: #ffebe9; -fx-padding: 5 15; -fx-background-radius: 15;");
-            btnCerrarCurso.setDisable(true);
-            btnCerrarCurso.setText("Acta Generada");
-        }
+    if (cursoCerrado) {
+        lblEstadoCurso.setText("CERRADO");
+        lblEstadoCurso.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #cf222e; -fx-background-color: #ffebe9; -fx-padding: 5 15; -fx-background-radius: 15;");
+        
+        btnCerrarCurso.setDisable(true);
+        btnCerrarCurso.setText("Acta Firmada");
+
+        lblInstrucciones.setText("Curso finalizado. Para correcciones extraordinarias, contacte a Servicios Escolares.");
     }
+}
 
     // ==========================================
     // CARGA DE DATOS Y CÁLCULOS
@@ -243,10 +245,16 @@ public class GrupoConcentradoController {
         alert.setHeaderText("Estás a punto de cerrar el acta de la materia.");
         alert.setContentText("Una vez cerrado, no podrás modificar calificaciones, asignar puntos extra ni realizar overrides. ¿Deseas continuar?");
         
-        if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-            cursoCerrado = true; // TODO: Guardar estado en BD
-            actualizarUICursoCerrado();
-            cargarDatos(); // Recargar para deshabilitar botones
+        if (alert.showAndWait().get() == ButtonType.OK) {
+            try {
+                grupoService.cerrarCurso(grupoActual.getId());
+                this.cursoCerrado = true;
+                grupoActual.setEstadoEvaluacion("CERRADO"); // Actualizar objeto en memoria
+                actualizarUICursoCerrado();
+                cargarDatos();
+            } catch (Exception e) {
+                mostrarMensaje("Error: " + e.getMessage(), true);
+            }
         }
     }
 
@@ -280,17 +288,19 @@ public class GrupoConcentradoController {
                 mostrarMensaje("La calificación debe estar entre 0 y 100.", true); return;
             }
 
-            // TODO: Persistir en tu Base de Datos
-            bdOverridesValor.put(alumnoSeleccionado.getInscripcionId(), valor);
-            bdOverridesMotivo.put(alumnoSeleccionado.getInscripcionId(), motivo);
+            inscripcionService.aplicarOverrideMateria(
+                alumnoSeleccionado.getInscripcionId(), 
+                valor, 
+                motivo
+            );
 
-            mostrarMensaje("Calificación manual aplicada correctamente.", false);
+            mostrarMensaje("Calificación manual guardada permanentemente.", false);
             javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1.5));
             pause.setOnFinished(e -> { handleCancelarOverride(); cargarDatos(); });
             pause.play();
 
-        } catch (NumberFormatException e) {
-            mostrarMensaje("Formato numérico inválido.", true);
+        } catch (Exception e) {
+            mostrarMensaje(e.getMessage(), true);
         }
     }
 

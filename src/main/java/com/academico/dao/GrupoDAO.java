@@ -26,6 +26,7 @@ public class GrupoDAO {
         g.setClave(rs.getString("clave"));
         g.setSemestre(rs.getString("semestre"));
         g.setActivo(rs.getBoolean("activo"));
+        g.setEstadoEvaluacion(rs.getString("estado_evaluacion"));
         
         try { g.setMateriaNombre(rs.getString("materia_nombre")); } catch (SQLException ignored) {}
         try { g.setMaestroNombre(rs.getString("maestro_nombre")); } catch (SQLException ignored) {}
@@ -200,6 +201,16 @@ public class GrupoDAO {
             ps.setString(4, g.getSemestre());
             ps.setBoolean(5, g.isActivo());
             ps.setInt(6, g.getId());
+            ps.executeUpdate();
+        }
+    }
+
+    public void actualizarEstadoEvaluacion(int id, String estado) throws SQLException {
+        String sql = "UPDATE grupo SET estado_evaluacion = ? WHERE id = ?";
+        try (Connection conn = DatabaseManagerUtil.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, estado);
+            ps.setInt(2, id);
             ps.executeUpdate();
         }
     }
