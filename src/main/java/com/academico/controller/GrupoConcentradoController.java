@@ -247,13 +247,16 @@ public class GrupoConcentradoController {
         
         if (alert.showAndWait().get() == ButtonType.OK) {
             try {
-                grupoService.cerrarCurso(grupoActual.getId());
+                grupoService.cerrarCursoDefinitivamente(grupoActual.getId());
                 this.cursoCerrado = true;
-                grupoActual.setEstadoEvaluacion("CERRADO"); // Actualizar objeto en memoria
+                grupoActual.setEstadoEvaluacion("CERRADO");
+                grupoActual.setActivo(false); // Reflejar cambio en el objeto
+                
                 actualizarUICursoCerrado();
                 cargarDatos();
+                mostrarMensaje("Acta cerrada y grupo archivado exitosamente.", false);
             } catch (Exception e) {
-                mostrarMensaje("Error: " + e.getMessage(), true);
+                mostrarMensaje(e.getMessage(), true);
             }
         }
     }

@@ -177,14 +177,33 @@ public class GruposController {
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || getTableRow() == null || getTableRow().getItem() == null) setGraphic(null);
-                else {
+                
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                    setGraphic(null);
+                } else {
                     Grupo g = getTableRow().getItem();
+                    boolean cerrado = g.isCerrado();
+
                     btnEstadoAccion.setText(g.isActivo() ? "Desactivar" : "Activar");
                     btnEstadoAccion.getStyleClass().removeAll("success", "warning");
                     btnEstadoAccion.getStyleClass().add(g.isActivo() ? "warning" : "success");
-                    btnReabrir.setVisible(g.isCerrado());
-                    btnReabrir.setManaged(g.isCerrado());
+
+                    btnEstadoAccion.setDisable(cerrado);
+
+                    btnEditar.setDisable(cerrado);
+
+                    btnReabrir.setVisible(cerrado);
+                    btnReabrir.setManaged(cerrado);
+
+                    if (cerrado) {
+                        Tooltip tip = new Tooltip("El acta está cerrada. Reabre el curso para realizar cambios.");
+                        btnEditar.setTooltip(tip);
+                        btnEstadoAccion.setTooltip(tip);
+                    } else {
+                        btnEditar.setTooltip(null);
+                        btnEstadoAccion.setTooltip(null);
+                    }
+
                     setGraphic(panel);
                 }
             }
