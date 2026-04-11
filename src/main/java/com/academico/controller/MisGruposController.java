@@ -145,13 +145,10 @@ public class MisGruposController {
             textoEvaluacion = "Sin Alumnos";
             estiloEvaluacion = "-fx-text-fill: #57606a; -fx-background-color: #f6f8fa;"; // Gris
         } 
-        // TODO: Cuando construyamos la pantalla 4 (Concentrado Final), 
-        // aquí validaremos si el maestro ya "Cerró el Acta" para ponerlo en verde.
-        /* else if (calificacionService.isActaCerrada(grupo.getId())) {
+        else if (grupo.isCerrado()) {
             textoEvaluacion = "Acta Cerrada";
-            estiloEvaluacion = "-fx-text-fill: #2da44e; -fx-background-color: #dcffe4;"; // Verde
+            estiloEvaluacion = "-fx-text-fill: #155724; -fx-background-color: #d4edda;"; // Verde
         }
-        */
 
         Label lblEvaluacion = new Label(textoEvaluacion);
         lblEvaluacion.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-padding: 4 8 4 8; -fx-background-radius: 12; " + estiloEvaluacion);
