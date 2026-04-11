@@ -100,6 +100,23 @@ public class GrupoService {
         }
     }
 
+    public void cerrarCurso(int id) throws Exception {
+        try {
+            grupoDAO.actualizarEstadoEvaluacion(id, "CERRADO");
+        } catch (SQLException e) {
+            throw new Exception("Error al intentar cerrar el acta del grupo.");
+        }
+    }
+
+    public void reabrirCurso(int id) throws Exception {
+        try {
+            // Regresamos el estado a ABIERTO para permitir ediciones nuevamente
+            grupoDAO.actualizarEstadoEvaluacion(id, "ABIERTO");
+        } catch (SQLException e) {
+            throw new Exception("Error al intentar reabrir el acta del grupo.");
+        }
+    }
+
     public void eliminar(int id) throws Exception {
         try {
             grupoDAO.eliminar(id); 

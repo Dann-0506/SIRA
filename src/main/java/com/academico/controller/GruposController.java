@@ -28,7 +28,7 @@ public class GruposController {
 
     // === ELEMENTOS DE LA INTERFAZ ===
     @FXML private TableView<Grupo> tablaGrupos;
-    @FXML private TableColumn<Grupo, String> colClave, colMateria, colMaestro, colSemestre;
+    @FXML private TableColumn<Grupo, String> colClave, colMateria, colMaestro, colSemestre, colEstadoEvaluacion;
     @FXML private TableColumn<Grupo, Void> colAcciones;
     @FXML private TableColumn<Grupo, Boolean> colEstado;
     @FXML private Pagination paginacionGrupos;
@@ -72,23 +72,28 @@ public class GruposController {
         colMaestro.setCellValueFactory(new PropertyValueFactory<>("maestroNombre"));
         colSemestre.setCellValueFactory(new PropertyValueFactory<>("semestre"));
         
-        colEstado.setCellValueFactory(new PropertyValueFactory<>("activo"));
-        colEstado.setCellFactory(param -> new TableCell<>() {
+        colEstadoEvaluacion.setCellValueFactory(new PropertyValueFactory<>("estadoEvaluacion"));
+        colEstadoEvaluacion.setCellFactory(param -> new TableCell<>() {
             private final Label lblBadge = new Label();
             {
                 lblBadge.setStyle("-fx-padding: 3 10; -fx-background-radius: 12; -fx-font-weight: bold; -fx-font-size: 11px;");
             }
             @Override
-            protected void updateItem(Boolean activo, boolean empty) {
-                super.updateItem(activo, empty);
-                if (empty || activo == null) {
+            protected void updateItem(String estado, boolean empty) {
+                super.updateItem(estado, empty);
+                if (empty || estado == null) {
                     setGraphic(null);
                 } else {
-                    lblBadge.setText(activo ? "ACTIVO" : "INACTIVO");
-                    lblBadge.setStyle(lblBadge.getStyle() + (activo 
-                        ? "-fx-background-color: #d4edda; -fx-text-fill: #155724;" 
-                        : "-fx-background-color: #e2e3e5; -fx-text-fill: #383d41;"));
+                    lblBadge.setText(estado);
+                    if ("CERRADO".equals(estado)) {
+                        // Estilo Rojo/Cerrado
+                        lblBadge.setStyle(lblBadge.getStyle() + "-fx-background-color: #ffebe9; -fx-text-fill: #cf222e;");
+                    } else {
+                        // Estilo Azul/Abierto
+                        lblBadge.setStyle(lblBadge.getStyle() + "-fx-background-color: #ddf4ff; -fx-text-fill: #0969da;");
+                    }
                     setGraphic(lblBadge);
+                    setStyle("-fx-alignment: CENTER;");
                 }
             }
         });
@@ -97,14 +102,21 @@ public class GruposController {
             private final Button btnEditar = new Button("Editar");
             private final Button btnEstado = new Button();
             private final Button btnEliminar = new Button("Eliminar");
-            private final HBox panel = new HBox(8, btnEditar, btnEstado, btnEliminar);
+            private final Button btnReabrir = new Button("Reabrir Acta");
+            private final HBox panel = new HBox(8, btnEditar, btnEstado, btnEliminar, btnReabrir);
 
             {
                 btnEditar.getStyleClass().addAll("flat", "accent");
                 btnEstado.getStyleClass().addAll("flat");
                 btnEliminar.getStyleClass().addAll("flat", "danger");
+                btnReabrir.getStyleClass().addAll("flat", "warning");
                 
                 panel.setStyle("-fx-alignment: center;");
+
+                btnReabrir.setOnAction(e -> {
+                    Grupo g = getTableRow().getItem();
+                    if (g != null) confirmarReapertura(g);
+                });
 
                 btnEditar.setOnAction(e -> {
                     if (getTableRow() != null && getTableRow().getItem() != null) {
@@ -132,9 +144,11 @@ public class GruposController {
                     Grupo g = (Grupo) getTableRow().getItem();
                     
                     btnEstado.setText(g.isActivo() ? "Desactivar" : "Activar");
-                    
                     btnEstado.getStyleClass().removeAll("success", "warning");
                     btnEstado.getStyleClass().add(g.isActivo() ? "warning" : "success");
+
+                    btnReabrir.setVisible(g.isCerrado());
+                    btnReabrir.setManaged(g.isCerrado());
                     
                     setGraphic(panel);
                 }
@@ -337,6 +351,24 @@ public class GruposController {
                 mostrarNotificacion("Estado actualizado exitosamente.", false);
             } catch (Exception e) { mostrarNotificacion(e.getMessage(), true); }
         });
+    }
+
+    private void confirmarReapertura(Grupo g) {
+        mostrarConfirmacion(
+            "Reapertura de Curso", 
+            "¿Estás seguro de reabrir el acta del grupo " + g.getClave() + "?\n" +
+            "Esto permitirá que el docente vuelva a modificar calificaciones.", 
+            "warning", 
+            () -> {
+                try {
+                    grupoService.reabrirCurso(g.getId());
+                    cargarDatos(); // Refrescar tabla
+                    mostrarNotificacion("El curso ha sido reabierto exitosamente.", false);
+                } catch (Exception e) {
+                    mostrarNotificacion(e.getMessage(), true);
+                }
+            }
+        );
     }
 
     private void confirmarEliminacion(Grupo g) {
