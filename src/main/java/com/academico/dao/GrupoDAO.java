@@ -215,6 +215,17 @@ public class GrupoDAO {
         }
     }
 
+    public void actualizarEstadoActa(int id, String estadoEvaluacion, boolean activo) throws SQLException {
+    String sql = "UPDATE grupo SET estado_evaluacion = ?, activo = ? WHERE id = ?";
+    try (Connection conn = DatabaseManagerUtil.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setString(1, estadoEvaluacion);
+        ps.setBoolean(2, activo);
+        ps.setInt(3, id);
+        ps.executeUpdate();
+    }
+}
+
     // ==========================================
     // OPERACIONES DE ELIMINACIÓN
     // ==========================================
