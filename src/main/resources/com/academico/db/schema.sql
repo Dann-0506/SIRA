@@ -58,7 +58,9 @@ CREATE TABLE IF NOT EXISTS grupo (
     clave VARCHAR(20) NOT NULL UNIQUE,
     semestre VARCHAR(50) NOT NULL,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
-    estado_evaluacion VARCHAR(20) NOT NULL DEFAULT 'ABIERTO' CHECK (estado_evaluacion IN ('ABIERTO', 'CERRADO'))
+    estado_evaluacion VARCHAR(20) NOT NULL DEFAULT 'ABIERTO' CHECK (estado_evaluacion IN ('ABIERTO', 'CERRADO')),
+    calificacion_minima_aprobatoria DECIMAL(5,2) NOT NULL DEFAULT 70,
+    calificacion_maxima DECIMAL(5,2) NOT NULL DEFAULT 100
 );
 
 CREATE TABLE IF NOT EXISTS inscripcion (
