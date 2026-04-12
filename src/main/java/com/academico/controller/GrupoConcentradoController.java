@@ -2,6 +2,7 @@ package com.academico.controller;
 
 import com.academico.model.*;
 import com.academico.service.CalificacionService;
+import com.academico.service.ExportadorPdfService;
 import com.academico.service.ReporteService;
 import com.academico.service.individuals.GrupoService;
 import com.academico.service.individuals.InscripcionService;
@@ -28,10 +29,11 @@ import java.util.Optional;
 
 public class GrupoConcentradoController {
 
-    // === SERVICIOS (Arquitectura Limpia) ===
+    // === SERVICIOS ===
     private final ReporteService reporteService = new ReporteService();
     private final InscripcionService inscripcionService = new InscripcionService();
     private final GrupoService grupoService = new GrupoService();
+    private final ExportadorPdfService pdfService = new ExportadorPdfService();
     
     // Servicios auxiliares solo para la construcción visual de la UI
     private final UnidadService unidadService = new UnidadService(); 
@@ -73,6 +75,7 @@ public class GrupoConcentradoController {
         if (cursoCerrado) {
             lblEstadoCurso.setText("CERRADO");
             lblEstadoCurso.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #cf222e; -fx-background-color: #ffebe9; -fx-padding: 5 15; -fx-background-radius: 15;");
+            
             btnCerrarCurso.setDisable(true);
             btnCerrarCurso.setText("Acta Firmada");
         }
@@ -250,12 +253,12 @@ public class GrupoConcentradoController {
     @FXML 
     private void handleCerrarCurso() {
         boolean faltanCalificaciones = listaDatos.stream()
-        .anyMatch(cf -> {
-            long unidadesCalificadas = cf.getUnidades().stream()
-                .filter(u -> u.getResultadoFinal() != null)
-                .count();
-            return unidadesCalificadas < unidadesGrupo.size();
-        });
+            .anyMatch(cf -> {
+                long unidadesCalificadas = cf.getUnidades().stream()
+                    .filter(u -> u.getResultadoFinal() != null)
+                    .count();
+                return unidadesCalificadas < unidadesGrupo.size();
+            });
 
         if (faltanCalificaciones) {
             Alert alerta = new Alert(Alert.AlertType.WARNING);
@@ -270,12 +273,13 @@ public class GrupoConcentradoController {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Cierre Definitivo de Curso");
         alert.setHeaderText("Estás a punto de cerrar el acta de la materia.");
-        alert.setContentText("Al cerrar, el grupo se archivará y no se podrán modificar calificaciones. Esta acción es irreversible. ¿Deseas continuar?");
+        alert.setContentText("Al cerrar, el grupo se archivará y no se podrán realizar más cambios.\n\n" +
+                             "NOTA: El sistema abrirá automáticamente el asistente para guardar el PDF al finalizar.");
         
         if (alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             try {
                 grupoService.cerrarCursoDefinitivamente(grupoActual.getId());
-                
+
                 cursoCerrado = true;
                 grupoActual.setEstadoEvaluacion("CERRADO");
                 grupoActual.setActivo(false); 
@@ -283,8 +287,13 @@ public class GrupoConcentradoController {
                 actualizarUICursoCerrado();
                 cargarDatos();
 
-                Alert exito = new Alert(Alert.AlertType.INFORMATION, "El acta ha sido cerrada y archivada correctamente.");
+                Alert exito = new Alert(Alert.AlertType.INFORMATION);
+                exito.setTitle("Cierre Exitoso");
+                exito.setHeaderText("Curso Archivado");
+                exito.setContentText("El curso se ha cerrado correctamente. Por favor, elige dónde guardar el Acta Oficial en la siguiente ventana.");
                 exito.showAndWait();
+
+                handleExportarPDF();
                 
             } catch (Exception e) {
                 Alert error = new Alert(Alert.AlertType.ERROR, "Error al cerrar el curso: " + e.getMessage());
@@ -336,6 +345,34 @@ public class GrupoConcentradoController {
             mostrarMensaje("Formato numérico inválido.", true);
         } catch (Exception e) {
             mostrarMensaje(e.getMessage(), true);
+        }
+    }
+
+    private void handleExportarPDF() {
+        javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+        fileChooser.setTitle("Guardar Acta de Calificaciones");
+        fileChooser.setInitialFileName("Acta_" + grupoActual.getClave() + ".pdf");
+        fileChooser.getExtensionFilters().add(new javafx.stage.FileChooser.ExtensionFilter("Documento PDF", "*.pdf"));
+        
+        java.io.File file = fileChooser.showSaveDialog(btnCerrarCurso.getScene().getWindow());
+        
+        if (file != null) {
+            try {
+                pdfService.generarActa(file, grupoActual, unidadesGrupo, listaDatos);
+                
+                Alert exito = new Alert(Alert.AlertType.INFORMATION);
+                exito.setTitle("Exportación Exitosa");
+                exito.setHeaderText("Acta Generada Oficialmente");
+                exito.setContentText("El acta se ha guardado correctamente en:\n" + file.getAbsolutePath());
+                exito.showAndWait();
+
+            } catch (Exception e) {
+                Alert error = new Alert(Alert.AlertType.ERROR);
+                error.setTitle("Error de Exportación");
+                error.setHeaderText("No se pudo generar el PDF");
+                error.setContentText(e.getMessage());
+                error.showAndWait();
+            }
         }
     }
 

@@ -19,7 +19,9 @@
             <Label text="Estado de Evaluación:" style="-fx-text-fill: #57606a;"/>
             <Label fx:id="lblEstadoCurso" text="ABIERTO" style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #0969da; -fx-background-color: #ddf4ff; -fx-padding: 5 15; -fx-background-radius: 15;"/>
         </VBox>
-        <Button fx:id="btnCerrarCurso" text="Cerrar Curso Definitivamente" onAction="#handleCerrarCurso" styleClass="danger"/>
+
+        <Button fx:id="btnCerrarCurso" text="Cerrar Curso Definitivamente" onAction="#handleCerrarCurso" 
+                styleClass="danger" style="-fx-pref-height: 35;"/>
     </HBox>
 
     <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-background-color: #f6f8fa; -fx-padding: 15; -fx-background-radius: 8; -fx-border-color: #d0d7de; -fx-border-radius: 8;">
