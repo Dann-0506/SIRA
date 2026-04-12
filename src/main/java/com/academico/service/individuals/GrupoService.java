@@ -13,14 +13,17 @@ public class GrupoService {
     
     // === DEPENDENCIAS ===
     private final GrupoDAO grupoDAO;
+    private final ConfiguracionService configuracionService;
 
     // === CONSTRUCTORES ===
     public GrupoService() {
         this.grupoDAO = new GrupoDAO();
+        this.configuracionService = new ConfiguracionService();
     }
 
-    public GrupoService(GrupoDAO grupoDAO) {
+    public GrupoService(GrupoDAO grupoDAO, ConfiguracionService configuracionService) {
         this.grupoDAO = grupoDAO;
+        this.configuracionService = configuracionService;
     }
 
     // ==========================================
@@ -82,6 +85,8 @@ public class GrupoService {
             if (esEdicion) {
                 grupoDAO.actualizar(grupo);
             } else {
+                grupo.setCalificacionMinimaAprobatoria(configuracionService.obtenerCalificacionMinima());
+                grupo.setCalificacionMaxima(configuracionService.obtenerCalificacionMaxima());
                 grupoDAO.insertar(grupo);
             }
         } catch (SQLException e) {
