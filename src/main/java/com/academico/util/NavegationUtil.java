@@ -45,8 +45,7 @@ public class NavegationUtil {
     
     // Rutas Alumno
     public static final String MIS_CURSOS_ALUMNO     = "/com/academico/ui/mis_cursos_alumno.fxml";
-    public static final String ALUMNO_CALIFICACIONES = "/com/academico/ui/alumno_calificaciones.fxml";
-    public static final String ALUMNO_CONCENTRADO    = "/com/academico/ui/alumno_concentrado.fxml";
+    public static final String ALUMNO_CURSO_DETALLE = "/com/academico/ui/alumno_curso_detalle.fxml";
 
     private static final Map<String, String> TITULOS = new HashMap<>();
 
@@ -73,8 +72,7 @@ public class NavegationUtil {
 
         TITULOS.put(DASHBOARD_ALUMNO, "Portal Estudiantil");
         TITULOS.put(MIS_CURSOS_ALUMNO, "Mis Cursos");
-        TITULOS.put(ALUMNO_CALIFICACIONES, "Mis Unidades");
-        TITULOS.put(ALUMNO_CONCENTRADO, "Resultado Final");
+        TITULOS.put(ALUMNO_CURSO_DETALLE, "Mi Boleta y Desglose");
     }
 
     // ==========================================
