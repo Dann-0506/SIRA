@@ -108,17 +108,14 @@ public class DashboardAlumnoController {
         Label subtitulo = new Label(curso.getClave() + "\n" + curso.getMateriaNombre());
         subtitulo.setStyle("-fx-font-size: 11px; -fx-text-fill: #2da44e; -fx-padding: 0 0 10 10; -fx-font-weight: bold;");
 
-        // Solo lectura de resultados
-        Button btnCalificaciones = crearBotonMenu("Ver Calificaciones", NavegationUtil.ALUMNO_CALIFICACIONES);
-        Button btnConcentrado = crearBotonMenu("Desglose Final", NavegationUtil.ALUMNO_CONCENTRADO);
+        Button btnDetalles = crearBotonMenu("Mi Boleta", NavegationUtil.ALUMNO_CURSO_DETALLE);
 
-        menuCursoContextual.getChildren().addAll(titulo, subtitulo, btnCalificaciones, btnConcentrado);
+        menuCursoContextual.getChildren().addAll(titulo, subtitulo, btnDetalles);
         
         menuCursoContextual.setVisible(true);
         menuCursoContextual.setManaged(true);
-        
-        // Disparamos la vista de calificaciones por defecto
-        btnCalificaciones.fire();
+
+        btnDetalles.fire();
     }
 
     private Button crearBotonMenu(String texto, String rutaFxml) {
