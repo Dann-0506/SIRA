@@ -19,12 +19,16 @@
         <VBox alignment="CENTER" spacing="8"> <padding><Insets top="32" right="32" bottom="16" left="32"/></padding>
 
             <StackPane style="-fx-background-color: #0969da; -fx-background-radius: 50; -fx-min-width: 50; -fx-min-height: 50; -fx-max-width: 50; -fx-max-height: 50;">
-                <Label text="RA" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 18;"/>
+                <Label text="SIRA" style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 18;"/>
             </StackPane>
 
-            <Label text="Registro Académico"
-                   styleClass="title-2"
-                   style="-fx-font-weight: bold;"/>
+            <VBox alignment="CENTER" spacing="-2">
+                <Label text="SISTEMA INSTITUCIONAL DE" 
+                    style="-fx-font-size: 14px; -fx-text-fill: #888888; -fx-font-weight: bold;"/>
+                <Label text="Registro Académico" 
+                    styleClass="title-2" 
+                    style="-fx-font-weight: bold;"/>
+            </VBox>
                    
             <Label text="Ingresa tus credenciales"
                    styleClass="text-muted"/>

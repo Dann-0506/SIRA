@@ -50,11 +50,11 @@ public class NavegationUtil {
     private static final Map<String, String> TITULOS = new HashMap<>();
 
     static {
-        TITULOS.put(LOGIN,          "Iniciar Sesión");
+        TITULOS.put(LOGIN,                "Iniciar Sesión");
         TITULOS.put(DASHBOARD_ADMIN,      "Panel de Administración");
-        TITULOS.put(DASHBOARD_MAESTRO, "Portal Docente");
+        TITULOS.put(DASHBOARD_MAESTRO,    "Portal Docente");
 
-        TITULOS.put(ANALISIS,       "Análisis de Dato y Rendimiento");
+        TITULOS.put(ANALISIS,       "Análisis de Dato");
         TITULOS.put(ADMINS,         "Administradores");
         TITULOS.put(ALUMNOS,        "Alumnos");
         TITULOS.put(MATERIAS,       "Materias");
@@ -84,8 +84,8 @@ public class NavegationUtil {
             FXMLLoader loader = new FXMLLoader(NavegationUtil.class.getResource(ruta));
             Scene scene = new Scene(loader.load());
 
-            String titulo = TITULOS.getOrDefault(ruta, "Registro Académico");
-            MainApp.getPrimaryStage().setTitle("Registro Académico — " + titulo);
+            String titulo = TITULOS.getOrDefault(ruta, "SIRA");
+            MainApp.getPrimaryStage().setTitle("SIRA — " + titulo);
             MainApp.getPrimaryStage().setScene(scene);
 
         } catch (IOException e) {

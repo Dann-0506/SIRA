@@ -72,7 +72,7 @@ public class DashboardAdminController {
         menuNavegacion.getChildren().clear();
 
         agregarSeccion("PRINCIPAL");
-        agregarBoton("Análisis de Datos y Rendimiento", NavegationUtil.ANALISIS);
+        agregarBoton("Análisis de Datos", NavegationUtil.ANALISIS);
 
         agregarSeccion("CATÁLOGOS");
         agregarBoton("Administradores", NavegationUtil.ADMINS);
