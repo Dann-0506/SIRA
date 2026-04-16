@@ -41,6 +41,7 @@ public class GrupoCalificacionesController {
     private Grupo grupoActual;
     private List<ActividadGrupo> actividadesUnidad;
     private ObservableList<FilaCalificacion> datosTabla = FXCollections.observableArrayList();
+    private boolean bloqueoPorValidacion = false;
 
     @FXML
     public void initialize() {
@@ -60,6 +61,11 @@ public class GrupoCalificacionesController {
     }
 
     private void cargarUnidades() {
+        if (grupoActual.isCerrado()) {
+            btnGuardar.setDisable(true);
+            tablaCalificaciones.setEditable(false);
+            mostrarAdvertencia("El acta de este grupo ha sido firmada. Calificaciones en modo solo lectura.", false);
+        }
         if (grupoActual == null) return;
         try {
             List<Unidad> unidades = unidadService.listarPorMateria(grupoActual.getMateriaId());
@@ -77,7 +83,7 @@ public class GrupoCalificacionesController {
             actividadesUnidad = actividadService.buscarPorGrupoYUnidad(grupoActual.getId(), unidad.getId());
             
             if (!calificacionService.ponderacionesValidas(actividadesUnidad)) {
-                mostrarAdvertencia("🔒 Rúbrica incompleta. La suma de las actividades no es 100%. Ve a la pestaña 'Rúbrica' para configurarlo.", true);
+                mostrarAdvertencia("Rúbrica incompleta. La suma de las actividades no es 100%. Ve a la pestaña 'Rúbrica' para configurarlo.", true);
                 tablaCalificaciones.setDisable(true);
                 btnGuardar.setDisable(true);
                 return;
@@ -263,11 +269,17 @@ public class GrupoCalificacionesController {
         try {
             if (nueva == null || nueva.trim().isEmpty()) return "";
             BigDecimal valor = new BigDecimal(nueva.trim());
-            if (valor.compareTo(BigDecimal.ZERO) >= 0 && valor.compareTo(new BigDecimal("100")) <= 0) {
+
+            BigDecimal limiteMaximo = grupoActual.getCalificacionMaxima() != null ? grupoActual.getCalificacionMaxima() : new BigDecimal("100");
+
+            if (valor.compareTo(BigDecimal.ZERO) >= 0 && valor.compareTo(limiteMaximo) <= 0) {
                 return valor.setScale(2, RoundingMode.HALF_UP).toString();
+            } else {
+                bloqueoPorValidacion = true;
+                mostrarAdvertencia("El valor excede el máximo permitido para este grupo (" + limiteMaximo + ").", true);
             }
         } catch (NumberFormatException ignored) {}
-        return vieja; // Si escribió letras o algo fuera de 0-100, regresa al valor anterior
+        return vieja;
     }
 
     private void recalcularResultadoBase(FilaCalificacion fila) {
@@ -301,6 +313,19 @@ public class GrupoCalificacionesController {
 
     @FXML
     private void handleGuardarCalificaciones() {
+        if (grupoActual.isCerrado()) {
+            mostrarAdvertencia("Operación denegada: El grupo ya está cerrado.", true);
+            return;
+        }
+
+        bloqueoPorValidacion = false;
+
+        tablaCalificaciones.requestFocus();
+
+        if (bloqueoPorValidacion) {
+            return; 
+        }
+        
         try {
             List<Resultado> loteResultados = new ArrayList<>();
             

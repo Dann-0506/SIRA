@@ -55,11 +55,14 @@ public class AlumnoCursoDetalleController {
 
     private void configurarCabecera() {
         lblTituloMateria.setText(cursoActual.getClave() + " - " + cursoActual.getMateriaNombre());
+
+        String reglaEspecial = "  |  (Mínimo para aprobar: " + cursoActual.getCalificacionMinimaAprobatoria() + ")";
+
         if (cursoActual.isCerrado()) {
-            lblEstadoCurso.setText("CERRADO (ACTA FIRMADA)");
+            lblEstadoCurso.setText("CERRADO (ACTA FIRMADA)" + reglaEspecial);
             lblEstadoCurso.setStyle("-fx-text-fill: #cf222e; -fx-background-color: #ffebe9;");
         } else {
-            lblEstadoCurso.setText("EN EVALUACIÓN");
+            lblEstadoCurso.setText("EN EVALUACIÓN" + reglaEspecial);
             lblEstadoCurso.setStyle("-fx-text-fill: #0969da; -fx-background-color: #ddf4ff;");
         }
     }

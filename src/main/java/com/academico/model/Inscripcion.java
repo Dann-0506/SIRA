@@ -13,8 +13,10 @@ public class Inscripcion {
     private int id;
     private int alumnoId;
     private int grupoId;
-    private LocalDate fecha; 
-    private BigDecimal calificacionFinalOverride;
+    private LocalDate fecha;
+    private BigDecimal calificacionFinalCalculada; // Snapshot del cálculo on-demand
+    private String estadoAcademico;
+    private BigDecimal calificacionFinalOverride; // Nulo si se usa el cálculo automático
     private String overrideJustificacion;
     private String estadoFinal;
 
@@ -47,6 +49,12 @@ public class Inscripcion {
 
     public LocalDate getFecha() { return fecha; }
     public void setFecha(LocalDate fecha) { this.fecha = fecha; }
+
+    public BigDecimal getCalificacionFinalCalculada() { return calificacionFinalCalculada; }
+    public void setCalificacionFinalCalculada(BigDecimal calificacionFinalCalculada) { this.calificacionFinalCalculada = calificacionFinalCalculada; }
+
+    public String getEstadoAcademico() { return estadoAcademico; }
+    public void setEstadoAcademico(String estadoAcademico) { this.estadoAcademico = estadoAcademico; }
 
     public BigDecimal getCalificacionFinalOverride() { return calificacionFinalOverride; }
     public void setCalificacionFinalOverride(BigDecimal calificacionFinalOverride) { this.calificacionFinalOverride = calificacionFinalOverride; }
