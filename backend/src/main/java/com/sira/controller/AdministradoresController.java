@@ -33,14 +33,15 @@ public class AdministradoresController {
     @PostMapping
     public ResponseEntity<AdminResponse> crear(@RequestBody AdminRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(AdminResponse.from(adminService.crear(request.nombre(), request.email())));
+                .body(AdminResponse.from(adminService.crear(request.nombre(), request.email(), request.numEmpleado())));
     }
 
     @PutMapping("/{id}")
     public AdminResponse actualizar(@PathVariable Integer id,
                                     @RequestBody AdminRequest request,
                                     @AuthenticationPrincipal Usuario usuario) {
-        return AdminResponse.from(adminService.actualizar(id, request.nombre(), request.email(), usuario.getId()));
+        return AdminResponse.from(adminService.actualizar(
+                id, request.nombre(), request.email(), request.numEmpleado(), usuario.getId()));
     }
 
     @PatchMapping("/{id}/estado")

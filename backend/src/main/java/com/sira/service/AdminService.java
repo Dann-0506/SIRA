@@ -1,6 +1,8 @@
 package com.sira.service;
 
+import com.sira.model.Administrador;
 import com.sira.model.Usuario;
+import com.sira.repository.AdministradorRepository;
 import com.sira.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,97 +15,104 @@ import java.util.NoSuchElementException;
 @Service
 public class AdminService {
 
+    @Autowired private AdministradorRepository administradorRepository;
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
-    public List<Usuario> listarTodos() {
-        return usuarioRepository.findByRolOrderByNombreAsc("admin");
+    public List<Administrador> listarTodos() {
+        return administradorRepository.findAllWithUsuario();
     }
 
     @Transactional(readOnly = true)
-    public Usuario buscarPorId(Integer id) {
-        Usuario usuario = usuarioRepository.findById(id)
+    public Administrador buscarPorId(Integer id) {
+        return administradorRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Administrador no encontrado con id: " + id));
-        if (!"admin".equals(usuario.getRol())) {
-            throw new NoSuchElementException("El usuario especificado no es administrador.");
-        }
-        return usuario;
     }
 
     @Transactional
-    public Usuario crear(String nombre, String email) {
-        validarCampos(nombre, email);
+    public Administrador crear(String nombre, String email, String numEmpleado) {
+        validarCampos(nombre, email, numEmpleado);
         if (usuarioRepository.existsByEmail(email)) {
             throw new IllegalStateException("El correo electrónico ya está registrado en el sistema.");
         }
-        return usuarioRepository.save(
+        if (administradorRepository.existsByNumEmpleado(numEmpleado)) {
+            throw new IllegalStateException("El número de empleado '" + numEmpleado + "' ya está registrado.");
+        }
+        Usuario usuario = usuarioRepository.save(
                 new Usuario(nombre.trim(), email.trim().toLowerCase(), passwordEncoder.encode("123456"), "admin")
         );
+        return administradorRepository.save(new Administrador(usuario, numEmpleado.trim().toUpperCase()));
     }
 
     @Transactional
-    public Usuario actualizar(Integer id, String nombre, String email, Integer actorId) {
-        verificarNoEsMismoUsuario(id, actorId);
-        validarCampos(nombre, email);
+    public Administrador actualizar(Integer id, String nombre, String email, String numEmpleado, Integer actorId) {
+        Administrador admin = buscarPorId(id);
+        verificarNoEsMismoUsuario(admin, actorId);
+        validarCampos(nombre, email, numEmpleado);
 
-        Usuario admin = buscarPorId(id);
-        if (!admin.getEmail().equalsIgnoreCase(email) && usuarioRepository.existsByEmail(email)) {
+        if (!admin.getUsuario().getEmail().equalsIgnoreCase(email) && usuarioRepository.existsByEmail(email)) {
             throw new IllegalStateException("El correo electrónico ya está registrado en el sistema.");
         }
+        if (!admin.getNumEmpleado().equals(numEmpleado) && administradorRepository.existsByNumEmpleado(numEmpleado)) {
+            throw new IllegalStateException("El número de empleado '" + numEmpleado + "' ya está registrado.");
+        }
 
-        admin.setNombre(nombre.trim());
-        admin.setEmail(email.trim().toLowerCase());
-        return usuarioRepository.save(admin);
+        admin.getUsuario().setNombre(nombre.trim());
+        admin.getUsuario().setEmail(email.trim().toLowerCase());
+        usuarioRepository.save(admin.getUsuario());
+        admin.setNumEmpleado(numEmpleado.trim().toUpperCase());
+        return administradorRepository.save(admin);
     }
 
     @Transactional
     public void cambiarEstado(Integer id, boolean activo, Integer actorId) {
-        verificarNoEsMismoUsuario(id, actorId);
+        Administrador admin = buscarPorId(id);
+        verificarNoEsMismoUsuario(admin, actorId);
         if (!activo) {
-            verificarNoEsUltimoAdminActivo(id);
+            verificarNoEsUltimoAdminActivo(admin);
         }
-        Usuario admin = buscarPorId(id);
-        admin.setActivo(activo);
-        usuarioRepository.save(admin);
+        admin.getUsuario().setActivo(activo);
+        usuarioRepository.save(admin.getUsuario());
     }
 
     @Transactional
     public void restablecerPassword(Integer id, Integer actorId) {
-        verificarNoEsMismoUsuario(id, actorId);
-        Usuario admin = buscarPorId(id);
-        admin.setPasswordHash(passwordEncoder.encode("123456"));
-        usuarioRepository.save(admin);
+        Administrador admin = buscarPorId(id);
+        verificarNoEsMismoUsuario(admin, actorId);
+        admin.getUsuario().setPasswordHash(passwordEncoder.encode("123456"));
+        usuarioRepository.save(admin.getUsuario());
     }
 
     @Transactional
     public void eliminar(Integer id, Integer actorId) {
-        verificarNoEsMismoUsuario(id, actorId);
-        verificarNoEsUltimoAdminActivo(id);
-        Usuario admin = buscarPorId(id);
-        usuarioRepository.delete(admin);
+        Administrador admin = buscarPorId(id);
+        verificarNoEsMismoUsuario(admin, actorId);
+        verificarNoEsUltimoAdminActivo(admin);
+        Integer usuarioId = admin.getUsuario().getId();
+        administradorRepository.delete(admin);
+        usuarioRepository.deleteById(usuarioId);
     }
 
     // ==========================================
     // GUARDIAS DE SEGURIDAD
     // ==========================================
 
-    private void verificarNoEsMismoUsuario(Integer targetId, Integer actorId) {
-        if (targetId.equals(actorId)) {
+    private void verificarNoEsMismoUsuario(Administrador target, Integer actorId) {
+        if (target.getUsuario().getId().equals(actorId)) {
             throw new IllegalStateException("No puedes realizar esta acción sobre tu propia cuenta.");
         }
     }
 
-    private void verificarNoEsUltimoAdminActivo(Integer id) {
+    private void verificarNoEsUltimoAdminActivo(Administrador target) {
         long adminsActivos = usuarioRepository.countByRolAndActivo("admin", true);
-        Usuario target = buscarPorId(id);
-        if (adminsActivos <= 1 && target.isActivo()) {
+        if (adminsActivos <= 1 && target.getUsuario().isActivo()) {
             throw new IllegalStateException(
                     "Operación denegada: no puedes eliminar ni desactivar al único administrador activo del sistema.");
         }
     }
 
-    private void validarCampos(String nombre, String email) {
+    private void validarCampos(String nombre, String email, String numEmpleado) {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre es obligatorio.");
         }
@@ -112,6 +121,9 @@ public class AdminService {
         }
         if (!email.matches("^[\\w.-]+@[\\w.-]+\\.[a-z]{2,}$")) {
             throw new IllegalArgumentException("El formato del correo electrónico es inválido.");
+        }
+        if (numEmpleado == null || numEmpleado.isBlank()) {
+            throw new IllegalArgumentException("El número de empleado es obligatorio.");
         }
     }
 }

@@ -1,7 +1,9 @@
 package com.sira.config;
 
+import com.sira.model.Administrador;
 import com.sira.model.Configuracion;
 import com.sira.model.Usuario;
+import com.sira.repository.AdministradorRepository;
 import com.sira.repository.ConfiguracionRepository;
 import com.sira.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DataInitializer implements ApplicationRunner {
 
     @Autowired private UsuarioRepository usuarioRepository;
+    @Autowired private AdministradorRepository administradorRepository;
     @Autowired private ConfiguracionRepository configuracionRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
@@ -28,13 +31,13 @@ public class DataInitializer implements ApplicationRunner {
     private void crearAdminPorDefecto() {
         if (usuarioRepository.existsByEmail("admin@escuela.edu")) return;
 
-        Usuario admin = new Usuario(
+        Usuario usuario = usuarioRepository.save(new Usuario(
                 "Administrador",
                 "admin@escuela.edu",
                 passwordEncoder.encode("123456"),
                 "admin"
-        );
-        usuarioRepository.save(admin);
+        ));
+        administradorRepository.save(new Administrador(usuario, "ADMIN-001"));
     }
 
     private void crearConfiguracionPorDefecto() {
