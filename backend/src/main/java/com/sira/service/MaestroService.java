@@ -32,6 +32,12 @@ public class MaestroService {
                 .orElseThrow(() -> new NoSuchElementException("Maestro no encontrado con id: " + id));
     }
 
+    @Transactional(readOnly = true)
+    public Maestro buscarPorUsuarioId(Integer usuarioId) {
+        return maestroRepository.findByUsuarioId(usuarioId)
+                .orElseThrow(() -> new NoSuchElementException("Perfil de maestro no encontrado para el usuario: " + usuarioId));
+    }
+
     @Transactional
     public Maestro crear(String nombre, String email, String numEmpleado) {
         validarCampos(nombre, email, numEmpleado);
