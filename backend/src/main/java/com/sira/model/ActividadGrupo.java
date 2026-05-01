@@ -1,0 +1,50 @@
+package com.sira.model;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "actividad_grupo")
+@Getter @Setter @NoArgsConstructor
+public class ActividadGrupo {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "grupo_id", nullable = false)
+    private Grupo grupo;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "unidad_id", nullable = false)
+    private Unidad unidad;
+
+    @Column(name = "nombre", length = 150, nullable = false)
+    private String nombre;
+
+    @Column(name = "ponderacion", precision = 5, scale = 2, nullable = false)
+    private BigDecimal ponderacion;
+
+    @CreationTimestamp
+    @Column(name = "creado_en", updatable = false)
+    private LocalDateTime creadoEn;
+
+    public ActividadGrupo(Grupo grupo, Unidad unidad, String nombre, BigDecimal ponderacion) {
+        this.grupo = grupo;
+        this.unidad = unidad;
+        this.nombre = nombre;
+        this.ponderacion = ponderacion;
+    }
+
+    @Override
+    public String toString() {
+        return nombre + " (" + ponderacion + "%)";
+    }
+}
