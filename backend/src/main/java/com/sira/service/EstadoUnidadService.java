@@ -1,0 +1,59 @@
+package com.sira.service;
+
+import com.sira.model.EstadoUnidad;
+import com.sira.model.Grupo;
+import com.sira.model.Unidad;
+import com.sira.repository.EstadoUnidadRepository;
+import com.sira.repository.GrupoRepository;
+import com.sira.repository.UnidadRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
+@Service
+public class EstadoUnidadService {
+
+    @Autowired private EstadoUnidadRepository estadoUnidadRepository;
+    @Autowired private GrupoRepository grupoRepository;
+    @Autowired private UnidadRepository unidadRepository;
+
+    @Transactional(readOnly = true)
+    public Optional<EstadoUnidad> obtenerEstado(Integer grupoId, Integer unidadId) {
+        return estadoUnidadRepository.findByGrupoIdAndUnidadId(grupoId, unidadId);
+    }
+
+    public void validarUnidadAbierta(Integer grupoId, Integer unidadId) {
+        estadoUnidadRepository.findByGrupoIdAndUnidadId(grupoId, unidadId)
+                .filter(EstadoUnidad::isCerrada)
+                .ifPresent(e -> { throw new IllegalStateException("La unidad ya ha sido cerrada."); });
+    }
+
+    @Transactional
+    public void guardarEstado(Integer grupoId, Integer unidadId, String estado) {
+        Optional<EstadoUnidad> existing = estadoUnidadRepository.findByGrupoIdAndUnidadId(grupoId, unidadId);
+        if (existing.isPresent()) {
+            estadoUnidadRepository.actualizarEstado(grupoId, unidadId, estado);
+        } else {
+            Grupo grupo = grupoRepository.findById(grupoId)
+                    .orElseThrow(() -> new NoSuchElementException("Grupo no encontrado: " + grupoId));
+            Unidad unidad = unidadRepository.findById(unidadId)
+                    .orElseThrow(() -> new NoSuchElementException("Unidad no encontrada: " + unidadId));
+            EstadoUnidad eu = new EstadoUnidad(grupo, unidad);
+            eu.setEstado(estado);
+            estadoUnidadRepository.save(eu);
+        }
+    }
+
+    @Transactional
+    public void cerrarUnidad(Integer grupoId, Integer unidadId) {
+        guardarEstado(grupoId, unidadId, "CERRADA");
+    }
+
+    @Transactional
+    public void abrirUnidad(Integer grupoId, Integer unidadId) {
+        guardarEstado(grupoId, unidadId, "ABIERTA");
+    }
+}
