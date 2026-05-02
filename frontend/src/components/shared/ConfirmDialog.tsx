@@ -26,7 +26,7 @@ export function ConfirmDialog({ open, title, description, confirmLabel = 'Confir
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
       <div className="relative bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
         <div className="flex gap-4">
-          <div className={`flex-shrink-0 rounded-full p-2 ${variant === 'destructive' ? 'bg-red-100' : variant === 'warning' ? 'bg-amber-100' : 'bg-blue-100'}`}>
+          <div className={`flex-shrink-0 flex items-center justify-center rounded-full h-10 w-10 ${variant === 'destructive' ? 'bg-red-100' : variant === 'warning' ? 'bg-amber-100' : 'bg-blue-100'}`}>
             <AlertTriangle className={`h-5 w-5 ${variant === 'destructive' ? 'text-red-600' : variant === 'warning' ? 'text-amber-600' : 'text-blue-600'}`} />
           </div>
           <div>
