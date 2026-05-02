@@ -24,7 +24,7 @@ public class InscripcionService {
 
     @Transactional(readOnly = true)
     public List<Inscripcion> listarTodas() {
-        return inscripcionRepository.findAll();
+        return inscripcionRepository.findAllWithDetails();
     }
 
     @Transactional(readOnly = true)
