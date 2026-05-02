@@ -85,6 +85,9 @@ public interface GrupoRepository extends JpaRepository<Grupo, Integer> {
         """)
     List<Grupo> findGruposPendientesCierre(String semestre);
 
+    @Query("SELECT DISTINCT g.semestre FROM Grupo g WHERE g.estadoEvaluacion = 'CERRADO' ORDER BY g.semestre DESC")
+    List<String> findSemestresConActaCerrada();
+
     boolean existsByClaveAndMateriaIdAndSemestre(String clave, Integer materiaId, String semestre);
 
     boolean existsByMaestroId(Integer maestroId);
