@@ -83,7 +83,7 @@ export default function ActividadesCatalogo() {
   return (
     <div>
       <PageHeader
-        title="Catálogo de actividades"
+        title="Actividades"
         description="Define las actividades válidas que los maestros pueden asignar a sus grupos."
         action={
           <button onClick={openCreate} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors">
