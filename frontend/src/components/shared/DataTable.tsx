@@ -8,7 +8,7 @@ export interface Column<T> {
   className?: string
 }
 
-const PAGE_SIZE = 12
+const PAGE_SIZE = 10
 
 interface Props<T> {
   columns: Column<T>[]
@@ -31,7 +31,7 @@ export function DataTable<T>({
   const [page, setPage] = useState(1)
 
   const colSpan = columns.length + (rowActions ? 1 : 0)
-  const ROW_HEIGHT = 'h-[52px]' // py-3.5 con texto sm ≈ 52 px
+  const ROW_HEIGHT = 'h-[57px]' // py-3.5 + icono de botón (p-1.5 + h-4) + borde = 57 px
 
   // Filtrado
   const filtered = searchable && searchKeys && search
@@ -121,7 +121,7 @@ export function DataTable<T>({
                 {Array.from({ length: PAGE_SIZE - 1 }).map((_, i) => (
                   <tr key={i} className={ROW_HEIGHT}>
                     {Array.from({ length: colSpan }).map((_, j) => (
-                      <td key={j} className="px-4" />
+                      <td key={j} className="px-4 py-3.5 select-none text-transparent">&nbsp;</td>
                     ))}
                   </tr>
                 ))}
@@ -138,11 +138,11 @@ export function DataTable<T>({
                     {rowActions && <td className="px-4 py-3.5 text-right">{rowActions(row)}</td>}
                   </tr>
                 ))}
-                {/* Filas vacías para completar 12 */}
+                {/* Filas vacías para completar al tamaño de PAGE_SIZE*/}
                 {Array.from({ length: emptyRows }).map((_, i) => (
                   <tr key={`empty-${i}`} className={ROW_HEIGHT}>
                     {Array.from({ length: colSpan }).map((_, j) => (
-                      <td key={j} className="px-4" />
+                      <td key={j} className="px-4 py-3.5 select-none text-transparent">&nbsp;</td>
                     ))}
                   </tr>
                 ))}
