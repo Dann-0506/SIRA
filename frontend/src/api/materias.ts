@@ -13,3 +13,7 @@ export const deleteMateria = (id: number) => client.delete(`${BASE}/${id}`)
 
 export const getUnidadesByMateria = (materiaId: number) =>
   client.get<MateriaResponse>(`${BASE}/${materiaId}`).then(r => r.data.unidades as UnidadDto[])
+
+// Endpoint accesible por MAESTRO (no requiere rol admin)
+export const getUnidadesByGrupo = (grupoId: number) =>
+  client.get<UnidadDto[]>(`/maestro/grupos/${grupoId}/unidades`).then(r => r.data)

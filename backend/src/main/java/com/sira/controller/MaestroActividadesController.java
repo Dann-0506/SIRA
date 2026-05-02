@@ -2,12 +2,14 @@ package com.sira.controller;
 
 import com.sira.dto.ActividadGrupoRequest;
 import com.sira.dto.ActividadGrupoResponse;
+import com.sira.dto.MateriaResponse;
 import com.sira.model.Grupo;
 import com.sira.model.Maestro;
 import com.sira.model.Usuario;
 import com.sira.service.ActividadGrupoService;
 import com.sira.service.GrupoService;
 import com.sira.service.MaestroService;
+import com.sira.service.UnidadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

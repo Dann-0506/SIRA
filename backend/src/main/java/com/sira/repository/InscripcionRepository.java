@@ -29,6 +29,8 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
         SELECT i FROM Inscripcion i
         JOIN FETCH i.alumno a
         JOIN FETCH a.usuario
+        JOIN FETCH i.grupo g
+        JOIN FETCH g.materia
         WHERE i.grupo.id = :grupoId
         ORDER BY a.usuario.nombre ASC
         """)
@@ -36,12 +38,24 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
 
     @Query("""
         SELECT i FROM Inscripcion i
+        JOIN FETCH i.alumno a
+        JOIN FETCH a.usuario
         JOIN FETCH i.grupo g
         JOIN FETCH g.materia
         WHERE i.alumno.id = :alumnoId
         ORDER BY g.semestre DESC
         """)
     List<Inscripcion> findByAlumnoIdWithGrupo(Integer alumnoId);
+
+    @Query("""
+        SELECT i FROM Inscripcion i
+        JOIN FETCH i.alumno a
+        JOIN FETCH a.usuario
+        JOIN FETCH i.grupo g
+        JOIN FETCH g.materia
+        ORDER BY a.usuario.nombre ASC
+        """)
+    List<Inscripcion> findAllWithDetails();
 
     long countByGrupoId(Integer grupoId);
 
