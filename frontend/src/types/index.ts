@@ -119,6 +119,51 @@ export interface AlumnoAlertaDto {
   email: string
 }
 
+export interface MateriaReprobacionDto {
+  materiaId: number
+  clave: string
+  nombre: string
+  gruposEvaluados: number
+  totalAlumnos: number
+  aprobados: number
+  reprobados: number
+  porcentajeReprobacion: number
+}
+
+export interface AlumnoRiesgoDto {
+  alumnoId: number
+  numControl: string
+  nombre: string
+  email: string
+  materiasReprobadas: number
+  grupos: string[]
+}
+
+export interface MaestroAprovechamientoDto {
+  maestroId: number
+  nombre: string
+  numEmpleado: string
+  grupos: number
+  alumnosEvaluados: number
+  aprobados: number
+  reprobados: number
+  porcentajeAprobacion: number
+}
+
+export interface RendimientoHistoricoDto {
+  semestre: string
+  aprobados: number
+  reprobados: number
+}
+
+export interface ReportesResponse {
+  semestre: string
+  materiasReprobacion: MateriaReprobacionDto[]
+  alumnosRiesgo: AlumnoRiesgoDto[]
+  maestrosAprovechamiento: MaestroAprovechamientoDto[]
+  rendimientoHistorico: RendimientoHistoricoDto[]
+}
+
 export interface DashboardResponse {
   semestreActivo: string
   alumnosActivos: number

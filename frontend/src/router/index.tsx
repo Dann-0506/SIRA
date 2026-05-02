@@ -14,6 +14,7 @@ import Inscripciones from '@/pages/admin/Inscripciones'
 import Configuracion from '@/pages/admin/Configuracion'
 import CargaCSV from '@/pages/admin/CargaCSV'
 import Respaldos from '@/pages/admin/Respaldos'
+import Reportes from '@/pages/admin/Reportes'
 import MisGrupos from '@/pages/maestro/MisGrupos'
 import GrupoDetalle from '@/pages/maestro/GrupoDetalle'
 import MisCursos from '@/pages/alumno/MisCursos'
@@ -47,6 +48,7 @@ export const router = createBrowserRouter([
           { path: '/admin/grupos', element: <Grupos /> },
           { path: '/admin/inscripciones', element: <Inscripciones /> },
           { path: '/admin/configuracion', element: <Configuracion /> },
+          { path: '/admin/reportes', element: <Reportes /> },
           { path: '/admin/carga', element: <CargaCSV /> },
           { path: '/admin/respaldos', element: <Respaldos /> },
         ]},
