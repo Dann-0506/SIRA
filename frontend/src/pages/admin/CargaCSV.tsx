@@ -47,7 +47,7 @@ const FORMATOS: Record<string, FormatoTipo> = {
       { nombre: 'correo',       requerida: true, descripcion: 'Correo electrónico (requerido para login)' },
     ],
     ejemplo: 'ADMIN-002,Carlos Ramírez,carlos@escuela.edu',
-    notas: 'La contraseña temporal será el número de empleado. El correo es obligatorio para administradores.',
+    notas: 'La contraseña temporal será el número de empleado.',
   },
   materias: {
     label: 'Materias',
@@ -79,7 +79,7 @@ const FORMATOS: Record<string, FormatoTipo> = {
       { nombre: 'semestre',    requerida: true, descripcion: 'Semestre del grupo (ej. 2026-1)' },
     ],
     ejemplo: 'A12345678,G-01,2026-1',
-    notas: 'El alumno y el grupo (clave + semestre) deben existir previamente. No se permiten inscripciones duplicadas.',
+    notas: 'El alumno y el grupo deben existir previamente. No se permiten inscripciones duplicadas.',
   },
   actividades: {
     label: 'Actividades',
