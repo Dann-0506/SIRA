@@ -63,20 +63,6 @@ public class MaestroGruposController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/grupos/{id}/reabrir")
-    public ResponseEntity<Void> reabrir(@PathVariable Integer id, @AuthenticationPrincipal Usuario usuario) {
-        verificarPropietario(grupoService.buscarPorId(id), usuario);
-        grupoService.reabrirCurso(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/grupos/{id}/cerrar-definitivo")
-    public ResponseEntity<Void> cerrarDefinitivamente(@PathVariable Integer id, @AuthenticationPrincipal Usuario usuario) {
-        verificarPropietario(grupoService.buscarPorId(id), usuario);
-        grupoService.cerrarDefinitivamente(id);
-        return ResponseEntity.noContent().build();
-    }
-
     private void verificarPropietario(Grupo grupo, Usuario usuario) {
         Maestro maestro = maestroService.buscarPorUsuarioId(usuario.getId());
         if (!grupo.getMaestro().getId().equals(maestro.getId())) {
