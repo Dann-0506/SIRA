@@ -82,8 +82,10 @@ public class InscripcionService {
 
     @Transactional
     public void eliminar(Integer id) {
-        if (!inscripcionRepository.existsById(id)) {
-            throw new NoSuchElementException("Inscripción no encontrada con id: " + id);
+        Inscripcion inscripcion = inscripcionRepository.findByIdWithDetails(id)
+                .orElseThrow(() -> new NoSuchElementException("Inscripción no encontrada con id: " + id));
+        if ("CERRADO".equals(inscripcion.getGrupo().getEstadoEvaluacion())) {
+            throw new IllegalStateException("No se puede eliminar una inscripción de un grupo con acta cerrada.");
         }
         inscripcionRepository.deleteById(id);
     }
