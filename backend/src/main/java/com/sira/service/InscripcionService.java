@@ -55,6 +55,9 @@ public class InscripcionService {
                 .orElseThrow(() -> new NoSuchElementException("Alumno no encontrado con id: " + alumnoId));
         Grupo grupo = grupoRepository.findById(grupoId)
                 .orElseThrow(() -> new NoSuchElementException("Grupo no encontrado con id: " + grupoId));
+        if (grupo.isCerrado()) {
+            throw new IllegalStateException("No se puede inscribir un alumno: la evaluación del grupo ya fue terminada.");
+        }
 
         return inscripcionRepository.save(new Inscripcion(alumno, grupo, fecha != null ? fecha : LocalDate.now()));
     }
@@ -73,6 +76,9 @@ public class InscripcionService {
             throw new NoSuchElementException("Inscripción no encontrada con id: " + inscripcionId);
         }
         Inscripcion inscripcion = inscripcionRepository.findById(inscripcionId).orElseThrow();
+        if (inscripcion.getGrupo().isCerrado()) {
+            throw new IllegalStateException("No se puede aplicar un override: la evaluación del grupo ya fue terminada.");
+        }
         BigDecimal calMinima = inscripcion.getGrupo().getCalificacionMinimaAprobatoria();
         String estado = calificacionManual != null
                 ? (calificacionManual.compareTo(calMinima) >= 0 ? "APROBADO" : "REPROBADO")
@@ -85,7 +91,7 @@ public class InscripcionService {
         Inscripcion inscripcion = inscripcionRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new NoSuchElementException("Inscripción no encontrada con id: " + id));
         if ("CERRADO".equals(inscripcion.getGrupo().getEstadoEvaluacion())) {
-            throw new IllegalStateException("No se puede eliminar una inscripción de un grupo con acta cerrada.");
+            throw new IllegalStateException("No se puede eliminar una inscripción: la evaluación del grupo ya fue terminada.");
         }
         inscripcionRepository.deleteById(id);
     }

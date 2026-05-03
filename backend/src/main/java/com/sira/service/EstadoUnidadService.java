@@ -64,6 +64,11 @@ public class EstadoUnidadService {
 
     @Transactional
     public void abrirUnidad(Integer grupoId, Integer unidadId) {
+        grupoRepository.findById(grupoId).ifPresent(g -> {
+            if (g.isCerrado()) {
+                throw new IllegalStateException("No se puede reabrir la unidad: la evaluación del grupo ya fue terminada.");
+            }
+        });
         guardarEstado(grupoId, unidadId, "ABIERTA");
     }
 
