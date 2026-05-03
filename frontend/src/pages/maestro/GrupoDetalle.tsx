@@ -340,6 +340,10 @@ function CalificacionesTab({ grupo }: { grupo: GrupoResponse }) {
   const abrirMut = useMutation({
     mutationFn: (unidadId: number) => abrirUnidad(grupoId, unidadId),
     onSuccess: (_data, unidadId) => { invEstados(); setCerrarErrors((p) => ({ ...p, [unidadId]: '' })) },
+    onError: (err, unidadId) => {
+      const msg = axios.isAxiosError(err) ? err.response?.data?.error ?? 'Error al reabrir la unidad.' : 'Error inesperado.'
+      setCerrarErrors((p) => ({ ...p, [unidadId]: msg }))
+    },
   })
 
   const getGrade = (inscripcionId: number, actividadId: number): string => {
@@ -419,10 +423,15 @@ function CalificacionesTab({ grupo }: { grupo: GrupoResponse }) {
                 {cerrada && <span className="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 font-medium">Cerrada</span>}
               </div>
               <div className="flex items-center gap-2">
-                {(hasFieldErrors(u.id) || cerrarErrors[u.id]) && !cerrada && (
+                {cerrarErrors[u.id] && (
                   <span className="text-xs text-red-600 flex items-center gap-1">
                     <AlertTriangle className="h-3 w-3" />
-                    {cerrarErrors[u.id] || 'Error al guardar'}
+                    {cerrarErrors[u.id]}
+                  </span>
+                )}
+                {hasFieldErrors(u.id) && !cerrada && (
+                  <span className="text-xs text-red-600 flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3" /> Error al guardar
                   </span>
                 )}
                 {cerrada ? (

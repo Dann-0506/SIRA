@@ -55,7 +55,7 @@ public class BonusService {
                 .orElseThrow(() -> new NoSuchElementException("Inscripción no encontrada: " + inscripcionId));
 
         if (inscripcion.getGrupo().isCerrado()) {
-            throw new IllegalStateException("No se pueden otorgar puntos extra: el acta del grupo ya está cerrada.");
+            throw new IllegalStateException("No se pueden otorgar puntos extra: la evaluación del grupo ya fue terminada.");
         }
 
         Unidad unidad = null;
