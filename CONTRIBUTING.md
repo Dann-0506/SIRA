@@ -2,8 +2,6 @@
 
 Esta guía explica cómo trabajar con Git en este proyecto, tanto desde la terminal como desde VSCode. Está pensada para quienes están aprendiendo el flujo de trabajo con ramas.
 
----
-
 ## ¿Por qué usamos ramas?
 
 Cuando varias personas trabajan en el mismo proyecto, no es seguro que todos hagan cambios directamente sobre `main`. Si alguien sube código con errores, rompe el proyecto para todos.
@@ -36,8 +34,6 @@ fix/lazy-loading-inscripcion
 refactor/calificacion-service
 ```
 
----
-
 ## Flujo de trabajo completo
 
 Cada vez que vayas a trabajar en algo nuevo, sigue estos pasos en orden.
@@ -57,8 +53,6 @@ git pull origin development
 2. Selecciona `development` en la lista que aparece arriba.
 3. Abre la paleta de comandos con `Ctrl+Shift+P`.
 4. Escribe `Git: Pull` y presiona Enter.
-
----
 
 ### Paso 2 — Crea tu rama
 
@@ -81,13 +75,9 @@ git branch
 ```
 La rama activa tiene un `*` al lado.
 
----
-
 ### Paso 3 — Trabaja en tu tarea
 
 Edita, crea o elimina archivos con normalidad. Mientras estés en tu rama, tus cambios no afectan a nadie más.
-
----
 
 ### Paso 4 — Guarda tus cambios (commit)
 
@@ -114,8 +104,6 @@ git commit -m "feat: agrega gestión de alumnos"
 5. Escribe el mensaje del commit en el campo de texto arriba.
 6. Haz clic en el botón `Confirmar` (o presiona `Ctrl+Enter`).
 
----
-
 ### Paso 5 — Sube tu rama al repositorio remoto
 
 La primera vez que subes una rama nueva necesitas indicarle a Git dónde publicarla.
@@ -136,8 +124,6 @@ git push
 
 Puedes hacer esto al momento de crearla para que todos sepan que estás trabajando en esa mejora.
 
----
-
 ### Paso 6 — Une tu rama a `development` con un Pull Request
 
 Un **Pull Request (PR)** es una petición para que tu código sea revisado y unido a `development`.
@@ -150,8 +136,6 @@ Un **Pull Request (PR)** es una petición para que tu código sea revisado y uni
 6. Pide a un compañero que revise el código. Una vez aprobado, se hace el merge.
 
 Los cambios de `development` a `main` los hace el responsable del proyecto cuando hay una versión estable lista.
-
----
 
 ### Paso 7 — Elimina la rama (opcional pero recomendado)
 
@@ -170,8 +154,6 @@ git push origin --delete feature/nombre-de-tu-tarea
 1. Haz clic en el nombre de la rama en la esquina inferior izquierda.
 2. En la lista que aparece, busca tu rama.
 3. Haz clic en el ícono de papelera que aparece al pasar el cursor.
-
----
 
 ## Resolución de conflictos
 
@@ -202,8 +184,6 @@ Cuando hay un conflicto, el archivo afectado se ve así:
 git add .
 git commit -m "fix: resuelve conflicto en modelo Alumno"
 ```
-
----
 
 ## Convenciones de commits
 
@@ -242,19 +222,6 @@ git commit -m "fix: corrige cálculo de promedio con actividades sin calificar
 Antes las actividades sin calificación se ignoraban del conteo total,
 lo que inflaba el promedio. Ahora se cuentan pero aportan cero."
 ```
-
----
-
-## Checklist antes de hacer merge a `development`
-
-- [ ] El backend compila sin errores (`cd backend && mvn compile`)
-- [ ] El frontend compila sin errores (`cd frontend && npm run build`)
-- [ ] No hay credenciales ni contraseñas en el código
-- [ ] El archivo `backend/.env` no está incluido en el commit
-- [ ] Los mensajes de commit describen claramente los cambios
-- [ ] `development` está actualizado antes del merge (`git pull`)
-
----
 
 ## Comandos de referencia rápida
 
