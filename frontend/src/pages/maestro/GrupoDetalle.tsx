@@ -2,7 +2,7 @@ import { useInvalidateDashboard } from '@/hooks/useInvalidateDashboard'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Pencil, Trash2, Save, Lock, LockOpen, LockKeyhole, FileDown, Gift } from 'lucide-react'
+import { Plus, Pencil, Trash2, Save, Lock, LockOpen, LockKeyhole, FileDown, Gift, AlertTriangle } from 'lucide-react'
 import axios from 'axios'
 import { getMiGrupo, cerrarGrupoMaestro, reabrirGrupoMaestro, cerrarDefinitivamenteMaestro } from '@/api/grupos'
 import { getUnidadesByGrupo } from '@/api/materias'
@@ -299,6 +299,24 @@ function CalificacionesTab({ grupo }: { grupo: GrupoResponse }) {
     setGrades((p) => ({ ...p, [inscripcionId]: { ...p[inscripcionId], [actividadId]: value } }))
   }
 
+  const maxima = grupo.calificacionMaxima
+
+  const isGradeInvalid = (value: string): boolean => {
+    if (value === '') return false
+    const n = Number(value)
+    return isNaN(n) || n < 0 || n > maxima
+  }
+
+  const ponderacionDeUnidad = (unidadId: number): number =>
+    actividades
+      .filter((a: ActividadGrupoResponse) => a.unidadId === unidadId)
+      .reduce((s: number, a: ActividadGrupoResponse) => s + a.ponderacion, 0)
+
+  const tieneCalificacionesInvalidas = (unidadId: number): boolean => {
+    const actsU = actividades.filter((a: ActividadGrupoResponse) => a.unidadId === unidadId)
+    return reporte.some((r) => actsU.some((a: ActividadGrupoResponse) => isGradeInvalid(getGrade(r.inscripcionId, a.id))))
+  }
+
   const handleSaveUnidad = async (unidadId: number, _nombre: string) => {
     setSaving((p) => ({ ...p, [unidadId]: true }))
     setSaveErrors((p) => ({ ...p, [unidadId]: '' }))
@@ -335,6 +353,10 @@ function CalificacionesTab({ grupo }: { grupo: GrupoResponse }) {
       {unidades.map((u) => {
         const actsU = actividades.filter((a: ActividadGrupoResponse) => a.unidadId === u.id)
         if (actsU.length === 0) return null
+        const ponderacion = ponderacionDeUnidad(u.id)
+        const ponderacionIncompleta = ponderacion !== 100
+        const hayInvalidas = tieneCalificacionesInvalidas(u.id)
+        const bloqueado = ponderacionIncompleta || hayInvalidas
         return (
           <div key={u.id} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-5 py-3 bg-slate-50 border-b border-slate-200">
@@ -343,14 +365,22 @@ function CalificacionesTab({ grupo }: { grupo: GrupoResponse }) {
                 {saveErrors[u.id] && <span className="text-xs text-red-600">{saveErrors[u.id]}</span>}
                 <button
                   onClick={() => handleSaveUnidad(u.id, u.nombre)}
-                  disabled={saving[u.id]}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                  disabled={saving[u.id] || bloqueado}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {saving[u.id] ? <LoadingSpinner size="sm" /> : <Save className="h-3 w-3" />}
                   Guardar
                 </button>
               </div>
             </div>
+
+            {ponderacionIncompleta && (
+              <div className="flex items-center gap-2 px-5 py-2.5 bg-amber-50 border-b border-amber-100 text-amber-700 text-xs">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                La ponderación de esta unidad suma <strong className="mx-1">{ponderacion}%</strong> — debe ser exactamente 100% para poder guardar calificaciones.
+              </div>
+            )}
+
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -368,20 +398,34 @@ function CalificacionesTab({ grupo }: { grupo: GrupoResponse }) {
                   {reporte.map((r) => (
                     <tr key={r.inscripcionId} className="hover:bg-slate-50/60">
                       <td className="px-4 py-2.5 text-slate-700 font-medium">{r.alumnoNombre}</td>
-                      {actsU.map((a: ActividadGrupoResponse) => (
-                        <td key={a.id} className="px-3 py-2 text-center">
-                          <input
-                            type="number"
-                            min={0}
-                            max={100}
-                            step={0.1}
-                            value={getGrade(r.inscripcionId, a.id)}
-                            onChange={(e) => setGrade(r.inscripcionId, a.id, e.target.value)}
-                            className="w-20 text-center px-2 py-1 rounded border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
-                            placeholder="—"
-                          />
-                        </td>
-                      ))}
+                      {actsU.map((a: ActividadGrupoResponse) => {
+                        const val = getGrade(r.inscripcionId, a.id)
+                        const invalido = isGradeInvalid(val)
+                        return (
+                          <td key={a.id} className="px-3 py-2 text-center">
+                            <input
+                              type="number"
+                              min={0}
+                              max={maxima}
+                              step={0.1}
+                              value={val}
+                              onChange={(e) => setGrade(r.inscripcionId, a.id, e.target.value)}
+                              disabled={ponderacionIncompleta}
+                              className={`w-20 text-center px-2 py-1 rounded border text-sm focus:outline-none focus:ring-2 transition ${
+                                ponderacionIncompleta
+                                  ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed'
+                                  : invalido
+                                  ? 'border-red-400 bg-red-50 text-red-700 focus:ring-red-400/30'
+                                  : 'border-slate-200 focus:ring-blue-500/30 focus:border-blue-400'
+                              }`}
+                              placeholder="—"
+                            />
+                            {invalido && (
+                              <p className="text-xs text-red-600 mt-0.5">0 – {maxima}</p>
+                            )}
+                          </td>
+                        )
+                      })}
                     </tr>
                   ))}
                 </tbody>
