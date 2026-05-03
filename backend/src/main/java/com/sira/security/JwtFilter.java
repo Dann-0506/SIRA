@@ -47,14 +47,18 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         Integer usuarioId = jwtUtil.extraerUsuarioId(token);
-        usuarioRepository.findById(usuarioId).ifPresent(usuario -> {
-            if (usuario.isActivo()) {
-                var authority = new SimpleGrantedAuthority("ROLE_" + usuario.getRol().toUpperCase());
-                var auth = new UsernamePasswordAuthenticationToken(usuario, null, List.of(authority));
-                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            }
-        });
+        var usuarioOpt = usuarioRepository.findById(usuarioId);
+
+        if (usuarioOpt.isEmpty() || !usuarioOpt.get().isActivo()) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
+        var usuario = usuarioOpt.get();
+        var authority = new SimpleGrantedAuthority("ROLE_" + usuario.getRol().toUpperCase());
+        var auth = new UsernamePasswordAuthenticationToken(usuario, null, List.of(authority));
+        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(auth);
 
         chain.doFilter(request, response);
     }
