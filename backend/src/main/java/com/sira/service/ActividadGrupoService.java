@@ -25,6 +25,7 @@ public class ActividadGrupoService {
     @Autowired private GrupoRepository grupoRepository;
     @Autowired private UnidadRepository unidadRepository;
     @Autowired private ResultadoRepository resultadoRepository;
+    @Autowired private EstadoUnidadService estadoUnidadService;
 
     @Transactional(readOnly = true)
     public List<ActividadGrupo> listarPorGrupo(Integer grupoId) {
@@ -55,6 +56,7 @@ public class ActividadGrupoService {
         }
         Unidad unidad = unidadRepository.findById(unidadId)
                 .orElseThrow(() -> new NoSuchElementException("Unidad no encontrada: " + unidadId));
+        estadoUnidadService.validarUnidadAbierta(grupoId, unidadId);
 
         BigDecimal sumActual = actividadRepository.sumPonderacionByGrupoIdAndUnidadId(grupoId, unidadId);
         if (sumActual.add(ponderacion).compareTo(new BigDecimal("100")) > 0) {
@@ -70,6 +72,7 @@ public class ActividadGrupoService {
         validarPonderacion(ponderacion);
         ActividadGrupo actividad = actividadRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Actividad no encontrada: " + id));
+        estadoUnidadService.validarUnidadAbierta(actividad.getGrupo().getId(), actividad.getUnidad().getId());
 
         BigDecimal sumSinEsta = actividadRepository
                 .sumPonderacionByGrupoIdAndUnidadId(actividad.getGrupo().getId(), actividad.getUnidad().getId())
@@ -93,6 +96,7 @@ public class ActividadGrupoService {
     public void eliminar(Integer id) {
         ActividadGrupo actividad = actividadRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Actividad no encontrada: " + id));
+        estadoUnidadService.validarUnidadAbierta(actividad.getGrupo().getId(), actividad.getUnidad().getId());
         if (resultadoRepository.tieneCalificacionesRegistradas(id)) {
             throw new IllegalStateException("No se puede eliminar: la actividad ya tiene calificaciones registradas.");
         }

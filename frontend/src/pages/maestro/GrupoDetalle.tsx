@@ -52,6 +52,11 @@ function ActividadesTab({ grupo }: { grupo: GrupoResponse }) {
     queryFn: getCatalogoActivo,
   })
 
+  const { data: estadosUnidades = {} } = useQuery({
+    queryKey: ['estadosUnidades', grupoId],
+    queryFn: () => getEstadosUnidades(grupoId),
+  })
+
   const inv = () => {
     qc.invalidateQueries({ queryKey: ['actividades', grupoId] })
     invalidateDashboard()
@@ -139,16 +144,27 @@ function ActividadesTab({ grupo }: { grupo: GrupoResponse }) {
           const uid = Number(unidadId)
           const totalPonderacion = acts.reduce((s, a) => s + a.ponderacion, 0)
           const info = unitLabels[uid]
+          const cerrada = estadosUnidades[uid] === 'CERRADA'
           return (
-            <div key={uid} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-3 bg-slate-50 border-b border-slate-200">
-                <h4 className="font-semibold text-slate-800">
-                  Unidad {info?.numero}: {info?.nombre}
-                </h4>
+            <div key={uid} className={`bg-white rounded-xl border shadow-sm overflow-hidden ${cerrada ? 'border-slate-300 opacity-80' : 'border-slate-200'}`}>
+              <div className={`flex items-center justify-between px-5 py-3 border-b ${cerrada ? 'bg-slate-100 border-slate-200' : 'bg-slate-50 border-slate-200'}`}>
+                <div className="flex items-center gap-2">
+                  <h4 className="font-semibold text-slate-800">
+                    Unidad {info?.numero}: {info?.nombre}
+                  </h4>
+                  {cerrada && <span className="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 font-medium">Cerrada</span>}
+                </div>
                 <span className="text-xs text-slate-500">
                   Ponderación: <span className={`font-semibold ${totalPonderacion > 100 ? 'text-red-600' : totalPonderacion === 100 ? 'text-emerald-600' : 'text-amber-600'}`}>{totalPonderacion}%</span>
                 </span>
               </div>
+
+              {cerrada && (
+                <div className="flex items-center gap-2 px-5 py-2 bg-slate-50 border-b border-slate-100 text-slate-500 text-xs">
+                  <Lock className="h-3 w-3 shrink-0" />
+                  Unidad cerrada. Reabre la unidad desde la pestaña Calificaciones para modificar la rúbrica.
+                </div>
+              )}
 
               {/* Progress bar */}
               <div className="px-5 pt-3">
@@ -168,10 +184,20 @@ function ActividadesTab({ grupo }: { grupo: GrupoResponse }) {
                       <p className="text-xs text-slate-400">{a.ponderacion}% de la unidad</p>
                     </div>
                     <div className="flex items-center gap-1">
-                      <button onClick={() => openEdit(a)} className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+                      <button
+                        onClick={() => !cerrada && openEdit(a)}
+                        disabled={cerrada}
+                        title={cerrada ? 'Unidad cerrada' : undefined}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
                         <Pencil className="h-3.5 w-3.5" />
                       </button>
-                      <button onClick={() => setDeleteTarget(a)} className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                      <button
+                        onClick={() => !cerrada && setDeleteTarget(a)}
+                        disabled={cerrada}
+                        title={cerrada ? 'Unidad cerrada' : undefined}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
@@ -201,9 +227,17 @@ function ActividadesTab({ grupo }: { grupo: GrupoResponse }) {
               <select value={form.unidadId} onChange={(e) => setForm((p) => ({ ...p, unidadId: e.target.value }))} className={inputClass}>
                 <option value="">Seleccionar unidad...</option>
                 {unidades.map((u: import('@/types').UnidadDto) => (
-                  <option key={u.id} value={u.id}>Unidad {u.numero}: {u.nombre}</option>
+                  <option key={u.id} value={u.id}>
+                    Unidad {u.numero}: {u.nombre}{estadosUnidades[u.id] === 'CERRADA' ? ' (cerrada)' : ''}
+                  </option>
                 ))}
               </select>
+              {form.unidadId && estadosUnidades[Number(form.unidadId)] === 'CERRADA' && (
+                <p className="text-xs text-amber-700 mt-1 flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  Esta unidad está cerrada. Reabre la unidad desde Calificaciones para agregar actividades.
+                </p>
+              )}
             </div>
           )}
 
