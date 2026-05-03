@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, ChevronRight, User } from 'lucide-react'
+import { BookOpen, ChevronRight } from 'lucide-react'
 import { getMisInscripciones } from '@/api/inscripciones'
 import type { InscripcionResponse } from '@/types'
 import { PageHeader } from '@/components/shared/PageHeader'
@@ -44,11 +44,8 @@ export default function MisCursos() {
                 className="group bg-white rounded-xl border border-slate-200 shadow-sm p-5 text-left hover:border-blue-300 hover:shadow-md transition-all flex flex-col gap-3"
               >
                 {/* Header */}
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 flex-shrink-0">
-                    <BookOpen className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <StatusBadge estado={i.estadoAcademico} />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 flex-shrink-0">
+                  <BookOpen className="h-5 w-5 text-blue-600" />
                 </div>
 
                 {/* Info */}
@@ -62,10 +59,9 @@ export default function MisCursos() {
                     <span className="text-slate-500">Semestre</span>
                     <span className="font-medium text-slate-700">{i.semestre}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-sm">
-                    <User className="h-3.5 w-3.5 text-slate-400 flex-shrink-0" />
-                    <span className="text-slate-500 truncate">Fecha inscripción:</span>
-                    <span className="font-medium text-slate-700 flex-shrink-0">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Fecha inscripción</span>
+                    <span className="font-medium text-slate-700">
                       {i.fecha ? new Date(i.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) : '—'}
                     </span>
                   </div>
