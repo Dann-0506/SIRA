@@ -2,9 +2,9 @@ import { useInvalidateDashboard } from '@/hooks/useInvalidateDashboard'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Pencil, Trash2, Save, Lock, LockOpen, LockKeyhole, FileDown, Gift, AlertTriangle } from 'lucide-react'
+import { Plus, Pencil, Trash2, Save, Lock, FileDown, Gift, AlertTriangle } from 'lucide-react'
 import axios from 'axios'
-import { getMiGrupo, cerrarGrupoMaestro, reabrirGrupoMaestro, cerrarDefinitivamenteMaestro } from '@/api/grupos'
+import { getMiGrupo, cerrarGrupoMaestro } from '@/api/grupos'
 import { getUnidadesByGrupo } from '@/api/materias'
 import { getActividades, createActividad, updateActividad, deleteActividad } from '@/api/actividades'
 import { getCatalogoActivo } from '@/api/actividadesCatalogo'
@@ -601,8 +601,6 @@ function ReporteTab({ grupo }: { grupo: GrupoResponse }) {
   const [overrideForm, setOverrideForm] = useState({ calificacion: '', justificacion: '' })
   const [overrideError, setOverrideError] = useState('')
   const [cerrarOpen, setCerrarOpen] = useState(false)
-  const [reabrirOpen, setRreabrirOpen] = useState(false)
-  const [definitiveOpen, setDefinitiveOpen] = useState(false)
   const [downloadLoading, setDownloadLoading] = useState(false)
 
   const { data: reporte = [], isLoading } = useQuery({
@@ -621,8 +619,6 @@ function ReporteTab({ grupo }: { grupo: GrupoResponse }) {
   })
 
   const cerrarMut = useMutation({ mutationFn: () => cerrarGrupoMaestro(grupoId), onSuccess: () => { invGrupo(); setCerrarOpen(false) } })
-  const reabrirMut = useMutation({ mutationFn: () => reabrirGrupoMaestro(grupoId), onSuccess: () => { invGrupo(); setRreabrirOpen(false) } })
-  const defMut = useMutation({ mutationFn: () => cerrarDefinitivamenteMaestro(grupoId), onSuccess: () => { invGrupo(); setDefinitiveOpen(false) } })
 
   const handleDownloadActa = async () => {
     setDownloadLoading(true)
@@ -645,29 +641,39 @@ function ReporteTab({ grupo }: { grupo: GrupoResponse }) {
   return (
     <div className="space-y-5">
       {/* Action buttons */}
-      <div className="flex items-center gap-3 flex-wrap">
-        {grupo.estadoEvaluacion === 'ABIERTO' && (
-          <button onClick={() => setCerrarOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-colors">
-            <Lock className="h-4 w-4" /> Cerrar acta
-          </button>
-        )}
-        {grupo.estadoEvaluacion === 'CERRADO' && (
-          <button onClick={() => setRreabrirOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors">
-            <LockOpen className="h-4 w-4" /> Reabrir acta
-          </button>
-        )}
-        <button onClick={() => setDefinitiveOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors">
-          <LockKeyhole className="h-4 w-4" /> Cerrar definitivamente
-        </button>
-        <button
-          onClick={handleDownloadActa}
-          disabled={downloadLoading}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-colors ml-auto disabled:opacity-50"
-        >
-          {downloadLoading ? <LoadingSpinner size="sm" /> : <FileDown className="h-4 w-4" />}
-          Descargar acta PDF
-        </button>
-      </div>
+      {(() => {
+        const hayPendientes = reporte.some((r) => r.estado === 'PENDIENTE')
+        return (
+          <div className="flex items-center gap-3 flex-wrap">
+            {grupo.estadoEvaluacion === 'ABIERTO' && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCerrarOpen(true)}
+                  disabled={hayPendientes}
+                  title={hayPendientes ? 'Hay alumnos con calificaciones pendientes' : undefined}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Lock className="h-4 w-4" /> Terminar evaluación
+                </button>
+                {hayPendientes && (
+                  <span className="text-xs text-amber-700 flex items-center gap-1">
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    Hay alumnos con calificaciones pendientes
+                  </span>
+                )}
+              </div>
+            )}
+            <button
+              onClick={handleDownloadActa}
+              disabled={downloadLoading}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 transition-colors ml-auto disabled:opacity-50"
+            >
+              {downloadLoading ? <LoadingSpinner size="sm" /> : <FileDown className="h-4 w-4" />}
+              Descargar acta PDF
+            </button>
+          </div>
+        )
+      })()}
 
       {/* Table */}
       {reporte.length === 0 ? (
@@ -745,32 +751,13 @@ function ReporteTab({ grupo }: { grupo: GrupoResponse }) {
 
       <ConfirmDialog
         open={cerrarOpen}
-        title="Cerrar acta"
-        description="¿Cerrar el acta de este grupo? No podrás editar calificaciones hasta que se reabra."
-        confirmLabel="Cerrar acta"
+        title="Terminar evaluación"
+        description="¿Terminar la evaluación de este grupo? Las calificaciones quedarán congeladas. Solo un administrador podrá reabrirlo si es necesario."
+        confirmLabel="Terminar evaluación"
         variant="warning"
         loading={cerrarMut.isPending}
         onConfirm={() => cerrarMut.mutate()}
         onCancel={() => setCerrarOpen(false)}
-      />
-      <ConfirmDialog
-        open={reabrirOpen}
-        title="Reabrir acta"
-        description="¿Reabrir el acta de este grupo?"
-        confirmLabel="Reabrir"
-        loading={reabrirMut.isPending}
-        onConfirm={() => reabrirMut.mutate()}
-        onCancel={() => setRreabrirOpen(false)}
-      />
-      <ConfirmDialog
-        open={definitiveOpen}
-        title="Cerrar definitivamente"
-        description="Esta acción cerrará el grupo de forma permanente e irreversible. ¿Continuar?"
-        confirmLabel="Cerrar definitivamente"
-        variant="destructive"
-        loading={defMut.isPending}
-        onConfirm={() => defMut.mutate()}
-        onCancel={() => setDefinitiveOpen(false)}
       />
     </div>
   )

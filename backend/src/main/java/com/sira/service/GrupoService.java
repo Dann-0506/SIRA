@@ -108,15 +108,19 @@ public class GrupoService {
         if (grupo.isCerrado()) {
             throw new IllegalStateException("El curso ya se encuentra cerrado.");
         }
-        // Congelar snapshot de calificaciones antes de cerrar
-        congelarCalificacionesFinales(grupo);
+        List<CalificacionFinalDto> reporte = reporteService.generarReporteFinalGrupo(id, grupo.getCalificacionMaxima());
+        long pendientes = reporte.stream().filter(CalificacionFinalDto::isPendiente).count();
+        if (pendientes > 0) {
+            throw new IllegalStateException(
+                    "No se puede terminar la evaluación: " + pendientes +
+                    (pendientes == 1 ? " alumno tiene" : " alumnos tienen") + " calificaciones pendientes.");
+        }
+        congelarCalificacionesFinales(grupo, reporte);
         grupo.setEstadoEvaluacion("CERRADO");
         grupoRepository.save(grupo);
     }
 
-    private void congelarCalificacionesFinales(Grupo grupo) {
-        List<CalificacionFinalDto> reporte = reporteService.generarReporteFinalGrupo(
-                grupo.getId(), grupo.getCalificacionMaxima());
+    private void congelarCalificacionesFinales(Grupo grupo, List<CalificacionFinalDto> reporte) {
         for (CalificacionFinalDto cf : reporte) {
             if (cf.getCalificacionFinal() != null) {
                 String estado = cf.getCalificacionFinal()
@@ -132,7 +136,7 @@ public class GrupoService {
         if (!grupo.isActivo() && grupo.isCerrado()) {
             throw new IllegalStateException("El curso ya fue cerrado definitivamente.");
         }
-        congelarCalificacionesFinales(grupo);
+        congelarCalificacionesFinales(grupo, reporteService.generarReporteFinalGrupo(id, grupo.getCalificacionMaxima()));
         grupo.setEstadoEvaluacion("CERRADO");
         grupo.setActivo(false);
         grupoRepository.save(grupo);

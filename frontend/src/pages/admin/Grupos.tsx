@@ -52,7 +52,7 @@ function ActionsDropdown({ grupo, onCerrar, onReabrir, onCerrarDef, onEliminar }
             {estado === 'EN_CURSO' && (
               <button onClick={() => { setOpen(false); onCerrar() }}
                 className="flex items-center gap-2.5 w-full px-4 py-2 text-left text-amber-700 hover:bg-amber-50 transition-colors">
-                <Lock className="h-3.5 w-3.5" /> Cerrar acta
+                <Lock className="h-3.5 w-3.5" /> Terminar evaluación
               </button>
             )}
             {estado === 'ACTA_CERRADA' && (
@@ -226,9 +226,9 @@ export default function Grupos() {
         </div>
       </FormModal>
 
-      <ConfirmDialog open={!!cerrarTarget} title="Cerrar acta del grupo"
-        description={`¿Cerrar el acta de "${cerrarTarget?.clave}"? Los maestros no podrán editar calificaciones hasta que se reabra.`}
-        confirmLabel="Cerrar acta" variant="warning" loading={cerrarMut.isPending}
+      <ConfirmDialog open={!!cerrarTarget} title="Terminar evaluación"
+        description={`¿Terminar la evaluación de "${cerrarTarget?.clave}"? Las calificaciones quedarán congeladas. Podrás reabrirlo si es necesario.`}
+        confirmLabel="Terminar evaluación" variant="warning" loading={cerrarMut.isPending}
         onConfirm={() => cerrarTarget && cerrarMut.mutate(cerrarTarget.id)} onCancel={() => setCerrarTarget(null)} />
 
       <ConfirmDialog open={!!reabrirTarget} title="Reabrir acta del grupo"
