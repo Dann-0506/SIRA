@@ -59,6 +59,7 @@ export default function Inscripciones() {
   })
 
   const grupoSeleccionado = grupos.find((g: GrupoResponse) => g.id === selectedGrupoId)
+  const grupoCerrado = grupoSeleccionado?.estadoEvaluacion === 'CERRADO'
 
   const alumnosFiltrados = alumnos.filter((a: AlumnoResponse) =>
     alumnoSearch
@@ -118,7 +119,9 @@ export default function Inscripciones() {
             actions={
               <button
                 onClick={() => { setFormError(''); setSelectedAlumnoId(''); setAlumnoSearch(''); setModalOpen(true) }}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors"
+                disabled={grupoCerrado}
+                title={grupoCerrado ? 'El grupo tiene acta cerrada' : undefined}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <UserPlus className="h-4 w-4" />
                 Inscribir alumno
@@ -143,8 +146,9 @@ export default function Inscripciones() {
             rowActions={(i) => (
               <button
                 onClick={() => setDeleteTarget(i)}
-                title="Eliminar inscripción"
-                className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                disabled={grupoCerrado}
+                title={grupoCerrado ? 'El grupo tiene acta cerrada' : 'Eliminar inscripción'}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-slate-400 disabled:hover:bg-transparent"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
