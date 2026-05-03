@@ -45,6 +45,7 @@ public class MaestroCalificacionesController {
                                             @RequestBody ResultadoLoteRequest request,
                                             @AuthenticationPrincipal Usuario usuario) {
         verificarPropietario(grupoId, usuario);
+        resultadoService.validarPonderacionCompleta(grupoId, request.unidadId());
         for (ResultadoItemRequest item : request.resultados()) {
             resultadoService.guardarCalificacion(
                     item.inscripcionId(), grupoId, request.unidadId(),

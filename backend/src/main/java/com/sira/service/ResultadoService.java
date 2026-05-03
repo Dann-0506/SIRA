@@ -1,6 +1,7 @@
 package com.sira.service;
 
 import com.sira.model.Resultado;
+import com.sira.repository.ActividadGrupoRepository;
 import com.sira.repository.ResultadoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,8 +13,11 @@ import java.util.List;
 @Service
 public class ResultadoService {
 
+    private static final BigDecimal PONDERACION_COMPLETA = new BigDecimal("100.00");
+
     @Autowired private ResultadoRepository resultadoRepository;
     @Autowired private EstadoUnidadService estadoUnidadService;
+    @Autowired private ActividadGrupoRepository actividadGrupoRepository;
 
     @Transactional(readOnly = true)
     public List<Resultado> buscarPorInscripcionYUnidad(Integer inscripcionId, Integer unidadId) {
@@ -24,6 +28,14 @@ public class ResultadoService {
     @Transactional(readOnly = true)
     public List<Resultado> buscarPorInscripcion(Integer inscripcionId) {
         return resultadoRepository.findByInscripcionId(inscripcionId);
+    }
+
+    public void validarPonderacionCompleta(Integer grupoId, Integer unidadId) {
+        BigDecimal suma = actividadGrupoRepository.sumPonderacionByGrupoIdAndUnidadId(grupoId, unidadId);
+        if (suma == null || suma.compareTo(PONDERACION_COMPLETA) != 0) {
+            throw new IllegalStateException(
+                    "La ponderación de las actividades no suma 100%. No se pueden registrar calificaciones.");
+        }
     }
 
     @Transactional
