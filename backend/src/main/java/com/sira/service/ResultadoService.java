@@ -2,6 +2,7 @@ package com.sira.service;
 
 import com.sira.model.Resultado;
 import com.sira.repository.ActividadGrupoRepository;
+import com.sira.repository.GrupoRepository;
 import com.sira.repository.ResultadoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class ResultadoService {
@@ -18,6 +20,7 @@ public class ResultadoService {
     @Autowired private ResultadoRepository resultadoRepository;
     @Autowired private EstadoUnidadService estadoUnidadService;
     @Autowired private ActividadGrupoRepository actividadGrupoRepository;
+    @Autowired private GrupoRepository grupoRepository;
 
     @Transactional(readOnly = true)
     public List<Resultado> buscarPorInscripcionYUnidad(Integer inscripcionId, Integer unidadId) {
@@ -41,8 +44,10 @@ public class ResultadoService {
     @Transactional
     public void guardarCalificacion(Integer inscripcionId, Integer grupoId, Integer unidadId,
                                     Integer actividadId, BigDecimal nota) {
-        if (nota != null && (nota.compareTo(BigDecimal.ZERO) < 0 || nota.compareTo(new BigDecimal("100")) > 0)) {
-            throw new IllegalArgumentException("La calificación debe estar entre 0 y 100.");
+        BigDecimal maxima = obtenerMaximaDelGrupo(grupoId);
+        if (nota != null && (nota.compareTo(BigDecimal.ZERO) < 0 || nota.compareTo(maxima) > 0)) {
+            throw new IllegalArgumentException(
+                    "La calificación debe estar entre 0 y " + maxima.stripTrailingZeros().toPlainString() + ".");
         }
         estadoUnidadService.validarUnidadAbierta(grupoId, unidadId);
         resultadoRepository.upsert(inscripcionId, actividadId, nota);
@@ -51,16 +56,16 @@ public class ResultadoService {
     @Transactional
     public void guardarLote(Integer grupoId, Integer unidadId, List<Resultado> resultados) {
         if (resultados == null || resultados.isEmpty()) return;
-
+        BigDecimal maxima = obtenerMaximaDelGrupo(grupoId);
         for (Resultado r : resultados) {
             if (r.getCalificacion() != null &&
                     (r.getCalificacion().compareTo(BigDecimal.ZERO) < 0 ||
-                     r.getCalificacion().compareTo(new BigDecimal("100")) > 0)) {
-                throw new IllegalArgumentException("Todas las calificaciones deben estar entre 0 y 100.");
+                     r.getCalificacion().compareTo(maxima) > 0)) {
+                throw new IllegalArgumentException(
+                        "Todas las calificaciones deben estar entre 0 y " + maxima.stripTrailingZeros().toPlainString() + ".");
             }
         }
         estadoUnidadService.validarUnidadAbierta(grupoId, unidadId);
-
         for (Resultado r : resultados) {
             resultadoRepository.upsert(
                     r.getInscripcion().getId(),
@@ -68,5 +73,11 @@ public class ResultadoService {
                     r.getCalificacion()
             );
         }
+    }
+
+    private BigDecimal obtenerMaximaDelGrupo(Integer grupoId) {
+        return grupoRepository.findById(grupoId)
+                .map(g -> g.getCalificacionMaxima() != null ? g.getCalificacionMaxima() : new BigDecimal("100"))
+                .orElseThrow(() -> new NoSuchElementException("Grupo no encontrado con id: " + grupoId));
     }
 }
