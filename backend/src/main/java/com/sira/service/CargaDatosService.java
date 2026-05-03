@@ -116,9 +116,19 @@ public class CargaDatosService {
         });
     }
 
+    private static final java.util.Set<String> PALABRAS_CABECERA = java.util.Set.of(
+            "matricula", "num_control", "nombre", "correo", "email",
+            "num_empleado", "num_empleado_maestro",
+            "clave", "clave_materia", "clave_grupo",
+            "semestre", "total_unidades", "nombres_unidades",
+            "descripcion", "tipo", "empleado", "materia", "docente", "grupo", "alumno"
+    );
+
     private boolean esEncabezado(String[] fila) {
-        if (fila == null || fila.length == 0 || fila[0] == null) return false;
-        String primera = fila[0].trim().toLowerCase();
-        return primera.matches(".*\\b(matricula|mat|alumno|num|empleado|clave|materia|docente|grupo|admin|actividad|nombre)\\b.*");
+        if (fila == null || fila.length == 0) return false;
+        for (String campo : fila) {
+            if (campo != null && PALABRAS_CABECERA.contains(campo.trim().toLowerCase())) return true;
+        }
+        return false;
     }
 }
