@@ -26,9 +26,22 @@ El backend expone una API REST protegida con JWT. El frontend consume esa API y 
 
 | Rol | Acceso |
 |---|---|
-| **Administrador** | Gestión completa: alumnos, maestros, materias, grupos, inscripciones, configuración, carga CSV, respaldos y análisis. |
-| **Maestro** | Operación de sus grupos: actividades, calificaciones, bonus, reporte y cierre de acta. |
+| **Administrador** | Gestión completa: alumnos, maestros, materias, grupos, inscripciones, configuración, carga CSV y análisis. Puede reabrir grupos y cerrar definitivamente. |
+| **Maestro** | Operación de sus grupos activos: actividades y rúbrica por unidad, registro de calificaciones, bonus, reporte y cierre de evaluación. |
 | **Alumno** | Consulta de sus cursos y calificaciones. Solo lectura. |
+
+## Flujo de evaluación
+
+```
+Grupo ABIERTO
+  └─ Maestro configura actividades y ponderaciones por unidad
+  └─ Maestro registra calificaciones (auto-guardado por campo)
+  └─ Maestro cierra cada unidad (requiere calificaciones completas)
+  └─ Maestro termina la evaluación (requiere todas las unidades cerradas)
+Grupo CERRADO  ←──── Admin puede reabrir
+  └─ Admin cierra definitivamente (irreversible)
+Grupo FINALIZADO
+```
 
 ## Requisitos
 
@@ -51,18 +64,23 @@ cd SIRA
 Crea `backend/.env` (ya está en `.gitignore`):
 
 ```env
-DB_URL=jdbc:postgresql://localhost:5432/registro_academico
-DB_USER=tu_usuario
-DB_PASSWORD=tu_contraseña
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=registro_academico
+DB_NAME=sira
+DB_USER=postgres
+DB_PASSWORD=tu_contraseña
+DB_URL=jdbc:postgresql://localhost:5432/sira
+
+JWT_SECRET=clave-secreta-de-al-menos-32-caracteres
+JWT_EXPIRATION_MS=604800000
+
+CORS_ALLOWED_ORIGINS=http://localhost:5173
 ```
 
 ### 3. Crear la base de datos
 
 ```bash
-psql -U postgres -c "CREATE DATABASE registro_academico;"
+psql -U postgres -c "CREATE DATABASE sira;"
 ```
 
 El esquema se crea automáticamente al arrancar el backend por primera vez (`ddl-auto=update`).
