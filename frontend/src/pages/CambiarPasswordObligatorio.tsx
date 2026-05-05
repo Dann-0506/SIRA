@@ -37,8 +37,9 @@ export default function CambiarPasswordObligatorio() {
     setShowPass(p => ({ ...p, [field]: !p[field] }))
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="relative min-h-screen bg-[url('/fondo-login.jpeg')] bg-cover bg-center flex items-center justify-end p-4 md:px-20">
+      <div className="absolute inset-0 bg-black/40" />
+      <div className="relative w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           {/* Header */}
           <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-8 py-7 text-white text-center">
@@ -102,7 +103,7 @@ export default function CambiarPasswordObligatorio() {
           </div>
         </div>
 
-        <p className="text-center text-slate-500 text-xs mt-4">
+        <p className="text-center text-white/60 text-xs mt-4">
           SIRA · Sistema Institucional de Registro Académico
         </p>
       </div>
