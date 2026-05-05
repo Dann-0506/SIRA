@@ -118,3 +118,6 @@ npm run dev
 
 - Daniel Landero Arias
 - Ximena Zaleta Hernández
+- Othón Vladimir López Ortiz
+- Habid Fernández Betanzos
+- Ángel Miguel Medina Mixtega
