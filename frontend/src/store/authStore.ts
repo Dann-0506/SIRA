@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import type { AuthUsuario, Rol } from '@/types'
 
 interface AuthState {
@@ -25,6 +25,6 @@ export const useAuthStore = create<AuthState>()(
         usuario: s.usuario ? { ...s.usuario, requiereCambioPassword: false } : null
       })),
     }),
-    { name: 'sira-auth' }
+    { name: 'sira-auth', storage: createJSONStorage(() => sessionStorage) }
   )
 )
