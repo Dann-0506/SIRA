@@ -1,5 +1,5 @@
-num_empleado,nombre,correo
-M001,Dr. Roberto Hernández Soto,rhernandez@sira.edu.mx
-M002,Mtra. Laura Jiménez Cruz,ljimenez@sira.edu.mx
-M003,Ing. Pedro Ramírez Vega,pramirez@sira.edu.mx
-M004,Dra. Sofía Torres Morales,storres@sira.edu.mx
+num_empleado,apellido_paterno,apellido_materno,nombre,correo
+M001,Hernández,Soto,Roberto,rhernandez@sira.edu.mx
+M002,Jiménez,Cruz,Laura,ljimenez@sira.edu.mx
+M003,Ramírez,Vega,Pedro,pramirez@sira.edu.mx
+M004,Torres,Morales,Sofía,storres@sira.edu.mx

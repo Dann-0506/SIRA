@@ -45,8 +45,9 @@ public class MaestroService {
     }
 
     @Transactional
-    public Maestro crear(String nombre, String email, String numEmpleado) {
-        validarCampos(nombre, email, numEmpleado);
+    public Maestro crear(String nombre, String apellidoPaterno, String apellidoMaterno,
+                          String email, String numEmpleado) {
+        validarCampos(nombre, apellidoPaterno, email, numEmpleado);
         if (maestroRepository.existsByNumEmpleado(numEmpleado)) {
             throw new IllegalStateException("El número de empleado '" + numEmpleado + "' ya está registrado.");
         }
@@ -54,7 +55,9 @@ public class MaestroService {
             throw new IllegalStateException("El correo electrónico ya está registrado en el sistema.");
         }
         String numEmpleadoNormalizado = numEmpleado.trim().toUpperCase();
-        Usuario usuario = new Usuario(nombre.trim(), email.trim(), passwordEncoder.encode(numEmpleadoNormalizado), "maestro");
+        Usuario usuario = new Usuario(nombre.trim(), apellidoPaterno.trim(),
+                (apellidoMaterno != null && !apellidoMaterno.isBlank()) ? apellidoMaterno.trim() : null,
+                email.trim(), passwordEncoder.encode(numEmpleadoNormalizado), "maestro");
         usuario.setRequiereCambioPassword(true);
         usuarioRepository.save(usuario);
         Maestro saved = maestroRepository.save(new Maestro(usuario, numEmpleadoNormalizado));
@@ -62,9 +65,10 @@ public class MaestroService {
     }
 
     @Transactional
-    public Maestro actualizar(Integer id, String nombre, String email, String numEmpleado) {
+    public Maestro actualizar(Integer id, String nombre, String apellidoPaterno, String apellidoMaterno,
+                               String email, String numEmpleado) {
         Maestro maestro = buscarPorId(id);
-        validarCampos(nombre, email, numEmpleado);
+        validarCampos(nombre, apellidoPaterno, email, numEmpleado);
 
         if (!maestro.getNumEmpleado().equals(numEmpleado) && maestroRepository.existsByNumEmpleado(numEmpleado)) {
             throw new IllegalStateException("El número de empleado '" + numEmpleado + "' ya está registrado.");
@@ -76,6 +80,8 @@ public class MaestroService {
         }
 
         usuario.setNombre(nombre.trim());
+        usuario.setApellidoPaterno(apellidoPaterno.trim());
+        usuario.setApellidoMaterno((apellidoMaterno != null && !apellidoMaterno.isBlank()) ? apellidoMaterno.trim() : null);
         usuario.setEmail(email.trim());
         usuarioRepository.save(usuario);
         maestro.setNumEmpleado(numEmpleado.trim().toUpperCase());
@@ -109,9 +115,12 @@ public class MaestroService {
         usuarioRepository.deleteById(usuarioId);
     }
 
-    private void validarCampos(String nombre, String email, String numEmpleado) {
+    private void validarCampos(String nombre, String apellidoPaterno, String email, String numEmpleado) {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre es obligatorio.");
+        }
+        if (apellidoPaterno == null || apellidoPaterno.isBlank()) {
+            throw new IllegalArgumentException("El apellido paterno es obligatorio.");
         }
         if (numEmpleado == null || numEmpleado.isBlank()) {
             throw new IllegalArgumentException("El número de empleado es obligatorio.");

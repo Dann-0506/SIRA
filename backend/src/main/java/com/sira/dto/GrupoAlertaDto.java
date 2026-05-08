@@ -15,7 +15,7 @@ public record GrupoAlertaDto(
                 g.getClave(),
                 g.getSemestre(),
                 g.getMateria().getNombre(),
-                g.getMaestro().getUsuario().getNombre()
+                g.getMaestro().getUsuario().getNombreCompleto()
         );
     }
 }

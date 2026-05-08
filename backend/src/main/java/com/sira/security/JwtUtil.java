@@ -29,7 +29,7 @@ public class JwtUtil {
                 .subject(usuario.getId().toString())
                 .claim("email", usuario.getEmail())
                 .claim("rol", usuario.getRol())
-                .claim("nombre", usuario.getNombre())
+                .claim("nombre", usuario.getNombreCompleto())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(getKey())

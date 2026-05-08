@@ -11,6 +11,7 @@ const CATALOGOS = [
   { label: 'Administradores', to: '/admin/administradores' },
   { label: 'Maestros',        to: '/admin/maestros' },
   { label: 'Alumnos',         to: '/admin/alumnos' },
+  { label: 'Carreras',        to: '/admin/carreras' },
   { label: 'Materias',        to: '/admin/materias' },
   { label: 'Actividades',     to: '/admin/actividades-catalogo' },
   { label: 'Grupos',          to: '/admin/grupos' },
