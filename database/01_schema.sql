@@ -15,6 +15,7 @@ CREATE TABLE usuario (
     nombre                  VARCHAR(100)    NOT NULL,
     apellido_paterno        VARCHAR(80)     NOT NULL,
     apellido_materno        VARCHAR(80),
+    fecha_nacimiento        DATE            NOT NULL,
     email                   VARCHAR(150)    NOT NULL,
     password_hash           VARCHAR(255)    NOT NULL,
     rol                     VARCHAR(20)     NOT NULL,
@@ -59,8 +60,7 @@ CREATE TABLE alumno (
     usuario_id          INTEGER     NOT NULL,
     matricula           VARCHAR(20) NOT NULL,
     curp                VARCHAR(18),
-    fecha_nacimiento    DATE,
-    carrera_id          INTEGER,
+    carrera_id          INTEGER         NOT NULL,
 
     CONSTRAINT uq_alumno_usuario    UNIQUE (usuario_id),
     CONSTRAINT uq_alumno_matricula  UNIQUE (matricula),

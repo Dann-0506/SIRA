@@ -35,7 +35,7 @@ public class AdministradoresController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(AdminResponse.from(adminService.crear(
                         request.nombre(), request.apellidoPaterno(), request.apellidoMaterno(),
-                        request.email(), request.numEmpleado())));
+                        request.email(), request.numEmpleado(), request.fechaNacimiento())));
     }
 
     @PutMapping("/{id}")
@@ -44,7 +44,7 @@ public class AdministradoresController {
                                     @AuthenticationPrincipal Usuario usuario) {
         return AdminResponse.from(adminService.actualizar(
                 id, request.nombre(), request.apellidoPaterno(), request.apellidoMaterno(),
-                request.email(), request.numEmpleado(), usuario.getId()));
+                request.email(), request.numEmpleado(), request.fechaNacimiento(), usuario.getId()));
     }
 
     @PatchMapping("/{id}/estado")

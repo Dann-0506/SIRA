@@ -24,30 +24,40 @@ public class CargaDatosService {
     @Autowired private InscripcionService inscripcionService;
     @Autowired private ActividadCatalogoService actividadCatalogoService;
     @Autowired private CarreraService carreraService;
+    @Autowired private com.sira.repository.CarreraRepository carreraRepository;
 
-    // Formato CSV alumnos: num_control, apellido_paterno, apellido_materno, nombre, correo [, curp, fecha_nacimiento]
+    // Formato CSV alumnos: matricula, apellido_paterno, apellido_materno, nombre, correo, fecha_nacimiento, clave_carrera [, curp]
     public CargaResultadoResponse importarAlumnos(MultipartFile archivo) {
         return procesar(archivo, (fila, num) -> {
-            if (fila.length < 5 || fila[4].isBlank()) throw new IllegalArgumentException("Faltan columnas (Núm. control, Apellido Paterno, Apellido Materno, Nombre, Correo).");
-            String curp = fila.length > 5 && !fila[5].isBlank() ? fila[5].trim() : null;
-            LocalDate fechaNac = fila.length > 6 && !fila[6].isBlank() ? LocalDate.parse(fila[6].trim()) : null;
-            alumnoService.crear(fila[3].trim(), fila[1].trim(), fila[2].trim(), fila[4].trim(), fila[0].trim(), curp, fechaNac, null);
+            if (fila.length < 7) throw new IllegalArgumentException("Faltan columnas (Matrícula, Apellido Paterno, Apellido Materno, Nombre, Correo, Fecha Nacimiento, Clave Carrera).");
+            if (fila[5].isBlank()) throw new IllegalArgumentException("La fecha de nacimiento es obligatoria.");
+            if (fila[6].isBlank()) throw new IllegalArgumentException("La clave de carrera es obligatoria.");
+            LocalDate fechaNac = LocalDate.parse(fila[5].trim());
+            Integer carreraId = carreraRepository.findByClave(fila[6].trim().toUpperCase())
+                    .orElseThrow(() -> new java.util.NoSuchElementException("Carrera no encontrada con clave: " + fila[6].trim()))
+                    .getId();
+            String curp = fila.length > 7 && !fila[7].isBlank() ? fila[7].trim() : null;
+            alumnoService.crear(fila[3].trim(), fila[1].trim(), fila[2].trim(), fila[4].trim(), fila[0].trim(), curp, fechaNac, carreraId);
         });
     }
 
-    // Formato CSV administradores: num_empleado, apellido_paterno, apellido_materno, nombre, correo
+    // Formato CSV administradores: num_empleado, apellido_paterno, apellido_materno, nombre, correo, fecha_nacimiento
     public CargaResultadoResponse importarAdministradores(MultipartFile archivo) {
         return procesar(archivo, (fila, num) -> {
-            if (fila.length < 5) throw new IllegalArgumentException("Faltan columnas (Num. Empleado, Apellido Paterno, Apellido Materno, Nombre, Correo).");
-            adminService.crear(fila[3].trim(), fila[1].trim(), fila[2].trim(), fila[4].trim(), fila[0].trim());
+            if (fila.length < 6) throw new IllegalArgumentException("Faltan columnas (Num. Empleado, Apellido Paterno, Apellido Materno, Nombre, Correo, Fecha Nacimiento).");
+            if (fila[5].isBlank()) throw new IllegalArgumentException("La fecha de nacimiento es obligatoria.");
+            LocalDate fechaNac = LocalDate.parse(fila[5].trim());
+            adminService.crear(fila[3].trim(), fila[1].trim(), fila[2].trim(), fila[4].trim(), fila[0].trim(), fechaNac);
         });
     }
 
-    // Formato CSV maestros: num_empleado, apellido_paterno, apellido_materno, nombre, correo
+    // Formato CSV maestros: num_empleado, apellido_paterno, apellido_materno, nombre, correo, fecha_nacimiento
     public CargaResultadoResponse importarMaestros(MultipartFile archivo) {
         return procesar(archivo, (fila, num) -> {
-            if (fila.length < 5 || fila[4].isBlank()) throw new IllegalArgumentException("Faltan columnas (Num. Empleado, Apellido Paterno, Apellido Materno, Nombre, Correo).");
-            maestroService.crear(fila[3].trim(), fila[1].trim(), fila[2].trim(), fila[4].trim(), fila[0].trim());
+            if (fila.length < 6 || fila[4].isBlank()) throw new IllegalArgumentException("Faltan columnas (Num. Empleado, Apellido Paterno, Apellido Materno, Nombre, Correo, Fecha Nacimiento).");
+            if (fila[5].isBlank()) throw new IllegalArgumentException("La fecha de nacimiento es obligatoria.");
+            LocalDate fechaNac = LocalDate.parse(fila[5].trim());
+            maestroService.crear(fila[3].trim(), fila[1].trim(), fila[2].trim(), fila[4].trim(), fila[0].trim(), fechaNac);
         });
     }
 
@@ -135,7 +145,7 @@ public class CargaDatosService {
             "num_empleado", "num_empleado_maestro",
             "apellido_paterno", "apellido_materno",
             "curp", "fecha_nacimiento",
-            "carrera", "carrera_id",
+            "carrera", "carrera_id", "clave_carrera",
             "clave", "clave_materia", "clave_grupo",
             "semestre", "total_unidades", "nombres_unidades",
             "descripcion", "tipo", "empleado", "materia", "docente", "grupo", "alumno"

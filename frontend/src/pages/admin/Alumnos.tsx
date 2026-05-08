@@ -116,6 +116,8 @@ export default function Alumnos() {
     if (!form.apellidoPaterno.trim()) { setFormError('El apellido paterno es requerido.'); return }
     if (!form.email.trim()) { setFormError('El correo electrónico es requerido.'); return }
     if (!form.numControl.trim()) { setFormError('El número de control es requerido.'); return }
+    if (!form.fechaNacimiento) { setFormError('La fecha de nacimiento es requerida.'); return }
+    if (!form.carreraId) { setFormError('La carrera es requerida.'); return }
     const data = {
       nombre: form.nombre.trim(),
       apellidoPaterno: form.apellidoPaterno.trim(),
@@ -300,7 +302,9 @@ export default function Alumnos() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Fecha de nacimiento</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Fecha de nacimiento <span className="text-red-500">*</span>
+              </label>
               <input
                 type="date"
                 value={form.fechaNacimiento}
@@ -311,7 +315,9 @@ export default function Alumnos() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Carrera</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              Carrera <span className="text-red-500">*</span>
+            </label>
             <select
               value={form.carreraId}
               onChange={(e) => setForm((p) => ({ ...p, carreraId: e.target.value }))}

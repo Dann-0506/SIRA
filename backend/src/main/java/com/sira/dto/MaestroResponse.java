@@ -2,6 +2,8 @@ package com.sira.dto;
 
 import com.sira.model.Maestro;
 
+import java.time.LocalDate;
+
 public record MaestroResponse(
         Integer id,
         Integer usuarioId,
@@ -10,7 +12,8 @@ public record MaestroResponse(
         String apellidoPaterno,
         String apellidoMaterno,
         String email,
-        boolean activo
+        boolean activo,
+        LocalDate fechaNacimiento
 ) {
     public static MaestroResponse from(Maestro m) {
         return new MaestroResponse(
@@ -21,7 +24,8 @@ public record MaestroResponse(
                 m.getUsuario().getApellidoPaterno(),
                 m.getUsuario().getApellidoMaterno(),
                 m.getUsuario().getEmail(),
-                m.getUsuario().isActivo()
+                m.getUsuario().isActivo(),
+                m.getUsuario().getFechaNacimiento()
         );
     }
 }

@@ -14,9 +14,9 @@ public record AlumnoResponse(
         String email,
         boolean activo,
         String curp,
-        LocalDate fechaNacimiento,
-        Integer carreraId,
-        String carreraNombre
+        LocalDate fechaNacimiento,   // siempre presente
+        Integer carreraId,           // siempre presente
+        String carreraNombre         // siempre presente
 ) {
     public static AlumnoResponse from(Alumno a) {
         return new AlumnoResponse(
@@ -29,7 +29,7 @@ public record AlumnoResponse(
                 a.getUsuario().getEmail(),
                 a.getUsuario().isActivo(),
                 a.getCurp(),
-                a.getFechaNacimiento(),
+                a.getUsuario().getFechaNacimiento(),
                 a.getCarrera() != null ? a.getCarrera().getId() : null,
                 a.getCarrera() != null ? a.getCarrera().getNombre() : null
         );

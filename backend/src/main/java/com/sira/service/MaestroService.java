@@ -10,6 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -46,8 +48,8 @@ public class MaestroService {
 
     @Transactional
     public Maestro crear(String nombre, String apellidoPaterno, String apellidoMaterno,
-                          String email, String numEmpleado) {
-        validarCampos(nombre, apellidoPaterno, email, numEmpleado);
+                          String email, String numEmpleado, LocalDate fechaNacimiento) {
+        validarCampos(nombre, apellidoPaterno, email, numEmpleado, fechaNacimiento);
         if (maestroRepository.existsByNumEmpleado(numEmpleado)) {
             throw new IllegalStateException("El número de empleado '" + numEmpleado + "' ya está registrado.");
         }
@@ -55,9 +57,10 @@ public class MaestroService {
             throw new IllegalStateException("El correo electrónico ya está registrado en el sistema.");
         }
         String numEmpleadoNormalizado = numEmpleado.trim().toUpperCase();
+        String passwordTemporal = fechaNacimiento.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
         Usuario usuario = new Usuario(nombre.trim(), apellidoPaterno.trim(),
                 (apellidoMaterno != null && !apellidoMaterno.isBlank()) ? apellidoMaterno.trim() : null,
-                email.trim(), passwordEncoder.encode(numEmpleadoNormalizado), "maestro");
+                email.trim(), passwordEncoder.encode(passwordTemporal), "maestro", fechaNacimiento);
         usuario.setRequiereCambioPassword(true);
         usuarioRepository.save(usuario);
         Maestro saved = maestroRepository.save(new Maestro(usuario, numEmpleadoNormalizado));
@@ -66,9 +69,9 @@ public class MaestroService {
 
     @Transactional
     public Maestro actualizar(Integer id, String nombre, String apellidoPaterno, String apellidoMaterno,
-                               String email, String numEmpleado) {
+                               String email, String numEmpleado, LocalDate fechaNacimiento) {
         Maestro maestro = buscarPorId(id);
-        validarCampos(nombre, apellidoPaterno, email, numEmpleado);
+        validarCampos(nombre, apellidoPaterno, email, numEmpleado, fechaNacimiento);
 
         if (!maestro.getNumEmpleado().equals(numEmpleado) && maestroRepository.existsByNumEmpleado(numEmpleado)) {
             throw new IllegalStateException("El número de empleado '" + numEmpleado + "' ya está registrado.");
@@ -83,6 +86,7 @@ public class MaestroService {
         usuario.setApellidoPaterno(apellidoPaterno.trim());
         usuario.setApellidoMaterno((apellidoMaterno != null && !apellidoMaterno.isBlank()) ? apellidoMaterno.trim() : null);
         usuario.setEmail(email.trim());
+        usuario.setFechaNacimiento(fechaNacimiento);
         usuarioRepository.save(usuario);
         maestro.setNumEmpleado(numEmpleado.trim().toUpperCase());
         maestroRepository.save(maestro);
@@ -99,7 +103,9 @@ public class MaestroService {
     @Transactional
     public void restablecerPassword(Integer id) {
         Maestro maestro = buscarPorId(id);
-        maestro.getUsuario().setPasswordHash(passwordEncoder.encode(maestro.getNumEmpleado()));
+        String passwordTemporal = maestro.getUsuario().getFechaNacimiento()
+                .format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+        maestro.getUsuario().setPasswordHash(passwordEncoder.encode(passwordTemporal));
         maestro.getUsuario().setRequiereCambioPassword(true);
         usuarioRepository.save(maestro.getUsuario());
     }
@@ -115,7 +121,8 @@ public class MaestroService {
         usuarioRepository.deleteById(usuarioId);
     }
 
-    private void validarCampos(String nombre, String apellidoPaterno, String email, String numEmpleado) {
+    private void validarCampos(String nombre, String apellidoPaterno, String email,
+                                String numEmpleado, LocalDate fechaNacimiento) {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre es obligatorio.");
         }
@@ -130,6 +137,9 @@ public class MaestroService {
         }
         if (!email.matches("^[\\w.-]+@[\\w.-]+\\.[a-z]{2,}$")) {
             throw new IllegalArgumentException("El formato del correo electrónico es inválido.");
+        }
+        if (fechaNacimiento == null) {
+            throw new IllegalArgumentException("La fecha de nacimiento es obligatoria.");
         }
     }
 }

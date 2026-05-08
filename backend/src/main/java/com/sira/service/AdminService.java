@@ -9,6 +9,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -32,8 +34,8 @@ public class AdminService {
 
     @Transactional
     public Administrador crear(String nombre, String apellidoPaterno, String apellidoMaterno,
-                                String email, String numEmpleado) {
-        validarCampos(nombre, apellidoPaterno, email, numEmpleado);
+                                String email, String numEmpleado, LocalDate fechaNacimiento) {
+        validarCampos(nombre, apellidoPaterno, email, numEmpleado, fechaNacimiento);
         if (usuarioRepository.existsByEmail(email)) {
             throw new IllegalStateException("El correo electrónico ya está registrado en el sistema.");
         }
@@ -41,9 +43,10 @@ public class AdminService {
             throw new IllegalStateException("El número de empleado '" + numEmpleado + "' ya está registrado.");
         }
         String numEmpleadoNormalizado = numEmpleado.trim().toUpperCase();
+        String passwordTemporal = fechaNacimiento.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
         Usuario usuario = new Usuario(nombre.trim(), apellidoPaterno.trim(),
                 (apellidoMaterno != null && !apellidoMaterno.isBlank()) ? apellidoMaterno.trim() : null,
-                email.trim().toLowerCase(), passwordEncoder.encode(numEmpleadoNormalizado), "admin");
+                email.trim().toLowerCase(), passwordEncoder.encode(passwordTemporal), "admin", fechaNacimiento);
         usuario.setRequiereCambioPassword(true);
         usuarioRepository.save(usuario);
         Administrador saved = administradorRepository.save(new Administrador(usuario, numEmpleadoNormalizado));
@@ -52,10 +55,10 @@ public class AdminService {
 
     @Transactional
     public Administrador actualizar(Integer id, String nombre, String apellidoPaterno, String apellidoMaterno,
-                                     String email, String numEmpleado, Integer actorId) {
+                                     String email, String numEmpleado, LocalDate fechaNacimiento, Integer actorId) {
         Administrador admin = buscarPorId(id);
         verificarNoEsMismoUsuario(admin, actorId);
-        validarCampos(nombre, apellidoPaterno, email, numEmpleado);
+        validarCampos(nombre, apellidoPaterno, email, numEmpleado, fechaNacimiento);
 
         if (!admin.getUsuario().getEmail().equalsIgnoreCase(email) && usuarioRepository.existsByEmail(email)) {
             throw new IllegalStateException("El correo electrónico ya está registrado en el sistema.");
@@ -68,6 +71,7 @@ public class AdminService {
         admin.getUsuario().setApellidoPaterno(apellidoPaterno.trim());
         admin.getUsuario().setApellidoMaterno((apellidoMaterno != null && !apellidoMaterno.isBlank()) ? apellidoMaterno.trim() : null);
         admin.getUsuario().setEmail(email.trim().toLowerCase());
+        admin.getUsuario().setFechaNacimiento(fechaNacimiento);
         usuarioRepository.save(admin.getUsuario());
         admin.setNumEmpleado(numEmpleado.trim().toUpperCase());
         administradorRepository.save(admin);
@@ -89,7 +93,9 @@ public class AdminService {
     public void restablecerPassword(Integer id, Integer actorId) {
         Administrador admin = buscarPorId(id);
         verificarNoEsMismoUsuario(admin, actorId);
-        admin.getUsuario().setPasswordHash(passwordEncoder.encode(admin.getNumEmpleado()));
+        String passwordTemporal = admin.getUsuario().getFechaNacimiento()
+                .format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+        admin.getUsuario().setPasswordHash(passwordEncoder.encode(passwordTemporal));
         admin.getUsuario().setRequiereCambioPassword(true);
         usuarioRepository.save(admin.getUsuario());
     }
@@ -122,7 +128,8 @@ public class AdminService {
         }
     }
 
-    private void validarCampos(String nombre, String apellidoPaterno, String email, String numEmpleado) {
+    private void validarCampos(String nombre, String apellidoPaterno, String email,
+                                String numEmpleado, LocalDate fechaNacimiento) {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre es obligatorio.");
         }
@@ -137,6 +144,9 @@ public class AdminService {
         }
         if (numEmpleado == null || numEmpleado.isBlank()) {
             throw new IllegalArgumentException("El número de empleado es obligatorio.");
+        }
+        if (fechaNacimiento == null) {
+            throw new IllegalArgumentException("La fecha de nacimiento es obligatoria.");
         }
     }
 }

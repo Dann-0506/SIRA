@@ -9,6 +9,6 @@ public record AlumnoRequest(
         String email,
         String numControl,
         String curp,
-        LocalDate fechaNacimiento,
-        Integer carreraId
+        LocalDate fechaNacimiento,  // obligatorio
+        Integer carreraId           // obligatorio
 ) {}

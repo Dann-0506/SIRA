@@ -1,5 +1,5 @@
-num_empleado,apellido_paterno,apellido_materno,nombre,correo
-M001,Hernández,Soto,Roberto,rhernandez@sira.edu.mx
-M002,Jiménez,Cruz,Laura,ljimenez@sira.edu.mx
-M003,Ramírez,Vega,Pedro,pramirez@sira.edu.mx
-M004,Torres,Morales,Sofía,storres@sira.edu.mx
+num_empleado,apellido_paterno,apellido_materno,nombre,correo,fecha_nacimiento
+M001,Hernández,Soto,Roberto,rhernandez@sira.edu.mx,1975-02-18
+M002,Jiménez,Cruz,Laura,ljimenez@sira.edu.mx,1982-11-07
+M003,Ramírez,Vega,Pedro,pramirez@sira.edu.mx,1979-06-25
+M004,Torres,Morales,Sofía,storres@sira.edu.mx,1988-03-14

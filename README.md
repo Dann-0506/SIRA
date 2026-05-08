@@ -112,7 +112,7 @@ npm run dev
 | Contraseña | `123456` |
 | Rol | Administrador |
 
-> Los usuarios nuevos reciben como contraseña temporal su número de empleado o matrícula, y se les solicita cambiarla en el primer inicio de sesión.
+> Los usuarios nuevos reciben como contraseña temporal su **fecha de nacimiento en formato `DDMMYYYY`** (ej. `14052003`). Al iniciar sesión por primera vez se les solicita cambiarla. La cuenta de administrador por defecto usa la contraseña `123456`.
 
 ## Colaboradores
 

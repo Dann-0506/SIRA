@@ -11,6 +11,8 @@ public interface CarreraRepository extends JpaRepository<Carrera, Integer> {
 
     boolean existsByClave(String clave);
 
+    java.util.Optional<Carrera> findByClave(String clave);
+
     List<Carrera> findAllByOrderByNombreAsc();
 
     List<Carrera> findByActivaTrue();

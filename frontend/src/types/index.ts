@@ -27,6 +27,7 @@ export interface PerfilResponse {
   email: string
   rol: Rol
   identificador: string | null
+  fechaNacimiento: string
 }
 
 export interface CarreraResponse {
@@ -45,6 +46,7 @@ export interface AdminResponse {
   apellidoMaterno: string | null
   email: string
   activo: boolean
+  fechaNacimiento: string
 }
 
 export interface AlumnoResponse {
@@ -57,9 +59,9 @@ export interface AlumnoResponse {
   email: string
   activo: boolean
   curp: string | null
-  fechaNacimiento: string | null
-  carreraId: number | null
-  carreraNombre: string | null
+  fechaNacimiento: string
+  carreraId: number
+  carreraNombre: string
 }
 
 export interface MaestroResponse {
@@ -71,6 +73,7 @@ export interface MaestroResponse {
   apellidoMaterno: string | null
   email: string
   activo: boolean
+  fechaNacimiento: string
 }
 
 export interface MateriaResponse {
