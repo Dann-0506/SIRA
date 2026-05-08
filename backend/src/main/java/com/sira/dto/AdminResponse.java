@@ -2,6 +2,8 @@ package com.sira.dto;
 
 import com.sira.model.Administrador;
 
+import java.time.LocalDate;
+
 public record AdminResponse(
         Integer id,
         String numEmpleado,
@@ -9,7 +11,8 @@ public record AdminResponse(
         String apellidoPaterno,
         String apellidoMaterno,
         String email,
-        boolean activo
+        boolean activo,
+        LocalDate fechaNacimiento
 ) {
     public static AdminResponse from(Administrador a) {
         return new AdminResponse(
@@ -19,7 +22,8 @@ public record AdminResponse(
                 a.getUsuario().getApellidoPaterno(),
                 a.getUsuario().getApellidoMaterno(),
                 a.getUsuario().getEmail(),
-                a.getUsuario().isActivo()
+                a.getUsuario().isActivo(),
+                a.getUsuario().getFechaNacimiento()
         );
     }
 }

@@ -37,7 +37,8 @@ public class DataInitializer implements ApplicationRunner {
                 null,
                 "admin@escuela.edu",
                 passwordEncoder.encode("123456"),
-                "admin"
+                "admin",
+                java.time.LocalDate.of(1990, 1, 1)
         ));
         administradorRepository.save(new Administrador(usuario, "ADMIN-001"));
     }

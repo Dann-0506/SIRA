@@ -2,6 +2,8 @@ package com.sira.dto;
 
 import com.sira.model.Usuario;
 
+import java.time.LocalDate;
+
 public record PerfilResponse(
         Integer id,
         String nombre,
@@ -9,7 +11,8 @@ public record PerfilResponse(
         String apellidoMaterno,
         String email,
         String rol,
-        String identificador
+        String identificador,
+        LocalDate fechaNacimiento
 ) {
     public static PerfilResponse of(Usuario usuario, String identificador) {
         return new PerfilResponse(
@@ -19,7 +22,8 @@ public record PerfilResponse(
                 usuario.getApellidoMaterno(),
                 usuario.getEmail(),
                 usuario.getRol(),
-                identificador
+                identificador,
+                usuario.getFechaNacimiento()
         );
     }
 }

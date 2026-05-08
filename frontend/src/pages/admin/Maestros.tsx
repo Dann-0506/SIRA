@@ -15,7 +15,7 @@ import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
 
-const emptyForm = { nombre: '', apellidoPaterno: '', apellidoMaterno: '', email: '', numEmpleado: '' }
+const emptyForm = { nombre: '', apellidoPaterno: '', apellidoMaterno: '', email: '', numEmpleado: '', fechaNacimiento: '' }
 
 export default function Maestros() {
   const qc = useQueryClient()
@@ -86,7 +86,7 @@ export default function Maestros() {
   const openCreate = () => { setEditTarget(null); setForm(emptyForm); setFormError(''); setModalOpen(true) }
   const openEdit = (m: MaestroResponse) => {
     setEditTarget(m)
-    setForm({ nombre: m.nombre, apellidoPaterno: m.apellidoPaterno, apellidoMaterno: m.apellidoMaterno ?? '', email: m.email ?? '', numEmpleado: m.numEmpleado })
+    setForm({ nombre: m.nombre, apellidoPaterno: m.apellidoPaterno, apellidoMaterno: m.apellidoMaterno ?? '', email: m.email ?? '', numEmpleado: m.numEmpleado, fechaNacimiento: m.fechaNacimiento ?? '' })
     setFormError('')
     setModalOpen(true)
   }
@@ -97,12 +97,14 @@ export default function Maestros() {
     if (!form.apellidoPaterno.trim()) { setFormError('El apellido paterno es requerido.'); return }
     if (!form.email.trim()) { setFormError('El correo electrónico es requerido.'); return }
     if (!form.numEmpleado.trim()) { setFormError('El número de empleado es requerido.'); return }
+    if (!form.fechaNacimiento) { setFormError('La fecha de nacimiento es requerida.'); return }
     const data = {
       nombre: form.nombre.trim(),
       apellidoPaterno: form.apellidoPaterno.trim(),
       apellidoMaterno: form.apellidoMaterno.trim() || undefined,
       email: form.email.trim(),
       numEmpleado: form.numEmpleado.trim(),
+      fechaNacimiento: form.fechaNacimiento,
     }
     if (editTarget) updateMut.mutate({ id: editTarget.id, data })
     else createMut.mutate(data)
@@ -236,18 +238,31 @@ export default function Maestros() {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Correo electrónico <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="email"
-              required
-              value={form.email}
-              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-              placeholder="maestro@escuela.edu"
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Correo electrónico <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                required
+                value={form.email}
+                onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                placeholder="maestro@escuela.edu"
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Fecha de nacimiento <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                value={form.fechaNacimiento}
+                onChange={(e) => setForm((p) => ({ ...p, fechaNacimiento: e.target.value }))}
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
+              />
+            </div>
           </div>
 
           <div>

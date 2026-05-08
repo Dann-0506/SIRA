@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -57,7 +58,7 @@ public class AlumnoService {
     public Alumno crear(String nombre, String apellidoPaterno, String apellidoMaterno,
                          String email, String matricula, String curp,
                          LocalDate fechaNacimiento, Integer carreraId) {
-        validarCampos(nombre, apellidoPaterno, email, matricula);
+        validarCampos(nombre, apellidoPaterno, email, matricula, fechaNacimiento, carreraId);
         if (alumnoRepository.existsByMatricula(matricula)) {
             throw new IllegalStateException("El número de control '" + matricula + "' ya está registrado.");
         }
@@ -68,18 +69,16 @@ public class AlumnoService {
             throw new IllegalStateException("La CURP ya está registrada en el sistema.");
         }
         String matriculaNormalizada = matricula.trim().toUpperCase();
+        String passwordTemporal = fechaNacimiento.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
         Usuario usuario = new Usuario(nombre.trim(), apellidoPaterno.trim(),
                 (apellidoMaterno != null && !apellidoMaterno.isBlank()) ? apellidoMaterno.trim() : null,
-                email.trim(), passwordEncoder.encode(matriculaNormalizada), "alumno");
+                email.trim(), passwordEncoder.encode(passwordTemporal), "alumno", fechaNacimiento);
         usuario.setRequiereCambioPassword(true);
         usuarioRepository.save(usuario);
         Alumno alumno = new Alumno(usuario, matriculaNormalizada);
         alumno.setCurp(curp != null && !curp.isBlank() ? curp.trim().toUpperCase() : null);
-        alumno.setFechaNacimiento(fechaNacimiento);
-        if (carreraId != null) {
-            alumno.setCarrera(carreraRepository.findById(carreraId)
-                    .orElseThrow(() -> new NoSuchElementException("Carrera no encontrada con id: " + carreraId)));
-        }
+        alumno.setCarrera(carreraRepository.findById(carreraId)
+                .orElseThrow(() -> new NoSuchElementException("Carrera no encontrada con id: " + carreraId)));
         Alumno saved = alumnoRepository.save(alumno);
         return alumnoRepository.findByIdWithDetails(saved.getId()).orElseThrow();
     }
@@ -89,7 +88,7 @@ public class AlumnoService {
                               String email, String matricula, String curp,
                               LocalDate fechaNacimiento, Integer carreraId) {
         Alumno alumno = buscarPorId(id);
-        validarCampos(nombre, apellidoPaterno, email, matricula);
+        validarCampos(nombre, apellidoPaterno, email, matricula, fechaNacimiento, carreraId);
 
         if (!alumno.getMatricula().equals(matricula) && alumnoRepository.existsByMatricula(matricula)) {
             throw new IllegalStateException("El número de control '" + matricula + "' ya está registrado.");
@@ -110,16 +109,12 @@ public class AlumnoService {
         usuario.setApellidoPaterno(apellidoPaterno.trim());
         usuario.setApellidoMaterno((apellidoMaterno != null && !apellidoMaterno.isBlank()) ? apellidoMaterno.trim() : null);
         usuario.setEmail(email.trim());
+        usuario.setFechaNacimiento(fechaNacimiento);
         usuarioRepository.save(usuario);
         alumno.setMatricula(matricula.trim().toUpperCase());
         alumno.setCurp(curpNormalizada);
-        alumno.setFechaNacimiento(fechaNacimiento);
-        if (carreraId != null) {
-            alumno.setCarrera(carreraRepository.findById(carreraId)
-                    .orElseThrow(() -> new NoSuchElementException("Carrera no encontrada con id: " + carreraId)));
-        } else {
-            alumno.setCarrera(null);
-        }
+        alumno.setCarrera(carreraRepository.findById(carreraId)
+                .orElseThrow(() -> new NoSuchElementException("Carrera no encontrada con id: " + carreraId)));
         alumnoRepository.save(alumno);
         return alumnoRepository.findByIdWithDetails(alumno.getId()).orElseThrow();
     }
@@ -134,7 +129,9 @@ public class AlumnoService {
     @Transactional
     public void restablecerPassword(Integer id) {
         Alumno alumno = buscarPorId(id);
-        alumno.getUsuario().setPasswordHash(passwordEncoder.encode(alumno.getMatricula()));
+        String passwordTemporal = alumno.getUsuario().getFechaNacimiento()
+                .format(DateTimeFormatter.ofPattern("ddMMyyyy"));
+        alumno.getUsuario().setPasswordHash(passwordEncoder.encode(passwordTemporal));
         alumno.getUsuario().setRequiereCambioPassword(true);
         usuarioRepository.save(alumno.getUsuario());
     }
@@ -150,7 +147,8 @@ public class AlumnoService {
         usuarioRepository.deleteById(usuarioId);
     }
 
-    private void validarCampos(String nombre, String apellidoPaterno, String email, String matricula) {
+    private void validarCampos(String nombre, String apellidoPaterno, String email,
+                                String matricula, LocalDate fechaNacimiento, Integer carreraId) {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre es obligatorio.");
         }
@@ -165,6 +163,12 @@ public class AlumnoService {
         }
         if (!email.matches("^[\\w.-]+@[\\w.-]+\\.[a-z]{2,}$")) {
             throw new IllegalArgumentException("El formato del correo electrónico es inválido.");
+        }
+        if (fechaNacimiento == null) {
+            throw new IllegalArgumentException("La fecha de nacimiento es obligatoria.");
+        }
+        if (carreraId == null) {
+            throw new IllegalArgumentException("La carrera es obligatoria.");
         }
     }
 }
