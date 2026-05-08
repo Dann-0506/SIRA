@@ -55,7 +55,7 @@ public class ReporteService {
         }
 
         // Grupo abierto: calcular on-demand
-        String nombre = inscripcion.getAlumno().getUsuario().getNombre();
+        String nombre = inscripcion.getAlumno().getUsuario().getNombreCompleto();
         String numControl = inscripcion.getAlumno().getMatricula();
 
         List<ResultadoUnidadDto> resultadosUnidades = new ArrayList<>();
@@ -95,7 +95,7 @@ public class ReporteService {
         CalificacionFinalDto cf = new CalificacionFinalDto();
         cf.setInscripcionId(inscripcion.getId());
         cf.setAlumnoId(inscripcion.getAlumno().getId());
-        cf.setAlumnoNombre(inscripcion.getAlumno().getUsuario().getNombre());
+        cf.setAlumnoNombre(inscripcion.getAlumno().getUsuario().getNombreCompleto());
         cf.setAlumnoNumControl(inscripcion.getAlumno().getMatricula());
         cf.setUnidades(resultadosUnidades);
         cf.setCalificacionCalculada(inscripcion.getCalificacionFinalCalculada());

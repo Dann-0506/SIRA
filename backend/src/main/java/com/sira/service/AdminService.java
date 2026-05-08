@@ -31,8 +31,9 @@ public class AdminService {
     }
 
     @Transactional
-    public Administrador crear(String nombre, String email, String numEmpleado) {
-        validarCampos(nombre, email, numEmpleado);
+    public Administrador crear(String nombre, String apellidoPaterno, String apellidoMaterno,
+                                String email, String numEmpleado) {
+        validarCampos(nombre, apellidoPaterno, email, numEmpleado);
         if (usuarioRepository.existsByEmail(email)) {
             throw new IllegalStateException("El correo electrónico ya está registrado en el sistema.");
         }
@@ -40,7 +41,9 @@ public class AdminService {
             throw new IllegalStateException("El número de empleado '" + numEmpleado + "' ya está registrado.");
         }
         String numEmpleadoNormalizado = numEmpleado.trim().toUpperCase();
-        Usuario usuario = new Usuario(nombre.trim(), email.trim().toLowerCase(), passwordEncoder.encode(numEmpleadoNormalizado), "admin");
+        Usuario usuario = new Usuario(nombre.trim(), apellidoPaterno.trim(),
+                (apellidoMaterno != null && !apellidoMaterno.isBlank()) ? apellidoMaterno.trim() : null,
+                email.trim().toLowerCase(), passwordEncoder.encode(numEmpleadoNormalizado), "admin");
         usuario.setRequiereCambioPassword(true);
         usuarioRepository.save(usuario);
         Administrador saved = administradorRepository.save(new Administrador(usuario, numEmpleadoNormalizado));
@@ -48,10 +51,11 @@ public class AdminService {
     }
 
     @Transactional
-    public Administrador actualizar(Integer id, String nombre, String email, String numEmpleado, Integer actorId) {
+    public Administrador actualizar(Integer id, String nombre, String apellidoPaterno, String apellidoMaterno,
+                                     String email, String numEmpleado, Integer actorId) {
         Administrador admin = buscarPorId(id);
         verificarNoEsMismoUsuario(admin, actorId);
-        validarCampos(nombre, email, numEmpleado);
+        validarCampos(nombre, apellidoPaterno, email, numEmpleado);
 
         if (!admin.getUsuario().getEmail().equalsIgnoreCase(email) && usuarioRepository.existsByEmail(email)) {
             throw new IllegalStateException("El correo electrónico ya está registrado en el sistema.");
@@ -61,6 +65,8 @@ public class AdminService {
         }
 
         admin.getUsuario().setNombre(nombre.trim());
+        admin.getUsuario().setApellidoPaterno(apellidoPaterno.trim());
+        admin.getUsuario().setApellidoMaterno((apellidoMaterno != null && !apellidoMaterno.isBlank()) ? apellidoMaterno.trim() : null);
         admin.getUsuario().setEmail(email.trim().toLowerCase());
         usuarioRepository.save(admin.getUsuario());
         admin.setNumEmpleado(numEmpleado.trim().toUpperCase());
@@ -116,9 +122,12 @@ public class AdminService {
         }
     }
 
-    private void validarCampos(String nombre, String email, String numEmpleado) {
+    private void validarCampos(String nombre, String apellidoPaterno, String email, String numEmpleado) {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre es obligatorio.");
+        }
+        if (apellidoPaterno == null || apellidoPaterno.isBlank()) {
+            throw new IllegalArgumentException("El apellido paterno es obligatorio.");
         }
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("El correo electrónico es obligatorio.");

@@ -1,3 +1,3 @@
-num_empleado,nombre,correo
-A001,Ana García López,agarcia@sira.edu.mx
-A002,Carlos Mendoza Ruiz,cmendoza@sira.edu.mx
+num_empleado,apellido_paterno,apellido_materno,nombre,correo
+A001,García,López,Ana,agarcia@sira.edu.mx
+A002,Mendoza,Ruiz,Carlos,cmendoza@sira.edu.mx

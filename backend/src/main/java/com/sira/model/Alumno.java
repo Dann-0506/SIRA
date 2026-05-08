@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "alumno", uniqueConstraints = {
     @UniqueConstraint(columnNames = "usuario_id"),
@@ -24,6 +26,16 @@ public class Alumno {
     @Column(name = "matricula", length = 20, nullable = false, unique = true)
     private String matricula;
 
+    @Column(name = "curp", length = 18, unique = true)
+    private String curp;
+
+    @Column(name = "fecha_nacimiento")
+    private LocalDate fechaNacimiento;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "carrera_id")
+    private Carrera carrera;
+
     public Alumno(Usuario usuario, String matricula) {
         this.usuario = usuario;
         this.matricula = matricula;
@@ -31,6 +43,6 @@ public class Alumno {
 
     @Override
     public String toString() {
-        return "[" + matricula + "] " + (usuario != null ? usuario.getNombre() : "");
+        return "[" + matricula + "] " + (usuario != null ? usuario.getNombreCompleto() : "");
     }
 }

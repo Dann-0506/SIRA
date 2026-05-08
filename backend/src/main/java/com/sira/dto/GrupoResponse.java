@@ -27,7 +27,7 @@ public record GrupoResponse(
                 g.getMateria().getNombre(),
                 g.getMateria().getClave(),
                 g.getMaestro().getId(),
-                g.getMaestro().getUsuario().getNombre(),
+                g.getMaestro().getUsuario().getNombreCompleto(),
                 g.isActivo(),
                 g.getEstadoEvaluacion(),
                 g.getCalificacionMinimaAprobatoria(),

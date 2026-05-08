@@ -31,7 +31,8 @@ public class MaestrosController {
     @PostMapping
     public ResponseEntity<MaestroResponse> crear(@RequestBody MaestroRequest request) {
         MaestroResponse response = MaestroResponse.from(
-                maestroService.crear(request.nombre(), request.email(), request.numEmpleado())
+                maestroService.crear(request.nombre(), request.apellidoPaterno(), request.apellidoMaterno(),
+                        request.email(), request.numEmpleado())
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -39,7 +40,8 @@ public class MaestrosController {
     @PutMapping("/{id}")
     public MaestroResponse actualizar(@PathVariable Integer id, @RequestBody MaestroRequest request) {
         return MaestroResponse.from(
-                maestroService.actualizar(id, request.nombre(), request.email(), request.numEmpleado())
+                maestroService.actualizar(id, request.nombre(), request.apellidoPaterno(), request.apellidoMaterno(),
+                        request.email(), request.numEmpleado())
         );
     }
 

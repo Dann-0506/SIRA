@@ -23,25 +23,31 @@ public class CargaDatosService {
     @Autowired private GrupoService grupoService;
     @Autowired private InscripcionService inscripcionService;
     @Autowired private ActividadCatalogoService actividadCatalogoService;
+    @Autowired private CarreraService carreraService;
 
+    // Formato CSV alumnos: num_control, apellido_paterno, apellido_materno, nombre, correo [, curp, fecha_nacimiento]
     public CargaResultadoResponse importarAlumnos(MultipartFile archivo) {
         return procesar(archivo, (fila, num) -> {
-            if (fila.length < 3 || fila[2].isBlank()) throw new IllegalArgumentException("Faltan columnas (Núm. de control, Nombre, Correo).");
-            alumnoService.crear(fila[1].trim(), fila[2].trim(), fila[0].trim());
+            if (fila.length < 5 || fila[4].isBlank()) throw new IllegalArgumentException("Faltan columnas (Núm. control, Apellido Paterno, Apellido Materno, Nombre, Correo).");
+            String curp = fila.length > 5 && !fila[5].isBlank() ? fila[5].trim() : null;
+            LocalDate fechaNac = fila.length > 6 && !fila[6].isBlank() ? LocalDate.parse(fila[6].trim()) : null;
+            alumnoService.crear(fila[3].trim(), fila[1].trim(), fila[2].trim(), fila[4].trim(), fila[0].trim(), curp, fechaNac, null);
         });
     }
 
+    // Formato CSV administradores: num_empleado, apellido_paterno, apellido_materno, nombre, correo
     public CargaResultadoResponse importarAdministradores(MultipartFile archivo) {
         return procesar(archivo, (fila, num) -> {
-            if (fila.length < 3) throw new IllegalArgumentException("Faltan columnas (Num. Empleado, Nombre, Correo).");
-            adminService.crear(fila[1].trim(), fila[2].trim(), fila[0].trim());
+            if (fila.length < 5) throw new IllegalArgumentException("Faltan columnas (Num. Empleado, Apellido Paterno, Apellido Materno, Nombre, Correo).");
+            adminService.crear(fila[3].trim(), fila[1].trim(), fila[2].trim(), fila[4].trim(), fila[0].trim());
         });
     }
 
+    // Formato CSV maestros: num_empleado, apellido_paterno, apellido_materno, nombre, correo
     public CargaResultadoResponse importarMaestros(MultipartFile archivo) {
         return procesar(archivo, (fila, num) -> {
-            if (fila.length < 3 || fila[2].isBlank()) throw new IllegalArgumentException("Faltan columnas (Num. Empleado, Nombre, Correo).");
-            maestroService.crear(fila[1].trim(), fila[2].trim(), fila[0].trim());
+            if (fila.length < 5 || fila[4].isBlank()) throw new IllegalArgumentException("Faltan columnas (Num. Empleado, Apellido Paterno, Apellido Materno, Nombre, Correo).");
+            maestroService.crear(fila[3].trim(), fila[1].trim(), fila[2].trim(), fila[4].trim(), fila[0].trim());
         });
     }
 
@@ -70,6 +76,14 @@ public class CargaDatosService {
             Integer alumnoId = alumnoService.buscarPorMatricula(fila[0].trim()).getId();
             Integer grupoId = grupoService.buscarPorClaveYSemestre(fila[1].trim(), fila[2].trim()).getId();
             inscripcionService.inscribir(alumnoId, grupoId, LocalDate.now());
+        });
+    }
+
+    // Formato CSV carreras: clave, nombre
+    public CargaResultadoResponse importarCarreras(MultipartFile archivo) {
+        return procesar(archivo, (fila, num) -> {
+            if (fila.length < 2 || fila[1].isBlank()) throw new IllegalArgumentException("Faltan columnas (Clave, Nombre).");
+            carreraService.crear(fila[0].trim(), fila[1].trim());
         });
     }
 
@@ -119,6 +133,9 @@ public class CargaDatosService {
     private static final java.util.Set<String> PALABRAS_CABECERA = java.util.Set.of(
             "matricula", "num_control", "nombre", "correo", "email",
             "num_empleado", "num_empleado_maestro",
+            "apellido_paterno", "apellido_materno",
+            "curp", "fecha_nacimiento",
+            "carrera", "carrera_id",
             "clave", "clave_materia", "clave_grupo",
             "semestre", "total_unidades", "nombres_unidades",
             "descripcion", "tipo", "empleado", "materia", "docente", "grupo", "alumno"

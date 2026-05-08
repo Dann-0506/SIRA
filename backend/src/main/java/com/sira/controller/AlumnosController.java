@@ -31,7 +31,9 @@ public class AlumnosController {
     @PostMapping
     public ResponseEntity<AlumnoResponse> crear(@RequestBody AlumnoRequest request) {
         AlumnoResponse response = AlumnoResponse.from(
-                alumnoService.crear(request.nombre(), request.email(), request.numControl())
+                alumnoService.crear(request.nombre(), request.apellidoPaterno(), request.apellidoMaterno(),
+                        request.email(), request.numControl(), request.curp(),
+                        request.fechaNacimiento(), request.carreraId())
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -39,7 +41,9 @@ public class AlumnosController {
     @PutMapping("/{id}")
     public AlumnoResponse actualizar(@PathVariable Integer id, @RequestBody AlumnoRequest request) {
         return AlumnoResponse.from(
-                alumnoService.actualizar(id, request.nombre(), request.email(), request.numControl())
+                alumnoService.actualizar(id, request.nombre(), request.apellidoPaterno(), request.apellidoMaterno(),
+                        request.email(), request.numControl(), request.curp(),
+                        request.fechaNacimiento(), request.carreraId())
         );
     }
 

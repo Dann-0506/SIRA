@@ -67,7 +67,7 @@ public class ReportesService {
                     return new AlumnoRiesgoDto(
                             primera.getAlumno().getId(),
                             primera.getAlumno().getMatricula(),
-                            primera.getAlumno().getUsuario().getNombre(),
+                            primera.getAlumno().getUsuario().getNombreCompleto(),
                             primera.getAlumno().getUsuario().getEmail(),
                             ins.size(),
                             grupos

@@ -7,7 +7,8 @@ import {
   getAlumnos, createAlumno, updateAlumno,
   toggleAlumnoEstado, resetAlumnoPassword, deleteAlumno,
 } from '@/api/alumnos'
-import type { AlumnoResponse } from '@/types'
+import { getCarrerasActivas } from '@/api/carreras'
+import type { AlumnoResponse, CarreraResponse } from '@/types'
 import { DataTable } from '@/components/shared/DataTable'
 import { FormModal } from '@/components/shared/FormModal'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
@@ -15,7 +16,11 @@ import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
 
-const emptyForm = { nombre: '', email: '', numControl: '' }
+const emptyForm = {
+  nombre: '', apellidoPaterno: '', apellidoMaterno: '',
+  email: '', numControl: '',
+  curp: '', fechaNacimiento: '', carreraId: '' as string,
+}
 
 export default function Alumnos() {
   const qc = useQueryClient()
@@ -35,6 +40,11 @@ export default function Alumnos() {
     queryFn: getAlumnos,
   })
 
+  const { data: carreras = [] } = useQuery<CarreraResponse[]>({
+    queryKey: ['carreras-activas'],
+    queryFn: getCarrerasActivas,
+  })
+
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['alumnos'] })
     invalidateDashboard()
@@ -47,7 +57,7 @@ export default function Alumnos() {
   })
 
   const updateMut = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: typeof emptyForm }) => updateAlumno(id, data),
+    mutationFn: ({ id, data }: { id: number; data: Parameters<typeof updateAlumno>[1] }) => updateAlumno(id, data),
     onSuccess: () => { invalidate(); closeModal() },
     onError: (err) => setFormError(axios.isAxiosError(err) ? err.response?.data?.error ?? 'Error al actualizar.' : 'Error inesperado.'),
   })
@@ -86,7 +96,16 @@ export default function Alumnos() {
   const openCreate = () => { setEditTarget(null); setForm(emptyForm); setFormError(''); setModalOpen(true) }
   const openEdit = (a: AlumnoResponse) => {
     setEditTarget(a)
-    setForm({ nombre: a.nombre, email: a.email ?? '', numControl: a.numControl })
+    setForm({
+      nombre: a.nombre,
+      apellidoPaterno: a.apellidoPaterno,
+      apellidoMaterno: a.apellidoMaterno ?? '',
+      email: a.email ?? '',
+      numControl: a.numControl,
+      curp: a.curp ?? '',
+      fechaNacimiento: a.fechaNacimiento ?? '',
+      carreraId: a.carreraId ? String(a.carreraId) : '',
+    })
     setFormError('')
     setModalOpen(true)
   }
@@ -94,11 +113,21 @@ export default function Alumnos() {
 
   const handleSubmit = () => {
     if (!form.nombre.trim()) { setFormError('El nombre es requerido.'); return }
+    if (!form.apellidoPaterno.trim()) { setFormError('El apellido paterno es requerido.'); return }
     if (!form.email.trim()) { setFormError('El correo electrónico es requerido.'); return }
     if (!form.numControl.trim()) { setFormError('El número de control es requerido.'); return }
-    const data = { nombre: form.nombre.trim(), email: form.email.trim(), numControl: form.numControl.trim() }
-    if (editTarget) updateMut.mutate({ id: editTarget.id, data: data as typeof emptyForm })
-    else createMut.mutate(data as typeof emptyForm)
+    const data = {
+      nombre: form.nombre.trim(),
+      apellidoPaterno: form.apellidoPaterno.trim(),
+      apellidoMaterno: form.apellidoMaterno.trim() || undefined,
+      email: form.email.trim(),
+      numControl: form.numControl.trim(),
+      curp: form.curp.trim() || undefined,
+      fechaNacimiento: form.fechaNacimiento || undefined,
+      carreraId: form.carreraId ? Number(form.carreraId) : undefined,
+    }
+    if (editTarget) updateMut.mutate({ id: editTarget.id, data })
+    else createMut.mutate(data)
   }
 
   const isPending = createMut.isPending || updateMut.isPending
@@ -132,7 +161,8 @@ export default function Alumnos() {
         emptyMessage="No hay alumnos registrados."
         columns={[
           { header: 'Núm. de control', accessor: 'numControl' },
-          { header: 'Nombre', accessor: 'nombre' },
+          { header: 'Nombre', accessor: (a) => `${a.apellidoPaterno} ${a.apellidoMaterno ?? ''} ${a.nombre}`.trim() },
+          { header: 'Carrera', accessor: (a) => a.carreraNombre ?? '—' },
           { header: 'Correo', accessor: (a) => a.email ?? '—' },
           {
             header: 'Estado',
@@ -180,7 +210,7 @@ export default function Alumnos() {
       <FormModal
         open={modalOpen}
         title={editTarget ? 'Editar alumno' : 'Nuevo alumno'}
-        subtitle={editTarget ? `Editando: ${editTarget.nombre}` : 'Completa los datos del nuevo alumno.'}
+        subtitle={editTarget ? `Editando: ${`${editTarget.apellidoPaterno} ${editTarget.apellidoMaterno ?? ''} ${editTarget.nombre}`.trim()}` : 'Completa los datos del nuevo alumno.'}
         onClose={closeModal}
         onSubmit={handleSubmit}
         loading={isPending}
@@ -189,44 +219,109 @@ export default function Alumnos() {
         <div className="space-y-4">
           {formError && <ErrorAlert message={formError} onClose={() => setFormError('')} />}
 
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Apellido paterno <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={form.apellidoPaterno}
+                onChange={(e) => setForm((p) => ({ ...p, apellidoPaterno: e.target.value }))}
+                placeholder="Ej. Pérez"
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Apellido materno
+              </label>
+              <input
+                type="text"
+                value={form.apellidoMaterno}
+                onChange={(e) => setForm((p) => ({ ...p, apellidoMaterno: e.target.value }))}
+                placeholder="Ej. García"
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
+              />
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Nombre completo <span className="text-red-500">*</span>
+              Nombre(s) <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={form.nombre}
               onChange={(e) => setForm((p) => ({ ...p, nombre: e.target.value }))}
-              placeholder="Ej. Juan Pérez García"
+              placeholder="Ej. Juan"
               className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Correo electrónico <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="email"
-              required
-              value={form.email}
-              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-              placeholder="alumno@escuela.edu"
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Correo electrónico <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                required
+                value={form.email}
+                onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                placeholder="alumno@escuela.edu"
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Número de control <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={form.numControl}
+                onChange={(e) => setForm((p) => ({ ...p, numControl: e.target.value }))}
+                placeholder="Ej. 21310001"
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">CURP</label>
+              <input
+                type="text"
+                value={form.curp}
+                onChange={(e) => setForm((p) => ({ ...p, curp: e.target.value.toUpperCase() }))}
+                placeholder="Ej. PEGJ010101HMCRZN00"
+                maxLength={18}
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Fecha de nacimiento</label>
+              <input
+                type="date"
+                value={form.fechaNacimiento}
+                onChange={(e) => setForm((p) => ({ ...p, fechaNacimiento: e.target.value }))}
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
+              />
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Número de control <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={form.numControl}
-              onChange={(e) => setForm((p) => ({ ...p, numControl: e.target.value }))}
-              placeholder="Ej. 21310001"
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Carrera</label>
+            <select
+              value={form.carreraId}
+              onChange={(e) => setForm((p) => ({ ...p, carreraId: e.target.value }))}
               className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
-            />
+            >
+              <option value="">Sin asignar</option>
+              {carreras.map((c) => (
+                <option key={c.id} value={c.id}>{c.nombre} ({c.clave})</option>
+              ))}
+            </select>
           </div>
         </div>
       </FormModal>
@@ -235,7 +330,7 @@ export default function Alumnos() {
       <ConfirmDialog
         open={!!deleteTarget}
         title="Eliminar alumno"
-        description={`¿Estás seguro de que deseas eliminar a "${deleteTarget?.nombre}"? Esta acción no se puede deshacer.`}
+        description={`¿Estás seguro de que deseas eliminar a "${deleteTarget ? `${deleteTarget.apellidoPaterno} ${deleteTarget.apellidoMaterno ?? ''} ${deleteTarget.nombre}`.trim() : ''}"? Esta acción no se puede deshacer.`}
         confirmLabel="Eliminar"
         variant="destructive"
         loading={deleteMut.isPending}
@@ -247,7 +342,7 @@ export default function Alumnos() {
       <ConfirmDialog
         open={!!resetTarget}
         title="Restablecer contraseña"
-        description={`Se restablecerá la contraseña de "${resetTarget?.nombre}" a su número de control. ¿Continuar?`}
+        description={`Se restablecerá la contraseña de "${resetTarget ? `${resetTarget.apellidoPaterno} ${resetTarget.apellidoMaterno ?? ''} ${resetTarget.nombre}`.trim() : ''}" a su número de control. ¿Continuar?`}
         confirmLabel="Restablecer"
         variant="warning"
         loading={resetMut.isPending}

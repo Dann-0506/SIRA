@@ -1,8 +1,10 @@
 package com.sira.service;
 
 import com.sira.model.Alumno;
+import com.sira.model.Carrera;
 import com.sira.model.Usuario;
 import com.sira.repository.AlumnoRepository;
+import com.sira.repository.CarreraRepository;
 import com.sira.repository.InscripcionRepository;
 import com.sira.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -19,6 +22,7 @@ public class AlumnoService {
     @Autowired private AlumnoRepository alumnoRepository;
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private InscripcionRepository inscripcionRepository;
+    @Autowired private CarreraRepository carreraRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
@@ -50,29 +54,51 @@ public class AlumnoService {
     }
 
     @Transactional
-    public Alumno crear(String nombre, String email, String matricula) {
-        validarCampos(nombre, email, matricula);
+    public Alumno crear(String nombre, String apellidoPaterno, String apellidoMaterno,
+                         String email, String matricula, String curp,
+                         LocalDate fechaNacimiento, Integer carreraId) {
+        validarCampos(nombre, apellidoPaterno, email, matricula);
         if (alumnoRepository.existsByMatricula(matricula)) {
             throw new IllegalStateException("El número de control '" + matricula + "' ya está registrado.");
         }
         if (usuarioRepository.existsByEmail(email)) {
             throw new IllegalStateException("El correo electrónico ya está registrado en el sistema.");
         }
+        if (curp != null && !curp.isBlank() && alumnoRepository.existsByCurp(curp.trim().toUpperCase())) {
+            throw new IllegalStateException("La CURP ya está registrada en el sistema.");
+        }
         String matriculaNormalizada = matricula.trim().toUpperCase();
-        Usuario usuario = new Usuario(nombre.trim(), email.trim(), passwordEncoder.encode(matriculaNormalizada), "alumno");
+        Usuario usuario = new Usuario(nombre.trim(), apellidoPaterno.trim(),
+                (apellidoMaterno != null && !apellidoMaterno.isBlank()) ? apellidoMaterno.trim() : null,
+                email.trim(), passwordEncoder.encode(matriculaNormalizada), "alumno");
         usuario.setRequiereCambioPassword(true);
         usuarioRepository.save(usuario);
-        Alumno saved = alumnoRepository.save(new Alumno(usuario, matriculaNormalizada));
-        return alumnoRepository.findByIdWithUsuario(saved.getId()).orElseThrow();
+        Alumno alumno = new Alumno(usuario, matriculaNormalizada);
+        alumno.setCurp(curp != null && !curp.isBlank() ? curp.trim().toUpperCase() : null);
+        alumno.setFechaNacimiento(fechaNacimiento);
+        if (carreraId != null) {
+            alumno.setCarrera(carreraRepository.findById(carreraId)
+                    .orElseThrow(() -> new NoSuchElementException("Carrera no encontrada con id: " + carreraId)));
+        }
+        Alumno saved = alumnoRepository.save(alumno);
+        return alumnoRepository.findByIdWithDetails(saved.getId()).orElseThrow();
     }
 
     @Transactional
-    public Alumno actualizar(Integer id, String nombre, String email, String matricula) {
+    public Alumno actualizar(Integer id, String nombre, String apellidoPaterno, String apellidoMaterno,
+                              String email, String matricula, String curp,
+                              LocalDate fechaNacimiento, Integer carreraId) {
         Alumno alumno = buscarPorId(id);
-        validarCampos(nombre, email, matricula);
+        validarCampos(nombre, apellidoPaterno, email, matricula);
 
         if (!alumno.getMatricula().equals(matricula) && alumnoRepository.existsByMatricula(matricula)) {
             throw new IllegalStateException("El número de control '" + matricula + "' ya está registrado.");
+        }
+
+        String curpNormalizada = curp != null && !curp.isBlank() ? curp.trim().toUpperCase() : null;
+        if (curpNormalizada != null && !curpNormalizada.equals(alumno.getCurp())
+                && alumnoRepository.existsByCurp(curpNormalizada)) {
+            throw new IllegalStateException("La CURP ya está registrada en el sistema.");
         }
 
         Usuario usuario = alumno.getUsuario();
@@ -81,11 +107,21 @@ public class AlumnoService {
         }
 
         usuario.setNombre(nombre.trim());
+        usuario.setApellidoPaterno(apellidoPaterno.trim());
+        usuario.setApellidoMaterno((apellidoMaterno != null && !apellidoMaterno.isBlank()) ? apellidoMaterno.trim() : null);
         usuario.setEmail(email.trim());
         usuarioRepository.save(usuario);
         alumno.setMatricula(matricula.trim().toUpperCase());
+        alumno.setCurp(curpNormalizada);
+        alumno.setFechaNacimiento(fechaNacimiento);
+        if (carreraId != null) {
+            alumno.setCarrera(carreraRepository.findById(carreraId)
+                    .orElseThrow(() -> new NoSuchElementException("Carrera no encontrada con id: " + carreraId)));
+        } else {
+            alumno.setCarrera(null);
+        }
         alumnoRepository.save(alumno);
-        return alumnoRepository.findByIdWithUsuario(alumno.getId()).orElseThrow();
+        return alumnoRepository.findByIdWithDetails(alumno.getId()).orElseThrow();
     }
 
     @Transactional
@@ -114,9 +150,12 @@ public class AlumnoService {
         usuarioRepository.deleteById(usuarioId);
     }
 
-    private void validarCampos(String nombre, String email, String matricula) {
+    private void validarCampos(String nombre, String apellidoPaterno, String email, String matricula) {
         if (nombre == null || nombre.isBlank()) {
             throw new IllegalArgumentException("El nombre es obligatorio.");
+        }
+        if (apellidoPaterno == null || apellidoPaterno.isBlank()) {
+            throw new IllegalArgumentException("El apellido paterno es obligatorio.");
         }
         if (matricula == null || matricula.isBlank()) {
             throw new IllegalArgumentException("La matrícula es obligatoria.");
