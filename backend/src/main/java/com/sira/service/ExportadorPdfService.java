@@ -69,7 +69,7 @@ public class ExportadorPdfService {
             datosAlumno.addCell(crearCeldaSinBorde("Núm. de control: " + cf.getAlumnoNumControl(), FUENTE_SUBTITULO, Element.ALIGN_RIGHT));
             datosAlumno.addCell(crearCeldaSinBorde("Materia: " + grupo.getMateria().getNombre() + " (" + grupo.getMateria().getClave() + ")", FUENTE_NORMAL, Element.ALIGN_LEFT));
             datosAlumno.addCell(crearCeldaSinBorde("Grupo: " + grupo.getClave() + " — " + grupo.getSemestre(), FUENTE_NORMAL, Element.ALIGN_RIGHT));
-            datosAlumno.addCell(crearCeldaSinBorde("Docente: " + grupo.getMaestro().getUsuario().getNombre(), FUENTE_NORMAL, Element.ALIGN_LEFT));
+            datosAlumno.addCell(crearCeldaSinBorde("Docente: " + grupo.getMaestro().getUsuario().getNombreCompleto(), FUENTE_NORMAL, Element.ALIGN_LEFT));
             datosAlumno.addCell(new PdfPCell());
             doc.add(datosAlumno);
             doc.add(Chunk.NEWLINE);
@@ -131,7 +131,7 @@ public class ExportadorPdfService {
         info.setWidthPercentage(100);
         info.addCell(crearCeldaSinBorde("Materia: " + grupo.getMateria().getNombre() + " — Grupo: " + grupo.getClave(), FUENTE_SUBTITULO, Element.ALIGN_LEFT));
         info.addCell(crearCeldaSinBorde("Estado: " + grupo.getEstadoEvaluacion(), FUENTE_SUBTITULO, Element.ALIGN_RIGHT));
-        info.addCell(crearCeldaSinBorde("Docente: " + grupo.getMaestro().getUsuario().getNombre() + " — Semestre: " + grupo.getSemestre(), FUENTE_NORMAL, Element.ALIGN_LEFT));
+        info.addCell(crearCeldaSinBorde("Docente: " + grupo.getMaestro().getUsuario().getNombreCompleto() + " — Semestre: " + grupo.getSemestre(), FUENTE_NORMAL, Element.ALIGN_LEFT));
         info.addCell(crearCeldaSinBorde("Mínima: " + grupo.getCalificacionMinimaAprobatoria() + "  |  Máxima: " + grupo.getCalificacionMaxima(), FUENTE_NORMAL, Element.ALIGN_RIGHT));
         doc.add(info);
     }

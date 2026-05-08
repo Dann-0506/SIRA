@@ -33,6 +33,8 @@ public class DataInitializer implements ApplicationRunner {
 
         Usuario usuario = usuarioRepository.save(new Usuario(
                 "Administrador",
+                "Sistema",
+                null,
                 "admin@escuela.edu",
                 passwordEncoder.encode("123456"),
                 "admin"

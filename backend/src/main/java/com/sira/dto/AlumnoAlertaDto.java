@@ -8,7 +8,7 @@ public record AlumnoAlertaDto(Integer id, String numControl, String nombre, Stri
         return new AlumnoAlertaDto(
                 a.getId(),
                 a.getMatricula(),
-                a.getUsuario().getNombre(),
+                a.getUsuario().getNombreCompleto(),
                 a.getUsuario().getEmail()
         );
     }

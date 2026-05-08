@@ -23,7 +23,7 @@ public record InscripcionResponse(
         return new InscripcionResponse(
                 i.getId(),
                 i.getAlumno().getId(),
-                i.getAlumno().getUsuario().getNombre(),
+                i.getAlumno().getUsuario().getNombreCompleto(),
                 i.getAlumno().getMatricula(),
                 i.getGrupo().getId(),
                 i.getGrupo().getClave(),

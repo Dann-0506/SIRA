@@ -9,7 +9,13 @@
 
 ALTER TABLE usuario
     ADD CONSTRAINT chk_usuario_rol
-        CHECK (rol IN ('ADMIN', 'MAESTRO', 'ALUMNO'));
+        CHECK (rol IN ('ADMIN', 'MAESTRO', 'ALUMNO')),
+    ADD CONSTRAINT chk_usuario_apellido_paterno_no_vacio
+        CHECK (apellido_paterno <> '');
+
+ALTER TABLE alumno
+    ADD CONSTRAINT chk_alumno_curp_formato
+        CHECK (curp IS NULL OR curp ~ '^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[A-Z0-9]{2}$');
 
 ALTER TABLE materia
     ADD CONSTRAINT chk_materia_total_unidades

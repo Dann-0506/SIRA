@@ -31,6 +31,6 @@ public class Maestro {
 
     @Override
     public String toString() {
-        return "[" + numEmpleado + "] " + (usuario != null ? usuario.getNombre() : "");
+        return "[" + numEmpleado + "] " + (usuario != null ? usuario.getNombreCompleto() : "");
     }
 }

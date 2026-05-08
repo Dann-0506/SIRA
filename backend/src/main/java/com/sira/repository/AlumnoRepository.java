@@ -14,6 +14,9 @@ public interface AlumnoRepository extends JpaRepository<Alumno, Integer> {
     @Query("SELECT a FROM Alumno a JOIN FETCH a.usuario WHERE a.id = :id")
     Optional<Alumno> findByIdWithUsuario(Integer id);
 
+    @Query("SELECT a FROM Alumno a JOIN FETCH a.usuario LEFT JOIN FETCH a.carrera WHERE a.id = :id")
+    Optional<Alumno> findByIdWithDetails(Integer id);
+
     @Query("SELECT a FROM Alumno a JOIN FETCH a.usuario WHERE a.matricula = :matricula")
     Optional<Alumno> findByMatriculaWithUsuario(String matricula);
 
@@ -26,14 +29,18 @@ public interface AlumnoRepository extends JpaRepository<Alumno, Integer> {
 
     boolean existsByMatricula(String matricula);
 
-    @Query("SELECT a FROM Alumno a JOIN FETCH a.usuario ORDER BY a.usuario.nombre ASC")
+    boolean existsByCurp(String curp);
+
+    boolean existsByCarreraId(Integer carreraId);
+
+    @Query("SELECT a FROM Alumno a JOIN FETCH a.usuario LEFT JOIN FETCH a.carrera ORDER BY a.usuario.apellidoPaterno ASC, a.usuario.apellidoMaterno ASC, a.usuario.nombre ASC")
     List<Alumno> findAllWithUsuario();
 
     @Query("""
-        SELECT a FROM Alumno a JOIN FETCH a.usuario
+        SELECT a FROM Alumno a JOIN FETCH a.usuario LEFT JOIN FETCH a.carrera
         JOIN Inscripcion i ON i.alumno = a
         WHERE i.grupo.id = :grupoId
-        ORDER BY a.usuario.nombre ASC
+        ORDER BY a.usuario.apellidoPaterno ASC, a.usuario.apellidoMaterno ASC, a.usuario.nombre ASC
         """)
     List<Alumno> findByGrupoId(Integer grupoId);
 
@@ -47,7 +54,7 @@ public interface AlumnoRepository extends JpaRepository<Alumno, Integer> {
             AND i.grupo.estadoEvaluacion = 'ABIERTO'
             AND i.grupo.activo = true
         )
-        ORDER BY a.usuario.nombre ASC
+        ORDER BY a.usuario.apellidoPaterno ASC, a.usuario.apellidoMaterno ASC, a.usuario.nombre ASC
         """)
     List<Alumno> findAlumnosSinInscripcionesEnSemestre(String semestre);
 }

@@ -85,7 +85,9 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
 
     @Query(value = """
         SELECT ma.id          AS maestro_id,
-               u.nombre       AS nombre,
+               CONCAT(u.nombre, ' ', u.apellido_paterno,
+                      CASE WHEN u.apellido_materno IS NOT NULL THEN CONCAT(' ', u.apellido_materno) ELSE '' END)
+                             AS nombre,
                ma.num_empleado AS num_empleado,
                COUNT(DISTINCT g.id)                                          AS grupos,
                COUNT(i.id)                                                   AS alumnos_evaluados,
@@ -98,8 +100,8 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
         WHERE g.estado_evaluacion = 'CERRADO'
           AND g.semestre = :semestre
           AND i.estado_academico IN ('APROBADO','REPROBADO')
-        GROUP BY ma.id, u.nombre, ma.num_empleado
-        ORDER BY u.nombre ASC
+        GROUP BY ma.id, u.nombre, u.apellido_paterno, u.apellido_materno, ma.num_empleado
+        ORDER BY u.apellido_paterno ASC, u.apellido_materno ASC, u.nombre ASC
         """, nativeQuery = true)
     List<Object[]> findMaestrosAprovechamientoRaw(String semestre);
 

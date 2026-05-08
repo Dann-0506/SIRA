@@ -2,7 +2,7 @@ export type Rol = 'admin' | 'maestro' | 'alumno'
 
 export interface AuthUsuario {
   id: number
-  nombre: string
+  nombre: string  // nombre completo calculado
   email: string
   rol: Rol
   identificador: string | null
@@ -22,9 +22,18 @@ export interface LoginResponse {
 export interface PerfilResponse {
   id: number
   nombre: string
+  apellidoPaterno: string
+  apellidoMaterno: string | null
   email: string
   rol: Rol
   identificador: string | null
+}
+
+export interface CarreraResponse {
+  id: number
+  clave: string
+  nombre: string
+  activa: boolean
 }
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
@@ -32,6 +41,8 @@ export interface AdminResponse {
   id: number
   numEmpleado: string
   nombre: string
+  apellidoPaterno: string
+  apellidoMaterno: string | null
   email: string
   activo: boolean
 }
@@ -41,8 +52,14 @@ export interface AlumnoResponse {
   usuarioId: number
   numControl: string
   nombre: string
+  apellidoPaterno: string
+  apellidoMaterno: string | null
   email: string
   activo: boolean
+  curp: string | null
+  fechaNacimiento: string | null
+  carreraId: number | null
+  carreraNombre: string | null
 }
 
 export interface MaestroResponse {
@@ -50,6 +67,8 @@ export interface MaestroResponse {
   usuarioId: number
   numEmpleado: string
   nombre: string
+  apellidoPaterno: string
+  apellidoMaterno: string | null
   email: string
   activo: boolean
 }
