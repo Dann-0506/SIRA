@@ -23,7 +23,7 @@ public class AuthController {
                     return ResponseEntity.ok(new LoginResponse(
                             token,
                             usuario.getId(),
-                            usuario.getNombre(),
+                            usuario.getNombreCompleto(),
                             usuario.getEmail(),
                             usuario.getRol(),
                             usuario.isRequiereCambioPassword()

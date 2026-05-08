@@ -12,7 +12,9 @@
 
 CREATE TABLE usuario (
     id                      SERIAL          PRIMARY KEY,
-    nombre                  VARCHAR(150)    NOT NULL,
+    nombre                  VARCHAR(100)    NOT NULL,
+    apellido_paterno        VARCHAR(80)     NOT NULL,
+    apellido_materno        VARCHAR(80),
     email                   VARCHAR(150)    NOT NULL,
     password_hash           VARCHAR(255)    NOT NULL,
     rol                     VARCHAR(20)     NOT NULL,
@@ -43,14 +45,28 @@ CREATE TABLE maestro (
     CONSTRAINT fk_maestro_usuario   FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE CASCADE
 );
 
+CREATE TABLE carrera (
+    id      SERIAL          PRIMARY KEY,
+    clave   VARCHAR(20)     NOT NULL,
+    nombre  VARCHAR(150)    NOT NULL,
+    activa  BOOLEAN         NOT NULL DEFAULT TRUE,
+
+    CONSTRAINT uq_carrera_clave UNIQUE (clave)
+);
+
 CREATE TABLE alumno (
-    id              SERIAL      PRIMARY KEY,
-    usuario_id      INTEGER     NOT NULL,
-    matricula       VARCHAR(20) NOT NULL,
+    id                  SERIAL      PRIMARY KEY,
+    usuario_id          INTEGER     NOT NULL,
+    matricula           VARCHAR(20) NOT NULL,
+    curp                VARCHAR(18),
+    fecha_nacimiento    DATE,
+    carrera_id          INTEGER,
 
     CONSTRAINT uq_alumno_usuario    UNIQUE (usuario_id),
     CONSTRAINT uq_alumno_matricula  UNIQUE (matricula),
-    CONSTRAINT fk_alumno_usuario    FOREIGN KEY (usuario_id) REFERENCES usuario (id) ON DELETE CASCADE
+    CONSTRAINT uq_alumno_curp       UNIQUE (curp),
+    CONSTRAINT fk_alumno_usuario    FOREIGN KEY (usuario_id)  REFERENCES usuario  (id) ON DELETE CASCADE,
+    CONSTRAINT fk_alumno_carrera    FOREIGN KEY (carrera_id)  REFERENCES carrera  (id)
 );
 
 -- -----------------------------------------------------------------------------
@@ -196,3 +212,5 @@ CREATE INDEX idx_estadounidad_grupo    ON estado_unidad     (grupo_id);
 CREATE INDEX idx_bonus_inscripcion     ON bonus             (inscripcion_id);
 CREATE INDEX idx_grupo_maestro         ON grupo             (maestro_id);
 CREATE INDEX idx_grupo_materia         ON grupo             (materia_id);
+CREATE INDEX idx_alumno_carrera        ON alumno            (carrera_id);
+CREATE INDEX idx_usuario_apellido      ON usuario           (apellido_paterno, apellido_materno);

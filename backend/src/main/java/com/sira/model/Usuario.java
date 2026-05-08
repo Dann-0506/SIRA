@@ -19,8 +19,14 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "nombre", length = 150, nullable = false)
+    @Column(name = "nombre", length = 100, nullable = false)
     private String nombre;
+
+    @Column(name = "apellido_paterno", length = 80, nullable = false)
+    private String apellidoPaterno;
+
+    @Column(name = "apellido_materno", length = 80)
+    private String apellidoMaterno;
 
     @Column(name = "email", length = 150, nullable = false, unique = true)
     private String email;
@@ -41,15 +47,25 @@ public class Usuario {
     @Column(name = "creado_en", updatable = false)
     private LocalDateTime creadoEn;
 
-    public Usuario(String nombre, String email, String passwordHash, String rol) {
+    public Usuario(String nombre, String apellidoPaterno, String apellidoMaterno,
+                   String email, String passwordHash, String rol) {
         this.nombre = nombre;
+        this.apellidoPaterno = apellidoPaterno;
+        this.apellidoMaterno = apellidoMaterno;
         this.email = email;
         this.passwordHash = passwordHash;
         this.rol = rol;
     }
 
+    public String getNombreCompleto() {
+        StringBuilder sb = new StringBuilder(nombre);
+        if (apellidoPaterno != null && !apellidoPaterno.isBlank()) sb.append(" ").append(apellidoPaterno);
+        if (apellidoMaterno != null && !apellidoMaterno.isBlank()) sb.append(" ").append(apellidoMaterno);
+        return sb.toString();
+    }
+
     @Override
     public String toString() {
-        return nombre + " (" + rol + ")";
+        return getNombreCompleto() + " (" + rol + ")";
     }
 }

@@ -15,7 +15,7 @@ import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
 
-const emptyForm = { nombre: '', email: '', numEmpleado: '' }
+const emptyForm = { nombre: '', apellidoPaterno: '', apellidoMaterno: '', email: '', numEmpleado: '' }
 
 export default function Administradores() {
   const qc = useQueryClient()
@@ -45,7 +45,7 @@ export default function Administradores() {
   })
 
   const updateMut = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: typeof emptyForm }) => updateAdmin(id, data),
+    mutationFn: ({ id, data }: { id: number; data: Parameters<typeof updateAdmin>[1] }) => updateAdmin(id, data),
     onSuccess: () => { invalidate(); closeModal() },
     onError: (err) => setFormError(axios.isAxiosError(err) ? err.response?.data?.error ?? 'Error al actualizar.' : 'Error inesperado.'),
   })
@@ -83,7 +83,7 @@ export default function Administradores() {
   const openCreate = () => { setEditTarget(null); setForm(emptyForm); setFormError(''); setModalOpen(true) }
   const openEdit = (a: AdminResponse) => {
     setEditTarget(a)
-    setForm({ nombre: a.nombre, email: a.email ?? '', numEmpleado: a.numEmpleado })
+    setForm({ nombre: a.nombre, apellidoPaterno: a.apellidoPaterno, apellidoMaterno: a.apellidoMaterno ?? '', email: a.email ?? '', numEmpleado: a.numEmpleado })
     setFormError('')
     setModalOpen(true)
   }
@@ -91,9 +91,16 @@ export default function Administradores() {
 
   const handleSubmit = () => {
     if (!form.nombre.trim()) { setFormError('El nombre es requerido.'); return }
+    if (!form.apellidoPaterno.trim()) { setFormError('El apellido paterno es requerido.'); return }
     if (!form.email.trim()) { setFormError('El correo es requerido.'); return }
     if (!form.numEmpleado.trim()) { setFormError('El número de empleado es requerido.'); return }
-    const data = { nombre: form.nombre.trim(), email: form.email.trim(), numEmpleado: form.numEmpleado.trim() }
+    const data = {
+      nombre: form.nombre.trim(),
+      apellidoPaterno: form.apellidoPaterno.trim(),
+      apellidoMaterno: form.apellidoMaterno.trim() || undefined,
+      email: form.email.trim(),
+      numEmpleado: form.numEmpleado.trim(),
+    }
     if (editTarget) updateMut.mutate({ id: editTarget.id, data })
     else createMut.mutate(data)
   }
@@ -135,7 +142,7 @@ export default function Administradores() {
             header: 'Nombre',
             accessor: (a) => (
               <span className="flex items-center gap-2">
-                {a.nombre}
+                {`${a.apellidoPaterno} ${a.apellidoMaterno ?? ''} ${a.nombre}`.trim()}
                 {isSelf(a) && (
                   <span className="text-xs text-blue-600 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded-full">Tú</span>
                 )}
@@ -198,7 +205,7 @@ export default function Administradores() {
       <FormModal
         open={modalOpen}
         title={editTarget ? 'Editar administrador' : 'Nuevo administrador'}
-        subtitle={editTarget ? `Editando: ${editTarget.nombre}` : 'Completa los datos del nuevo administrador.'}
+        subtitle={editTarget ? `Editando: ${editTarget.apellidoPaterno} ${editTarget.apellidoMaterno ?? ''} ${editTarget.nombre}`.trim() : 'Completa los datos del nuevo administrador.'}
         onClose={closeModal}
         onSubmit={handleSubmit}
         loading={isPending}
@@ -207,15 +214,42 @@ export default function Administradores() {
         <div className="space-y-4">
           {formError && <ErrorAlert message={formError} onClose={() => setFormError('')} />}
 
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Apellido paterno <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={form.apellidoPaterno}
+                onChange={(e) => setForm((p) => ({ ...p, apellidoPaterno: e.target.value }))}
+                placeholder="Ej. Ramírez"
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Apellido materno
+              </label>
+              <input
+                type="text"
+                value={form.apellidoMaterno}
+                onChange={(e) => setForm((p) => ({ ...p, apellidoMaterno: e.target.value }))}
+                placeholder="Ej. Torres"
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
+              />
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Nombre completo <span className="text-red-500">*</span>
+              Nombre(s) <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={form.nombre}
               onChange={(e) => setForm((p) => ({ ...p, nombre: e.target.value }))}
-              placeholder="Ej. Carlos Ramírez Torres"
+              placeholder="Ej. Carlos"
               className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
             />
           </div>
@@ -252,7 +286,7 @@ export default function Administradores() {
       <ConfirmDialog
         open={!!deleteTarget}
         title="Eliminar administrador"
-        description={`¿Estás seguro de que deseas eliminar a "${deleteTarget?.nombre}"? Esta acción no se puede deshacer.`}
+        description={`¿Estás seguro de que deseas eliminar a "${deleteTarget ? `${deleteTarget.apellidoPaterno} ${deleteTarget.apellidoMaterno ?? ''} ${deleteTarget.nombre}`.trim() : ''}"? Esta acción no se puede deshacer.`}
         confirmLabel="Eliminar"
         variant="destructive"
         loading={deleteMut.isPending}
@@ -264,7 +298,7 @@ export default function Administradores() {
       <ConfirmDialog
         open={!!resetTarget}
         title="Restablecer contraseña"
-        description={`Se restablecerá la contraseña de "${resetTarget?.nombre}" a su número de empleado. ¿Continuar?`}
+        description={`Se restablecerá la contraseña de "${resetTarget ? `${resetTarget.apellidoPaterno} ${resetTarget.apellidoMaterno ?? ''} ${resetTarget.nombre}`.trim() : ''}" a su número de empleado. ¿Continuar?`}
         confirmLabel="Restablecer"
         variant="warning"
         loading={resetMut.isPending}
