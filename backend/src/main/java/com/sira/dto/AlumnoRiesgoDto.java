@@ -8,5 +8,6 @@ public record AlumnoRiesgoDto(
         String nombre,
         String email,
         int materiasReprobadas,
-        List<String> grupos
+        List<String> grupos,
+        String carrera
 ) {}

@@ -11,4 +11,5 @@ public class ReportesResponse {
     private List<MateriaReprobacionDto> materiasReprobacion;
     private List<AlumnoRiesgoDto> alumnosRiesgo;
     private List<MaestroAprovechamientoDto> maestrosAprovechamiento;
+    private List<CarreraReprobacionDto> carrerasReprobacion;
 }

@@ -28,7 +28,8 @@ public class ReportesService {
                 semestre,
                 buildMateriasReprobacion(semestre),
                 buildAlumnosRiesgo(semestre),
-                buildMaestrosAprovechamiento(semestre)
+                buildMaestrosAprovechamiento(semestre),
+                buildCarrerasReprobacion(semestre)
         );
     }
 
@@ -64,13 +65,16 @@ public class ReportesService {
                     List<String> grupos = ins.stream()
                             .map(i -> i.getGrupo().getMateria().getNombre() + " (" + i.getGrupo().getClave() + ")")
                             .toList();
+                    String carrera = primera.getAlumno().getCarrera() != null
+                            ? primera.getAlumno().getCarrera().getNombre() : null;
                     return new AlumnoRiesgoDto(
                             primera.getAlumno().getId(),
                             primera.getAlumno().getMatricula(),
                             primera.getAlumno().getUsuario().getNombreCompleto(),
                             primera.getAlumno().getUsuario().getEmail(),
                             ins.size(),
-                            grupos
+                            grupos,
+                            carrera
                     );
                 })
                 .sorted(Comparator.comparingInt(AlumnoRiesgoDto::materiasReprobadas).reversed())
@@ -89,6 +93,20 @@ public class ReportesService {
                     return new MaestroAprovechamientoDto(
                             toInt(row[0]), str(row[1]), str(row[2]),
                             toLong(row[3]), alumnosEval, aprobados, toLong(row[6]), pct);
+                })
+                .toList();
+    }
+
+    // ─── Reprobación por carrera ──────────────────────────────────────────────
+
+    private List<CarreraReprobacionDto> buildCarrerasReprobacion(String semestre) {
+        return inscripcionRepository.findCarrerasReprobacionRaw(semestre)
+                .stream()
+                .map(row -> {
+                    long total = toLong(row[3]);
+                    long reprobados = toLong(row[4]);
+                    double pct = total > 0 ? Math.round((reprobados * 100.0 / total) * 10.0) / 10.0 : 0;
+                    return new CarreraReprobacionDto(toInt(row[0]), str(row[1]), str(row[2]), total, reprobados, pct);
                 })
                 .toList();
     }

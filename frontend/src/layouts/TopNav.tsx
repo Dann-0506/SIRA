@@ -112,9 +112,6 @@ function UserMenu() {
           open ? 'bg-white/15' : 'hover:bg-white/10'
         )}
       >
-        <div className="h-7 w-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-          {usuario?.nombre?.[0]?.toUpperCase()}
-        </div>
         <div className="text-left hidden sm:block">
           <p className="text-xs font-medium text-white leading-tight">{usuario?.nombre}</p>
           <p className="text-xs text-slate-400 leading-tight">{rolLabel(usuario?.rol ?? '')}</p>

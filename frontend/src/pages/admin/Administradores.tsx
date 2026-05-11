@@ -313,7 +313,7 @@ export default function Administradores() {
       <ConfirmDialog
         open={!!resetTarget}
         title="Restablecer contraseña"
-        description={`Se restablecerá la contraseña de "${resetTarget ? `${resetTarget.apellidoPaterno} ${resetTarget.apellidoMaterno ?? ''} ${resetTarget.nombre}`.trim() : ''}" a su número de empleado. ¿Continuar?`}
+        description={`Se restablecerá la contraseña de "${resetTarget ? `${resetTarget.apellidoPaterno} ${resetTarget.apellidoMaterno ?? ''} ${resetTarget.nombre}`.trim() : ''}" a su fecha de nacimiento en formato DDMMYYYY. ¿Continuar?`}
         confirmLabel="Restablecer"
         variant="warning"
         loading={resetMut.isPending}

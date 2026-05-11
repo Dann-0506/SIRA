@@ -4,11 +4,11 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell,
 } from 'recharts'
-import { ChevronDown, AlertTriangle, TrendingDown, GraduationCap } from 'lucide-react'
+import { ChevronDown, AlertTriangle, TrendingDown, GraduationCap, BookOpen } from 'lucide-react'
 import { getSemestresDisponibles, getReportes } from '@/api/reportes'
 import type {
   MateriaReprobacionDto, AlumnoRiesgoDto,
-  MaestroAprovechamientoDto,
+  MaestroAprovechamientoDto, CarreraReprobacionDto,
 } from '@/types'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
@@ -154,7 +154,12 @@ function AlumnosRiesgo({ data }: { data: AlumnoRiesgoDto[] }) {
                 </div>
               </button>
               {expandido === a.alumnoId && (
-                <div className="px-5 pb-3 bg-slate-50/60">
+                <div className="px-5 pb-3 bg-slate-50/60 space-y-2">
+                  {a.carrera && (
+                    <p className="text-xs text-slate-500">
+                      <span className="font-medium text-slate-600">Carrera:</span> {a.carrera}
+                    </p>
+                  )}
                   <ul className="space-y-1">
                     {a.grupos.map((g, i) => (
                       <li key={i} className="text-xs text-slate-600 flex items-center gap-2">
@@ -257,6 +262,81 @@ function MaestrosAprovechamiento({ data }: { data: MaestroAprovechamientoDto[] }
   )
 }
 
+// ─── Reporte 4: Reprobación por carrera ──────────────────────────────────────
+
+function CarrerasReprobacion({ data }: { data: CarreraReprobacionDto[] }) {
+  const chartData = data.map(c => ({
+    nombre: c.nombre.length > 28 ? c.nombre.slice(0, 28) + '…' : c.nombre,
+    aprobados: c.totalCursadas - c.reprobados,
+    reprobados: c.reprobados,
+    pct: c.porcentajeReprobacion,
+  }))
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 bg-slate-50">
+        <BookOpen className="h-5 w-5 text-blue-500" />
+        <div>
+          <h3 className="font-semibold text-slate-900 text-sm">Reprobación por carrera</h3>
+          <p className="text-xs text-slate-500 mt-0.5">Evaluaciones en grupos con acta cerrada</p>
+        </div>
+      </div>
+
+      {data.length === 0 ? (
+        <p className="px-5 py-8 text-center text-sm text-slate-400">Sin datos para este semestre.</p>
+      ) : (
+        <div className="p-5 space-y-5">
+          <ResponsiveContainer width="100%" height={Math.max(200, data.length * 52)}>
+            <BarChart data={chartData} layout="vertical" margin={{ left: 0, right: 50, top: 4, bottom: 4 }}>
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+              <XAxis type="number" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="nombre" width={200} tick={{ fontSize: 11, fill: '#475569' }} axisLine={false} tickLine={false} />
+              <Tooltip
+                formatter={(v, name) => [v, name === 'reprobados' ? 'Reprobados' : 'Aprobados']}
+                contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }}
+              />
+              <Bar dataKey="aprobados" name="aprobados" fill="#10b981" radius={[0, 3, 3, 0]} />
+              <Bar dataKey="reprobados" name="reprobados" fill="#ef4444" radius={[0, 3, 3, 0]}>
+                {chartData.map((entry, i) => (
+                  <Cell key={i} fill={entry.pct >= 50 ? '#dc2626' : entry.pct >= 30 ? '#f97316' : '#ef4444'} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  {['Carrera', 'Clave', 'Evaluaciones', 'Aprobados', 'Reprobados', '% Reprobación'].map(h => (
+                    <th key={h} className="px-3 py-2 text-left font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {data.map(c => (
+                  <tr key={c.carreraId} className="hover:bg-slate-50">
+                    <td className="px-3 py-2 font-medium text-slate-800">{c.nombre}</td>
+                    <td className="px-3 py-2 font-mono text-slate-500">{c.clave}</td>
+                    <td className="px-3 py-2 text-slate-600">{c.totalCursadas}</td>
+                    <td className="px-3 py-2 text-emerald-600">{c.totalCursadas - c.reprobados}</td>
+                    <td className="px-3 py-2 text-red-600">{c.reprobados}</td>
+                    <td className="px-3 py-2">
+                      <span className={`font-semibold ${c.porcentajeReprobacion >= 50 ? 'text-red-600' : c.porcentajeReprobacion >= 30 ? 'text-orange-600' : 'text-slate-700'}`}>
+                        {c.porcentajeReprobacion}%
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Página principal ─────────────────────────────────────────────────────────
 
 export default function Reportes() {
@@ -303,7 +383,10 @@ export default function Reportes() {
             <AlumnosRiesgo data={data?.alumnosRiesgo ?? []} />
           </div>
 
-          {/* Fila 2: Índice por maestro */}
+          {/* Fila 2: Reprobación por carrera */}
+          <CarrerasReprobacion data={data?.carrerasReprobacion ?? []} />
+
+          {/* Fila 3: Índice por maestro */}
           <MaestrosAprovechamiento data={data?.maestrosAprovechamiento ?? []} />
         </div>
       )}
