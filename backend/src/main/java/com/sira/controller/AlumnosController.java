@@ -2,6 +2,7 @@ package com.sira.controller;
 
 import com.sira.dto.AlumnoRequest;
 import com.sira.dto.AlumnoResponse;
+import com.sira.dto.BajaMasivaResultado;
 import com.sira.service.AlumnoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -57,6 +58,11 @@ public class AlumnosController {
     public ResponseEntity<Void> restablecerPassword(@PathVariable Integer id) {
         alumnoService.restablecerPassword(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/baja-masiva")
+    public BajaMasivaResultado bajaMasiva(@RequestBody List<String> matriculas) {
+        return alumnoService.bajaMasiva(matriculas);
     }
 
     @DeleteMapping("/{id}")

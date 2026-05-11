@@ -1,5 +1,5 @@
 import client from './client'
-import type { AlumnoResponse } from '@/types'
+import type { AlumnoResponse, BajaMasivaResultado } from '@/types'
 
 const BASE = '/admin/alumnos'
 
@@ -18,3 +18,5 @@ export const toggleAlumnoEstado = (id: number, activo: boolean) =>
   client.patch(`${BASE}/${id}/estado`, null, { params: { activo } })
 export const resetAlumnoPassword = (id: number) => client.post(`${BASE}/${id}/reset-password`)
 export const deleteAlumno = (id: number) => client.delete(`${BASE}/${id}`)
+export const bajaMasiva = (matriculas: string[]) =>
+  client.post<BajaMasivaResultado>(`${BASE}/baja-masiva`, matriculas).then(r => r.data)
