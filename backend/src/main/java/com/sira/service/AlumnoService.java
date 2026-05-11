@@ -12,10 +12,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sira.dto.BajaMasivaResultado;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class AlumnoService {
@@ -134,6 +138,33 @@ public class AlumnoService {
         alumno.getUsuario().setPasswordHash(passwordEncoder.encode(passwordTemporal));
         alumno.getUsuario().setRequiereCambioPassword(true);
         usuarioRepository.save(alumno.getUsuario());
+    }
+
+    @Transactional
+    public BajaMasivaResultado bajaMasiva(List<String> matriculas) {
+        List<String> desactivados = new ArrayList<>();
+        List<String> noEncontrados = new ArrayList<>();
+        List<String> yaInactivos = new ArrayList<>();
+
+        for (String matricula : matriculas) {
+            String normalizada = matricula.trim().toUpperCase();
+            if (normalizada.isBlank()) continue;
+            Optional<Alumno> opt = alumnoRepository.findByMatriculaWithUsuario(normalizada);
+            if (opt.isEmpty()) {
+                noEncontrados.add(normalizada);
+            } else {
+                Alumno alumno = opt.get();
+                if (!alumno.getUsuario().isActivo()) {
+                    yaInactivos.add(normalizada);
+                } else {
+                    alumno.getUsuario().setActivo(false);
+                    usuarioRepository.save(alumno.getUsuario());
+                    desactivados.add(normalizada);
+                }
+            }
+        }
+
+        return new BajaMasivaResultado(desactivados, noEncontrados, yaInactivos);
     }
 
     @Transactional

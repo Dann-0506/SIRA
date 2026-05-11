@@ -268,3 +268,9 @@ export interface CalificacionFinalDto {
 export interface ErrorResponse {
   error: string
 }
+
+export interface BajaMasivaResultado {
+  desactivados: string[]
+  noEncontrados: string[]
+  yaInactivos: string[]
+}

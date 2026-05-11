@@ -12,7 +12,7 @@ import Materias from '@/pages/admin/Materias'
 import Grupos from '@/pages/admin/Grupos'
 import Inscripciones from '@/pages/admin/Inscripciones'
 import Configuracion from '@/pages/admin/Configuracion'
-import CargaCSV from '@/pages/admin/CargaCSV'
+import Herramientas from '@/pages/admin/Herramientas'
 import ActividadesCatalogo from '@/pages/admin/ActividadesCatalogo'
 import Carreras from '@/pages/admin/Carreras'
 import Respaldos from '@/pages/admin/Respaldos'
@@ -53,7 +53,7 @@ export const router = createBrowserRouter([
           { path: '/admin/reportes', element: <Reportes /> },
           { path: '/admin/actividades-catalogo', element: <ActividadesCatalogo /> },
           { path: '/admin/carreras', element: <Carreras /> },
-          { path: '/admin/carga', element: <CargaCSV /> },
+          { path: '/admin/herramientas', element: <Herramientas /> },
           { path: '/admin/respaldos', element: <Respaldos /> },
         ]},
 

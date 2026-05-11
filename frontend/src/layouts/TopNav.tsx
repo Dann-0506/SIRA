@@ -21,7 +21,7 @@ const CATALOGOS = [
 const UTILIDADES = [
   { label: 'Reportes',        to: '/admin/reportes' },
   { label: 'Configuración',   to: '/admin/configuracion' },
-  { label: 'Carga CSV',       to: '/admin/carga' },
+  { label: 'Herramientas',    to: '/admin/herramientas' },
   { label: 'Respaldos',       to: '/admin/respaldos' },
 ]
 
