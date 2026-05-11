@@ -107,13 +107,31 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
 
     @Query("""
         SELECT i FROM Inscripcion i
-        JOIN FETCH i.alumno a JOIN FETCH a.usuario
+        JOIN FETCH i.alumno a JOIN FETCH a.usuario LEFT JOIN FETCH a.carrera
         JOIN FETCH i.grupo g JOIN FETCH g.materia
         WHERE i.estadoAcademico = 'REPROBADO'
         AND g.semestre = :semestre
-        ORDER BY a.usuario.nombre ASC
+        ORDER BY a.usuario.apellidoPaterno ASC, a.usuario.nombre ASC
         """)
     List<Inscripcion> findReprobadosPorSemestre(String semestre);
+
+    @Query(value = """
+        SELECT c.id                                                              AS carrera_id,
+               c.clave                                                           AS clave,
+               c.nombre                                                          AS nombre,
+               COUNT(i.id)                                                       AS total_cursadas,
+               SUM(CASE WHEN i.estado_academico = 'REPROBADO' THEN 1 ELSE 0 END) AS reprobados
+        FROM inscripcion i
+        JOIN alumno  a ON i.alumno_id    = a.id
+        JOIN carrera c ON a.carrera_id   = c.id
+        JOIN grupo   g ON i.grupo_id     = g.id
+        WHERE g.estado_evaluacion = 'CERRADO'
+          AND g.semestre = :semestre
+          AND i.estado_academico IN ('APROBADO','REPROBADO')
+        GROUP BY c.id, c.clave, c.nombre
+        ORDER BY reprobados DESC
+        """, nativeQuery = true)
+    List<Object[]> findCarrerasReprobacionRaw(String semestre);
 
     boolean existsByAlumnoIdAndGrupoId(Integer alumnoId, Integer grupoId);
 

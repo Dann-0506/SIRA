@@ -38,14 +38,9 @@ export default function Perfil() {
 
       {/* Info card */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-6">
-        <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-5 flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-500 text-white text-xl font-bold">
-            {perfil?.nombre?.[0]?.toUpperCase()}
-          </div>
-          <div>
-            <p className="text-white font-semibold text-lg">{perfil?.nombre}</p>
-            <p className="text-slate-400 text-sm">{rolLabel(perfil?.rol ?? '')}</p>
-          </div>
+        <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-5">
+          <p className="text-white font-semibold text-lg">{perfil?.nombre}</p>
+          <p className="text-slate-400 text-sm">{rolLabel(perfil?.rol ?? '')}</p>
         </div>
 
         <div className="divide-y divide-slate-100">

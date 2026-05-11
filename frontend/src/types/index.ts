@@ -159,6 +159,7 @@ export interface AlumnoRiesgoDto {
   email: string
   materiasReprobadas: number
   grupos: string[]
+  carrera: string | null
 }
 
 export interface MaestroAprovechamientoDto {
@@ -172,11 +173,21 @@ export interface MaestroAprovechamientoDto {
   porcentajeAprobacion: number
 }
 
+export interface CarreraReprobacionDto {
+  carreraId: number
+  clave: string
+  nombre: string
+  totalCursadas: number
+  reprobados: number
+  porcentajeReprobacion: number
+}
+
 export interface ReportesResponse {
   semestre: string
   materiasReprobacion: MateriaReprobacionDto[]
   alumnosRiesgo: AlumnoRiesgoDto[]
   maestrosAprovechamiento: MaestroAprovechamientoDto[]
+  carrerasReprobacion: CarreraReprobacionDto[]
 }
 
 export interface DashboardResponse {
