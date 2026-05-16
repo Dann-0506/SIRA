@@ -56,14 +56,16 @@ export default function MisCursos() {
 
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Maestro</span>
+                    <span className="font-medium text-slate-700 text-right max-w-[60%] truncate">{i.maestroNombre}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
                     <span className="text-slate-500">Semestre</span>
                     <span className="font-medium text-slate-700">{i.semestre}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Fecha inscripción</span>
-                    <span className="font-medium text-slate-700">
-                      {i.fecha ? new Date(i.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' }) : '—'}
-                    </span>
+                    <span className="text-slate-500">Mín. aprobatorio</span>
+                    <span className="font-medium text-slate-700">{i.calificacionMinimaAprobatoria}</span>
                   </div>
                   {calFinal != null && (
                     <div className="flex justify-between text-sm">

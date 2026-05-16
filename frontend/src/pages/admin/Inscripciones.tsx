@@ -4,9 +4,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Trash2, UserPlus, ChevronDown } from 'lucide-react'
 import axios from 'axios'
 import { getGrupos } from '@/api/grupos'
+import { getMaterias } from '@/api/materias'
 import { getAlumnos } from '@/api/alumnos'
 import { getInscripcionesByGrupo, createInscripcion, deleteInscripcion } from '@/api/inscripciones'
-import type { InscripcionResponse, GrupoResponse, AlumnoResponse } from '@/types'
+import type { InscripcionResponse, GrupoResponse, AlumnoResponse, MateriaResponse } from '@/types'
 import { DataTable } from '@/components/shared/DataTable'
 import { FormModal } from '@/components/shared/FormModal'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
@@ -19,12 +20,18 @@ import { formatCalificacion } from '@/lib/utils'
 export default function Inscripciones() {
   const qc = useQueryClient()
   const invalidateDashboard = useInvalidateDashboard()
+  const [selectedMateriaId, setSelectedMateriaId] = useState<number | null>(null)
   const [selectedGrupoId, setSelectedGrupoId] = useState<number | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedAlumnoId, setSelectedAlumnoId] = useState('')
   const [alumnoSearch, setAlumnoSearch] = useState('')
   const [formError, setFormError] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<InscripcionResponse | null>(null)
+
+  const { data: materias = [], isLoading: materiasLoading } = useQuery({
+    queryKey: ['materias'],
+    queryFn: getMaterias,
+  })
 
   const { data: grupos = [], isLoading: gruposLoading } = useQuery({
     queryKey: ['grupos'],
@@ -58,6 +65,13 @@ export default function Inscripciones() {
     onSuccess: () => { invalidateInsc(); setDeleteTarget(null) },
   })
 
+  const gruposDeMateria = grupos
+    .filter((g: GrupoResponse) => g.materiaId === selectedMateriaId)
+    .sort((a: GrupoResponse, b: GrupoResponse) => {
+      if (a.estadoEvaluacion === b.estadoEvaluacion) return 0
+      return a.estadoEvaluacion === 'ABIERTO' ? -1 : 1
+    })
+
   const grupoSeleccionado = grupos.find((g: GrupoResponse) => g.id === selectedGrupoId)
   const grupoCerrado = grupoSeleccionado?.estadoEvaluacion === 'CERRADO'
 
@@ -81,28 +95,59 @@ export default function Inscripciones() {
         description="Gestión de inscripciones de alumnos en grupos."
       />
 
-      {/* Group Selector */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6">
-        <label className="block text-sm font-medium text-slate-700 mb-2">Seleccionar grupo</label>
-        {gruposLoading ? (
-          <LoadingSpinner size="sm" className="py-2" />
-        ) : (
-          <div className="relative max-w-md">
-            <select
-              value={selectedGrupoId ?? ''}
-              onChange={(e) => setSelectedGrupoId(e.target.value ? Number(e.target.value) : null)}
-              className="w-full px-4 py-2.5 pr-10 rounded-lg border border-slate-300 text-sm text-slate-800 bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
-            >
-              <option value="">-- Elige un grupo --</option>
-              {grupos.map((g: GrupoResponse) => (
-                <option key={g.id} value={g.id}>
-                  {g.clave} — {g.materiaNombre} ({g.semestre})
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-          </div>
-        )}
+      {/* Selectors */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6 flex flex-col sm:flex-row gap-4">
+        {/* Materia */}
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-slate-700 mb-2">Materia</label>
+          {materiasLoading ? (
+            <LoadingSpinner size="sm" className="py-2" />
+          ) : (
+            <div className="relative">
+              <select
+                value={selectedMateriaId ?? ''}
+                onChange={(e) => {
+                  setSelectedMateriaId(e.target.value ? Number(e.target.value) : null)
+                  setSelectedGrupoId(null)
+                }}
+                className="w-full px-4 py-2.5 pr-10 rounded-lg border border-slate-300 text-sm text-slate-800 bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
+              >
+                <option value="">-- Elige una materia --</option>
+                {(materias as MateriaResponse[]).map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.clave} — {m.nombre}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+            </div>
+          )}
+        </div>
+
+        {/* Grupo */}
+        <div className="flex-1">
+          <label className="block text-sm font-medium text-slate-700 mb-2">Grupo</label>
+          {gruposLoading ? (
+            <LoadingSpinner size="sm" className="py-2" />
+          ) : (
+            <div className="relative">
+              <select
+                value={selectedGrupoId ?? ''}
+                onChange={(e) => setSelectedGrupoId(e.target.value ? Number(e.target.value) : null)}
+                disabled={!selectedMateriaId}
+                className="w-full px-4 py-2.5 pr-10 rounded-lg border border-slate-300 text-sm text-slate-800 bg-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <option value="">-- Elige un grupo --</option>
+                {gruposDeMateria.map((g: GrupoResponse) => (
+                  <option key={g.id} value={g.id}>
+                    {g.clave} ({g.semestre}){g.estadoEvaluacion === 'CERRADO' ? ' — Cerrado' : ''}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Inscriptions Table */}

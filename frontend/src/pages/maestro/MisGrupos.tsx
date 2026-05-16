@@ -63,10 +63,12 @@ export default function MisGrupos() {
                   <span className="font-medium text-slate-700">{g.semestre}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Estado</span>
-                  <span className={`font-medium text-sm ${g.activo ? 'text-emerald-600' : 'text-slate-400'}`}>
-                    {g.activo ? 'Activo' : 'Inactivo'}
-                  </span>
+                  <span className="text-slate-500">Mín. aprobatorio</span>
+                  <span className="font-medium text-slate-700">{g.calificacionMinimaAprobatoria}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">Cal. máxima</span>
+                  <span className="font-medium text-slate-700">{g.calificacionMaxima}</span>
                 </div>
               </div>
 

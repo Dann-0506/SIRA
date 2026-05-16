@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { FileDown, BookOpen } from 'lucide-react'
 import { getMisCalificaciones, descargarBoletaAlumno } from '@/api/calificaciones'
+import { getMisInscripciones } from '@/api/inscripciones'
 import type { ResultadoUnidadDto, ResultadoDto } from '@/types'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
@@ -20,6 +21,13 @@ export default function CursoDetalle() {
     queryFn: () => getMisCalificaciones(id),
     enabled: !!id,
   })
+
+  const { data: inscripciones = [] } = useQuery({
+    queryKey: ['misInscripciones'],
+    queryFn: getMisInscripciones,
+  })
+
+  const inscripcion = (inscripciones as import('@/types').InscripcionResponse[]).find(i => i.grupoId === id)
 
   const handleDescargar = async () => {
     setDownloadLoading(true)
@@ -112,9 +120,18 @@ export default function CursoDetalle() {
 
       {/* Final grade card */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-slate-100 bg-slate-50">
-          <BookOpen className="h-5 w-5 text-slate-400" />
-          <h3 className="font-semibold text-slate-900">Calificación final</h3>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
+          <div className="flex items-center gap-3">
+            <BookOpen className="h-5 w-5 text-slate-400" />
+            <h3 className="font-semibold text-slate-900">Calificación final</h3>
+          </div>
+          {inscripcion && (
+            <div className="flex items-center gap-4 text-xs text-slate-500">
+              {inscripcion.maestroNombre && <span>Maestro: <strong className="text-slate-700">{inscripcion.maestroNombre}</strong></span>}
+              <span>Mín. aprobatorio: <strong className="text-slate-700">{inscripcion.calificacionMinimaAprobatoria}</strong></span>
+              <span>Cal. máxima: <strong className="text-slate-700">{inscripcion.calificacionMaxima}</strong></span>
+            </div>
+          )}
         </div>
         <div className="px-6 py-6">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

@@ -118,6 +118,9 @@ export interface InscripcionResponse {
   estadoAcademico: 'APROBADO' | 'REPROBADO' | 'PENDIENTE'
   calificacionFinalCalculada: number | null
   calificacionFinalOverride: number | null
+  maestroNombre: string
+  calificacionMinimaAprobatoria: number
+  calificacionMaxima: number
 }
 
 export interface ConfiguracionResponse {
