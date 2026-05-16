@@ -59,7 +59,8 @@ public class InscripcionService {
             throw new IllegalStateException("No se puede inscribir un alumno: la evaluación del grupo ya fue terminada.");
         }
 
-        return inscripcionRepository.save(new Inscripcion(alumno, grupo, fecha != null ? fecha : LocalDate.now()));
+        Inscripcion saved = inscripcionRepository.save(new Inscripcion(alumno, grupo, fecha != null ? fecha : LocalDate.now()));
+        return inscripcionRepository.findByIdWithDetails(saved.getId()).orElseThrow();
     }
 
     @Transactional

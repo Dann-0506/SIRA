@@ -19,6 +19,8 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
         JOIN FETCH a.usuario
         JOIN FETCH i.grupo g
         JOIN FETCH g.materia
+        JOIN FETCH g.maestro m
+        JOIN FETCH m.usuario
         WHERE i.id = :id
         """)
     Optional<Inscripcion> findByIdWithDetails(Integer id);
@@ -31,6 +33,8 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
         JOIN FETCH a.usuario
         JOIN FETCH i.grupo g
         JOIN FETCH g.materia
+        JOIN FETCH g.maestro m
+        JOIN FETCH m.usuario
         WHERE i.grupo.id = :grupoId
         ORDER BY a.usuario.nombre ASC
         """)
@@ -42,6 +46,8 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
         JOIN FETCH a.usuario
         JOIN FETCH i.grupo g
         JOIN FETCH g.materia
+        JOIN FETCH g.maestro m
+        JOIN FETCH m.usuario
         WHERE i.alumno.id = :alumnoId
         ORDER BY g.semestre DESC
         """)
@@ -53,6 +59,8 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
         JOIN FETCH a.usuario
         JOIN FETCH i.grupo g
         JOIN FETCH g.materia
+        JOIN FETCH g.maestro m
+        JOIN FETCH m.usuario
         ORDER BY a.usuario.nombre ASC
         """)
     List<Inscripcion> findAllWithDetails();

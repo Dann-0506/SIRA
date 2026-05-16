@@ -897,9 +897,11 @@ export default function GrupoDetalle() {
           <div>
             <h1 className="text-xl font-bold text-slate-900">{grupo.materiaNombre}</h1>
             <p className="text-sm text-slate-500 mt-0.5">{grupo.materiaClave}</p>
-            <div className="flex items-center gap-4 mt-3 text-sm text-slate-600">
+            <div className="flex items-center gap-4 mt-3 text-sm text-slate-600 flex-wrap">
               <span>Clave: <strong className="text-slate-800">{grupo.clave}</strong></span>
               <span>Semestre: <strong className="text-slate-800">{grupo.semestre}</strong></span>
+              <span>Mín. aprobatorio: <strong className="text-slate-800">{grupo.calificacionMinimaAprobatoria}</strong></span>
+              <span>Cal. máxima: <strong className="text-slate-800">{grupo.calificacionMaxima}</strong></span>
             </div>
           </div>
           <StatusBadge estado={grupo.estadoEvaluacion} />

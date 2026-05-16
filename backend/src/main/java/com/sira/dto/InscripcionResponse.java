@@ -17,7 +17,10 @@ public record InscripcionResponse(
         LocalDate fecha,
         String estadoAcademico,
         BigDecimal calificacionFinalCalculada,
-        BigDecimal calificacionFinalOverride
+        BigDecimal calificacionFinalOverride,
+        String maestroNombre,
+        BigDecimal calificacionMinimaAprobatoria,
+        BigDecimal calificacionMaxima
 ) {
     public static InscripcionResponse from(Inscripcion i) {
         return new InscripcionResponse(
@@ -32,7 +35,10 @@ public record InscripcionResponse(
                 i.getFecha(),
                 i.getEstadoAcademico(),
                 i.getCalificacionFinalCalculada(),
-                i.getCalificacionFinalOverride()
+                i.getCalificacionFinalOverride(),
+                i.getGrupo().getMaestro().getUsuario().getNombreCompleto(),
+                i.getGrupo().getCalificacionMinimaAprobatoria(),
+                i.getGrupo().getCalificacionMaxima()
         );
     }
 }
