@@ -43,7 +43,7 @@ Grupo CERRADO  ←──── Admin puede reabrir
 Grupo FINALIZADO
 ```
 
-## Instalación y Ejecución (Recomendada con Docker/Podman)
+## Instalación y Ejecución
 
 La forma más rápida y segura de levantar el sistema es utilizando contenedores, ya que automatiza la creación de la base de datos, aplica los triggers de integridad de forma transparente y sirve el frontend preconfigurado.
 
@@ -78,7 +78,7 @@ El sistema estará disponible en:
 
 ---
 
-## Instalación Manual (Desarrollo)
+## Instalación Manual
 
 Si necesitas ejecutar los servicios por separado para desarrollar:
 
