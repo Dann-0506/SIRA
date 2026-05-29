@@ -43,14 +43,9 @@ Grupo CERRADO  ←──── Admin puede reabrir
 Grupo FINALIZADO
 ```
 
-## Requisitos
+## Instalación y Ejecución (Recomendada con Docker/Podman)
 
-- Java 21+
-- Maven 3.9+
-- Node.js 20+
-- PostgreSQL 14+
-
-## Configuración
+La forma más rápida y segura de levantar el sistema es utilizando contenedores, ya que automatiza la creación de la base de datos, aplica los triggers de integridad de forma transparente y sirve el frontend preconfigurado.
 
 ### 1. Clonar el repositorio
 
@@ -61,50 +56,75 @@ cd SIRA
 
 ### 2. Variables de entorno
 
-Crea `backend/.env` (ya está en `.gitignore`):
-
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=sira
-DB_USER=postgres
-DB_PASSWORD=tu_contraseña
-DB_URL=jdbc:postgresql://localhost:5432/sira
-
-JWT_SECRET=clave-secreta-de-al-menos-32-caracteres
-JWT_EXPIRATION_MS=604800000
-
-CORS_ALLOWED_ORIGINS=http://localhost:5173
-```
-
-### 3. Crear la base de datos
+Copia el archivo de ejemplo para configurar el entorno de Docker:
 
 ```bash
-psql -U postgres -c "CREATE DATABASE sira;"
+cp .env.example .env
 ```
+*(Edita el `.env` en la raíz si deseas cambiar la contraseña de PostgreSQL o el secreto JWT).*
 
-El esquema se crea automáticamente al arrancar el backend por primera vez (`ddl-auto=update`).
-
-## Ejecución
-
-### Backend
+### 3. Iniciar el sistema
 
 ```bash
-cd backend
-mvn spring-boot:run
-# API disponible en http://localhost:8080
+docker-compose up -d --build
+# Si usas Podman: podman-compose up -d --build
 ```
 
-### Frontend
+El sistema estará disponible en:
+- **App:** `http://localhost:8888`
+- **API Backend:** `http://localhost:8080`
 
-```bash
-cd frontend
-npm install
-npm run dev
-# App disponible en http://localhost:5173
-```
+> **Nota sobre la Base de Datos:** Al levantar los contenedores por primera vez, PostgreSQL ejecutará automáticamente los scripts `database/01_schema.sql` y `database/02_constraints_triggers.sql`. Esto es **crítico para la integridad del sistema** (bloqueo de calificaciones en grupos cerrados, etc.).
+
+---
+
+## Instalación Manual (Desarrollo)
+
+Si necesitas ejecutar los servicios por separado para desarrollar:
+
+**Requisitos:** Java 21+, Node.js 20+, PostgreSQL 14+
+
+1. **Variables de entorno (Backend)**: 
+   Copia el archivo de configuración dentro de la carpeta del backend.
+   ```bash
+   cp .env.example backend/.env
+   ```
+2. **Base de datos**: Crea la base `sira` en tu PostgreSQL local.
+3. **Scripts SQL**: **ANTES** de iniciar el backend por primera vez, ejecuta manualmente los scripts de la carpeta `database/` para asegurar la correcta estructura y los triggers de integridad.
+   ```bash
+   psql -U postgres -d sira -f database/01_schema.sql
+   psql -U postgres -d sira -f database/02_constraints_triggers.sql
+   ```
+4. **Backend**: 
+   ```bash
+   cd backend
+   mvn spring-boot:run
+   ```
+5. **Frontend**:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev  # Disponible en http://localhost:5173
+   ```
+
+## Flujo Óptimo de Captura de Datos
+
+Para probar el sistema desde cero (ya sea de forma manual o utilizando la herramienta de importación CSV), se recomienda crear los catálogos en el siguiente orden lógico de dependencia:
+
+1. **Carreras**: Base necesaria para registrar alumnos.
+2. **Administradores**: Personal de gestión.
+3. **Maestros**: Necesarios para asignar a los grupos.
+4. **Alumnos**: Requieren una carrera existente.
+5. **Materias**: Base para crear grupos.
+6. **Actividades**: Catálogo de tipos de evaluación.
+7. **Grupos**: Requieren una materia y un maestro.
+8. **Inscripciones**: Requieren un alumno y un grupo.
+
+*(Puedes encontrar archivos CSV de muestra listos para importar en la carpeta `database/csv-samples/`)*.
 
 ## Credenciales por defecto
+
+Al arrancar con una base de datos vacía, el sistema genera automáticamente un administrador inicial:
 
 | Campo | Valor |
 |---|---|
@@ -112,7 +132,7 @@ npm run dev
 | Contraseña | `123456` |
 | Rol | Administrador |
 
-> Los usuarios nuevos reciben como contraseña temporal su **fecha de nacimiento en formato `DDMMYYYY`** (ej. `14052003`). Al iniciar sesión por primera vez se les solicita cambiarla. La cuenta de administrador por defecto usa la contraseña `123456`.
+> Los usuarios nuevos (alumnos y maestros importados/creados) reciben como contraseña temporal su **fecha de nacimiento en formato `DDMMYYYY`** (ej. `14052003`). Al iniciar sesión por primera vez se les solicita cambiarla obligatoriamente.
 
 ## Colaboradores
 
