@@ -26,8 +26,8 @@ public class DashboardService {
     public DashboardResponse obtenerDashboard() {
         String semestre = configuracionService.obtenerSemestreActivo();
 
-        long alumnosActivos = usuarioRepository.countByRolAndActivo("alumno", true);
-        long maestrosActivos = usuarioRepository.countByRolAndActivo("maestro", true);
+        long alumnosActivos = usuarioRepository.countByRolAndActivo("ALUMNO", true);
+        long maestrosActivos = usuarioRepository.countByRolAndActivo("MAESTRO", true);
         long gruposEnCurso = grupoRepository.countByActivoAndEstadoEvaluacionAndSemestre(true, "ABIERTO", semestre);
         long inscripcionesActivas = inscripcionRepository.countInscripcionesActivasPorSemestre(semestre);
 

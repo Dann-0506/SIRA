@@ -1,4 +1,4 @@
-export type Rol = 'admin' | 'maestro' | 'alumno'
+export type Rol = 'ADMIN' | 'MAESTRO' | 'ALUMNO'
 
 export interface AuthUsuario {
   id: number

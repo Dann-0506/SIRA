@@ -60,7 +60,7 @@ public class MaestroService {
         String passwordTemporal = fechaNacimiento.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
         Usuario usuario = new Usuario(nombre.trim(), apellidoPaterno.trim(),
                 (apellidoMaterno != null && !apellidoMaterno.isBlank()) ? apellidoMaterno.trim() : null,
-                email.trim(), passwordEncoder.encode(passwordTemporal), "maestro", fechaNacimiento);
+                email.trim(), passwordEncoder.encode(passwordTemporal), "MAESTRO", fechaNacimiento);
         usuario.setRequiereCambioPassword(true);
         usuarioRepository.save(usuario);
         Maestro saved = maestroRepository.save(new Maestro(usuario, numEmpleadoNormalizado));

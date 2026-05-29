@@ -8,10 +8,10 @@ import { rolLabel, cn } from '@/lib/utils'
 // ─── Estructura de navegación admin ──────────────────────────────────────────
 
 const CATALOGOS = [
+  { label: 'Carreras',        to: '/admin/carreras' },
   { label: 'Administradores', to: '/admin/administradores' },
   { label: 'Maestros',        to: '/admin/maestros' },
   { label: 'Alumnos',         to: '/admin/alumnos' },
-  { label: 'Carreras',        to: '/admin/carreras' },
   { label: 'Materias',        to: '/admin/materias' },
   { label: 'Actividades',     to: '/admin/actividades-catalogo' },
   { label: 'Grupos',          to: '/admin/grupos' },
@@ -157,7 +157,7 @@ export function TopNav() {
   return (
     <header className="sticky top-0 z-30 h-14 bg-slate-900 border-b border-slate-800 flex items-center px-4 gap-2">
       {/* Logo */}
-      <NavLink to={rol === 'admin' ? '/admin' : rol === 'maestro' ? '/maestro' : '/alumno'}
+      <NavLink to={rol === 'ADMIN' ? '/admin' : rol === 'MAESTRO' ? '/maestro' : '/alumno'}
         className="flex items-center gap-2.5 mr-4 flex-shrink-0">
         <div className="h-8 w-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
           S
@@ -167,7 +167,7 @@ export function TopNav() {
 
       {/* Nav por rol */}
       <nav className="flex items-center gap-1 flex-1">
-        {rol === 'admin' && (
+        {rol === 'ADMIN' && (
           <>
             <NavLink to="/admin" end
               className={({ isActive }) => cn(
@@ -183,7 +183,7 @@ export function TopNav() {
           </>
         )}
 
-        {rol === 'maestro' && (
+        {rol === 'MAESTRO' && (
           <NavLink to="/maestro"
             className={({ isActive }) => cn(
               'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
@@ -195,7 +195,7 @@ export function TopNav() {
           </NavLink>
         )}
 
-        {rol === 'alumno' && (
+        {rol === 'ALUMNO' && (
           <NavLink to="/alumno"
             className={({ isActive }) => cn(
               'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',

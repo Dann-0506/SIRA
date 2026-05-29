@@ -41,7 +41,7 @@ export const router = createBrowserRouter([
         { path: '/perfil', element: <Perfil /> },
 
         // Admin
-        { element: <PrivateRoute roles={['admin']} />, children: [
+        { element: <PrivateRoute roles={['ADMIN']} />, children: [
           { path: '/admin', element: <Dashboard /> },
           { path: '/admin/alumnos', element: <Alumnos /> },
           { path: '/admin/maestros', element: <Maestros /> },
@@ -58,13 +58,13 @@ export const router = createBrowserRouter([
         ]},
 
         // Maestro
-        { element: <PrivateRoute roles={['maestro']} />, children: [
+        { element: <PrivateRoute roles={['MAESTRO']} />, children: [
           { path: '/maestro', element: <MisGrupos /> },
           { path: '/maestro/grupos/:id', element: <GrupoDetalle /> },
         ]},
 
         // Alumno
-        { element: <PrivateRoute roles={['alumno']} />, children: [
+        { element: <PrivateRoute roles={['ALUMNO']} />, children: [
           { path: '/alumno', element: <MisCursos /> },
           { path: '/alumno/cursos/:grupoId', element: <CursoDetalle /> },
         ]},

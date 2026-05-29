@@ -76,7 +76,7 @@ public class AlumnoService {
         String passwordTemporal = fechaNacimiento.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
         Usuario usuario = new Usuario(nombre.trim(), apellidoPaterno.trim(),
                 (apellidoMaterno != null && !apellidoMaterno.isBlank()) ? apellidoMaterno.trim() : null,
-                email.trim(), passwordEncoder.encode(passwordTemporal), "alumno", fechaNacimiento);
+                email.trim(), passwordEncoder.encode(passwordTemporal), "ALUMNO", fechaNacimiento);
         usuario.setRequiereCambioPassword(true);
         usuarioRepository.save(usuario);
         Alumno alumno = new Alumno(usuario, matriculaNormalizada);

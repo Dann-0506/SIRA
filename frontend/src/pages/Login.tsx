@@ -17,8 +17,10 @@ export default function Login() {
     e.preventDefault()
     setError('')
     setLoading(true)
+    useAuthStore.getState().logout() // Limpiar sesión previa
     try {
       const data = await login(form.email, form.password)
+      console.log('Login exitoso. Rol recibido:', data.rol)
       storeLogin(data.token, {
         id: data.id,
         nombre: data.nombre,
@@ -30,7 +32,7 @@ export default function Login() {
       if (data.requiereCambioPassword) {
         navigate('/cambiar-password-obligatorio', { replace: true })
       } else {
-        const redirects = { admin: '/admin', maestro: '/maestro', alumno: '/alumno' }
+        const redirects = { ADMIN: '/admin', MAESTRO: '/maestro', ALUMNO: '/alumno' }
         navigate(redirects[data.rol], { replace: true })
       }
     } catch {

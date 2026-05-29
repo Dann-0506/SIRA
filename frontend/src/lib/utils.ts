@@ -24,7 +24,7 @@ export function estadoColor(estado: string): string {
 }
 
 export function rolLabel(rol: string): string {
-  const map: Record<string, string> = { admin: 'Administrador', maestro: 'Maestro', alumno: 'Alumno' }
+  const map: Record<string, string> = { ADMIN: 'Administrador', MAESTRO: 'Maestro', ALUMNO: 'Alumno' }
   return map[rol] ?? rol
 }
 

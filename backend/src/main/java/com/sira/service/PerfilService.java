@@ -23,13 +23,13 @@ public class PerfilService {
     @Transactional(readOnly = true)
     public PerfilResponse obtenerPerfil(Usuario usuario) {
         String identificador = switch (usuario.getRol()) {
-            case "admin"   -> administradorRepository.findByUsuarioId(usuario.getId())
+            case "ADMIN"   -> administradorRepository.findByUsuarioId(usuario.getId())
                                 .map(a -> a.getNumEmpleado())
                                 .orElse(null);
-            case "maestro" -> maestroRepository.findByUsuarioId(usuario.getId())
+            case "MAESTRO" -> maestroRepository.findByUsuarioId(usuario.getId())
                                 .map(m -> m.getNumEmpleado())
                                 .orElse(null);
-            case "alumno"  -> alumnoRepository.findByUsuarioId(usuario.getId())
+            case "ALUMNO"  -> alumnoRepository.findByUsuarioId(usuario.getId())
                                 .map(a -> a.getMatricula())
                                 .orElse(null);
             default        -> null;
