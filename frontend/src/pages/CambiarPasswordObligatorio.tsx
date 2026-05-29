@@ -19,7 +19,7 @@ export default function CambiarPasswordObligatorio() {
     mutationFn: cambiarPassword,
     onSuccess: () => {
       clearPasswordFlag()
-      const redirects = { admin: '/admin', maestro: '/maestro', alumno: '/alumno' }
+      const redirects = { ADMIN: '/admin', MAESTRO: '/maestro', ALUMNO: '/alumno' }
       navigate(redirects[usuario!.rol], { replace: true })
     },
     onError: (err) => {

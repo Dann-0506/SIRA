@@ -16,7 +16,7 @@ export function PrivateRoute({ roles }: Props) {
   }
 
   if (roles && usuario && !roles.includes(usuario.rol)) {
-    const redirects: Record<Rol, string> = { admin: '/admin', maestro: '/maestro', alumno: '/alumno' }
+    const redirects: Record<Rol, string> = { ADMIN: '/admin', MAESTRO: '/maestro', ALUMNO: '/alumno' }
     return <Navigate to={redirects[usuario.rol]} replace />
   }
   return <Outlet />

@@ -18,6 +18,41 @@ interface Columna { nombre: string; requerida: boolean; descripcion: string }
 interface FormatoTipo { label: string; columnas: Columna[]; ejemplo: string; notas?: string }
 
 const FORMATOS: Record<string, FormatoTipo> = {
+  carreras: {
+    label: 'Carreras',
+    columnas: [
+      { nombre: 'clave',  requerida: true, descripcion: 'Clave única de la carrera (ej. ISC)' },
+      { nombre: 'nombre', requerida: true, descripcion: 'Nombre completo de la carrera' },
+    ],
+    ejemplo: 'ISC,Ingeniería en Sistemas Computacionales',
+    notas: 'Las carreras se crean como activas por defecto. Si ya existe una carrera con la misma clave se reportará como error en esa línea.',
+  },
+  administradores: {
+    label: 'Administradores',
+    columnas: [
+      { nombre: 'num_empleado',     requerida: true,  descripcion: 'Número de empleado único (ej. ADMIN-002)' },
+      { nombre: 'apellido_paterno', requerida: true,  descripcion: 'Apellido paterno' },
+      { nombre: 'apellido_materno', requerida: false, descripcion: 'Apellido materno (dejar vacío si no aplica)' },
+      { nombre: 'nombre',           requerida: true,  descripcion: 'Nombre(s) de pila' },
+      { nombre: 'correo',           requerida: true,  descripcion: 'Correo electrónico (requerido para login)' },
+      { nombre: 'fecha_nacimiento', requerida: true,  descripcion: 'Fecha de nacimiento en formato YYYY-MM-DD (ej. 1985-04-12)' },
+    ],
+    ejemplo: 'ADMIN-002,Ramírez,,Carlos,carlos@escuela.edu,1985-04-12',
+    notas: 'La contraseña temporal será la fecha de nacimiento en formato DDMMYYYY (ej. 12041985).',
+  },
+  maestros: {
+    label: 'Maestros',
+    columnas: [
+      { nombre: 'num_empleado',     requerida: true,  descripcion: 'Número de empleado único (ej. EMP-001)' },
+      { nombre: 'apellido_paterno', requerida: true,  descripcion: 'Apellido paterno' },
+      { nombre: 'apellido_materno', requerida: false, descripcion: 'Apellido materno (dejar vacío si no aplica)' },
+      { nombre: 'nombre',           requerida: true,  descripcion: 'Nombre(s) de pila' },
+      { nombre: 'correo',           requerida: true,  descripcion: 'Correo electrónico (se usa para iniciar sesión)' },
+      { nombre: 'fecha_nacimiento', requerida: true,  descripcion: 'Fecha de nacimiento en formato YYYY-MM-DD (ej. 1982-11-07)' },
+    ],
+    ejemplo: 'EMP-001,López,Ruiz,María,maria@escuela.edu,1982-11-07',
+    notas: 'La contraseña temporal será la fecha de nacimiento en formato DDMMYYYY (ej. 07111982).',
+  },
   alumnos: {
     label: 'Alumnos',
     columnas: [
@@ -33,32 +68,6 @@ const FORMATOS: Record<string, FormatoTipo> = {
     ejemplo: '21310001,Pérez,García,Juan,juan@escuela.edu,2005-03-12,ISC,',
     notas: 'La contraseña temporal será la fecha de nacimiento en formato DDMMYYYY (ej. 12032005). La carrera debe existir previamente. La CURP es opcional.',
   },
-  maestros: {
-    label: 'Maestros',
-    columnas: [
-      { nombre: 'num_empleado',     requerida: true,  descripcion: 'Número de empleado único (ej. EMP-001)' },
-      { nombre: 'apellido_paterno', requerida: true,  descripcion: 'Apellido paterno' },
-      { nombre: 'apellido_materno', requerida: false, descripcion: 'Apellido materno (dejar vacío si no aplica)' },
-      { nombre: 'nombre',           requerida: true,  descripcion: 'Nombre(s) de pila' },
-      { nombre: 'correo',           requerida: true,  descripcion: 'Correo electrónico (se usa para iniciar sesión)' },
-      { nombre: 'fecha_nacimiento', requerida: true,  descripcion: 'Fecha de nacimiento en formato YYYY-MM-DD (ej. 1982-11-07)' },
-    ],
-    ejemplo: 'EMP-001,López,Ruiz,María,maria@escuela.edu,1982-11-07',
-    notas: 'La contraseña temporal será la fecha de nacimiento en formato DDMMYYYY (ej. 07111982).',
-  },
-  administradores: {
-    label: 'Administradores',
-    columnas: [
-      { nombre: 'num_empleado',     requerida: true,  descripcion: 'Número de empleado único (ej. ADMIN-002)' },
-      { nombre: 'apellido_paterno', requerida: true,  descripcion: 'Apellido paterno' },
-      { nombre: 'apellido_materno', requerida: false, descripcion: 'Apellido materno (dejar vacío si no aplica)' },
-      { nombre: 'nombre',           requerida: true,  descripcion: 'Nombre(s) de pila' },
-      { nombre: 'correo',           requerida: true,  descripcion: 'Correo electrónico (requerido para login)' },
-      { nombre: 'fecha_nacimiento', requerida: true,  descripcion: 'Fecha de nacimiento en formato YYYY-MM-DD (ej. 1985-04-12)' },
-    ],
-    ejemplo: 'ADMIN-002,Ramírez,,Carlos,carlos@escuela.edu,1985-04-12',
-    notas: 'La contraseña temporal será la fecha de nacimiento en formato DDMMYYYY (ej. 12041985).',
-  },
   materias: {
     label: 'Materias',
     columnas: [
@@ -69,6 +78,15 @@ const FORMATOS: Record<string, FormatoTipo> = {
     ],
     ejemplo: 'MAT101,Matemáticas I,3,Álgebra Básica|Cálculo Diferencial|Geometría Analítica',
     notas: 'Si no se especifican nombres de unidades, se generan automáticamente como "Unidad 1", "Unidad 2", etc.',
+  },
+  actividades: {
+    label: 'Actividades',
+    columnas: [
+      { nombre: 'nombre',      requerida: true,  descripcion: 'Nombre de la actividad, debe ser único en el catálogo (ej. Examen parcial)' },
+      { nombre: 'descripcion', requerida: false, descripcion: 'Descripción opcional de la actividad' },
+    ],
+    ejemplo: 'Examen parcial,Evaluación escrita individual sin consulta',
+    notas: 'Si ya existe una actividad con el mismo nombre se reportará como error en esa línea. Las actividades se crean como activas por defecto.',
   },
   grupos: {
     label: 'Grupos',
@@ -90,24 +108,6 @@ const FORMATOS: Record<string, FormatoTipo> = {
     ],
     ejemplo: 'A12345678,G-01,2026-1',
     notas: 'El alumno y el grupo deben existir previamente. No se permiten inscripciones duplicadas.',
-  },
-  carreras: {
-    label: 'Carreras',
-    columnas: [
-      { nombre: 'clave',  requerida: true, descripcion: 'Clave única de la carrera (ej. ISC)' },
-      { nombre: 'nombre', requerida: true, descripcion: 'Nombre completo de la carrera' },
-    ],
-    ejemplo: 'ISC,Ingeniería en Sistemas Computacionales',
-    notas: 'Las carreras se crean como activas por defecto. Si ya existe una carrera con la misma clave se reportará como error en esa línea.',
-  },
-  actividades: {
-    label: 'Actividades',
-    columnas: [
-      { nombre: 'nombre',      requerida: true,  descripcion: 'Nombre de la actividad, debe ser único en el catálogo (ej. Examen parcial)' },
-      { nombre: 'descripcion', requerida: false, descripcion: 'Descripción opcional de la actividad' },
-    ],
-    ejemplo: 'Examen parcial,Evaluación escrita individual sin consulta',
-    notas: 'Si ya existe una actividad con el mismo nombre se reportará como error en esa línea. Las actividades se crean como activas por defecto.',
   },
 }
 
@@ -242,7 +242,7 @@ function DropZone({
 // ─── Sección: Importar datos ──────────────────────────────────────────────────
 
 function SeccionImportar() {
-  const [tipo, setTipo] = useState('alumnos')
+  const [tipo, setTipo] = useState('carreras')
   const [archivo, setArchivo] = useState<File | null>(null)
   const [resultado, setResultado] = useState<CargaResultadoResponse | null>(null)
   const [globalError, setGlobalError] = useState('')

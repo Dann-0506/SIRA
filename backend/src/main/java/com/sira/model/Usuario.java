@@ -51,6 +51,14 @@ public class Usuario {
     @Column(name = "creado_en", updatable = false)
     private LocalDateTime creadoEn;
 
+    @PrePersist
+    @PreUpdate
+    private void normalizarRol() {
+        if (this.rol != null) {
+            this.rol = this.rol.toUpperCase();
+        }
+    }
+
     public Usuario(String nombre, String apellidoPaterno, String apellidoMaterno,
                    String email, String passwordHash, String rol, LocalDate fechaNacimiento) {
         this.nombre = nombre;

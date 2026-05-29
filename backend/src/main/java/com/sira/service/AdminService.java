@@ -46,7 +46,7 @@ public class AdminService {
         String passwordTemporal = fechaNacimiento.format(DateTimeFormatter.ofPattern("ddMMyyyy"));
         Usuario usuario = new Usuario(nombre.trim(), apellidoPaterno.trim(),
                 (apellidoMaterno != null && !apellidoMaterno.isBlank()) ? apellidoMaterno.trim() : null,
-                email.trim().toLowerCase(), passwordEncoder.encode(passwordTemporal), "admin", fechaNacimiento);
+                email.trim().toLowerCase(), passwordEncoder.encode(passwordTemporal), "ADMIN", fechaNacimiento);
         usuario.setRequiereCambioPassword(true);
         usuarioRepository.save(usuario);
         Administrador saved = administradorRepository.save(new Administrador(usuario, numEmpleadoNormalizado));
@@ -121,7 +121,7 @@ public class AdminService {
     }
 
     private void verificarNoEsUltimoAdminActivo(Administrador target) {
-        long adminsActivos = usuarioRepository.countByRolAndActivo("admin", true);
+        long adminsActivos = usuarioRepository.countByRolAndActivo("ADMIN", true);
         if (adminsActivos <= 1 && target.getUsuario().isActivo()) {
             throw new IllegalStateException(
                     "Operación denegada: no puedes eliminar ni desactivar al único administrador activo del sistema.");
