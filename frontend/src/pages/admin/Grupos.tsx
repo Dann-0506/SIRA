@@ -315,14 +315,12 @@ export default function Grupos() {
             <label className="block text-sm font-medium text-slate-700 mb-1.5">Maestro <span className="text-red-500">*</span></label>
             <select value={form.maestroId} onChange={(e) => setForm(p => ({ ...p, maestroId: e.target.value }))} className={inputClass}>
               <option value="">Seleccionar maestro...</option>
-              {maestros.map(m => <option key={m.id} value={m.id}>{m.numEmpleado} — {m.nombre}</option>)}
+              {maestros.map(m => (
+                <option key={m.id} value={m.id}>
+                  {m.numEmpleado} — {m.apellidoPaterno} {m.apellidoMaterno ?? ''} {m.nombre}
+                </option>
+              ))}
             </select>
-          </div>
-          
-          <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-            <p className="text-[11px] text-blue-700 leading-tight">
-              <strong>Nota:</strong> Los criterios de evaluación (mínimo aprobatorio y máximo) se heredan automáticamente del periodo seleccionado para garantizar la normalización académica.
-            </p>
           </div>
         </div>
       </FormModal>

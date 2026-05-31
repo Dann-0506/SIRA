@@ -25,7 +25,7 @@ function SemestreSelector({ value, semestres, onChange }: {
         <select
           value={value}
           onChange={e => onChange(e.target.value)}
-          className="appearance-none w-36 pl-3 pr-8 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
+          className="appearance-none w-64 pl-3 pr-8 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition"
         >
           {semestres.length === 0
             ? <option value="">Sin datos</option>

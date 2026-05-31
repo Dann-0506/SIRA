@@ -34,6 +34,15 @@ public class PeriodoEscolarService {
     @Transactional
     public PeriodoEscolar guardar(PeriodoEscolar periodo) {
         validarPeriodo(periodo);
+
+        // Si es una actualización, prohibimos cambiar los criterios de evaluación (mínimos y máximos)
+        if (periodo.getId() != null) {
+            PeriodoEscolar existente = obtenerPorId(periodo.getId());
+            if (existente.getCalificacionMinimaAprobatoria().compareTo(periodo.getCalificacionMinimaAprobatoria()) != 0 ||
+                existente.getCalificacionMaximaPosible().compareTo(periodo.getCalificacionMaximaPosible()) != 0) {
+                throw new IllegalStateException("No se pueden modificar los criterios de evaluación después de crear el periodo para mantener la integridad histórica.");
+            }
+        }
         
         // Si se marca como actual, debemos desactivar cualquier otro periodo previo
         if (periodo.isEsPeriodoActual()) {

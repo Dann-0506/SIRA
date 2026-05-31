@@ -3,6 +3,7 @@ package com.sira.repository;
 import com.sira.model.Grupo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public interface GrupoRepository extends JpaRepository<Grupo, Integer> {
         JOIN FETCH g.periodo
         WHERE g.clave = :clave AND g.periodo.nombrePeriodo = :nombrePeriodo
         """)
-    Optional<Grupo> findByClaveAndNombrePeriodo(String clave, String nombrePeriodo);
+    Optional<Grupo> findByClaveAndNombrePeriodo(@Param("clave") String clave, @Param("nombrePeriodo") String nombrePeriodo);
 
     @Query("""
         SELECT g FROM Grupo g
@@ -65,7 +66,7 @@ public interface GrupoRepository extends JpaRepository<Grupo, Integer> {
     Optional<Grupo> findByIdWithDetails(Integer id);
 
     @Query("SELECT COUNT(g) FROM Grupo g WHERE g.activo = :activo AND g.estadoEvaluacion = :estadoEvaluacion AND g.periodo.nombrePeriodo = :nombrePeriodo")
-    long countByActivoAndEstadoEvaluacionAndNombrePeriodo(boolean activo, String estadoEvaluacion, String nombrePeriodo);
+    long countByActivoAndEstadoEvaluacionAndNombrePeriodo(@Param("activo") boolean activo, @Param("estadoEvaluacion") String estadoEvaluacion, @Param("nombrePeriodo") String nombrePeriodo);
 
     @Query("""
         SELECT g FROM Grupo g
@@ -77,7 +78,7 @@ public interface GrupoRepository extends JpaRepository<Grupo, Integer> {
         AND NOT EXISTS (SELECT a FROM ActividadGrupo a WHERE a.grupo = g)
         ORDER BY g.materia.nombre ASC
         """)
-    List<Grupo> findGruposSinActividades(String nombrePeriodo);
+    List<Grupo> findGruposSinActividades(@Param("nombrePeriodo") String nombrePeriodo);
 
     @Query("""
         SELECT g FROM Grupo g
@@ -91,10 +92,10 @@ public interface GrupoRepository extends JpaRepository<Grupo, Integer> {
             = g.materia.totalUnidades
         ORDER BY g.materia.nombre ASC
         """)
-    List<Grupo> findGruposPendientesCierre(String nombrePeriodo);
+    List<Grupo> findGruposPendientesCierre(@Param("nombrePeriodo") String nombrePeriodo);
 
-    @Query("SELECT DISTINCT g.periodo.nombrePeriodo FROM Grupo g WHERE g.estadoEvaluacion = 'CERRADO' ORDER BY g.periodo.fechaInicioPeriodo DESC")
-    List<String> findSemestresConActaCerrada();
+    @Query("SELECT g.periodo.nombrePeriodo FROM Grupo g GROUP BY g.periodo.nombrePeriodo, g.periodo.fechaInicioPeriodo ORDER BY g.periodo.fechaInicioPeriodo DESC")
+    List<String> findSemestresDisponibles();
 
     @Query("SELECT (COUNT(g) > 0) FROM Grupo g WHERE g.clave = :clave AND g.materia.id = :materiaId AND g.periodo.id = :periodoId")
     boolean existsByClaveAndMateriaIdAndPeriodoId(String clave, Integer materiaId, Integer periodoId);

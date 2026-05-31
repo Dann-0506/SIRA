@@ -4,6 +4,7 @@ import com.sira.model.Inscripcion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -72,7 +73,7 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
     long countByGrupoId(Integer grupoId);
 
     @Query("SELECT COUNT(i) FROM Inscripcion i WHERE i.grupo.estadoEvaluacion = 'ABIERTO' AND i.grupo.activo = true AND i.grupo.periodo.nombrePeriodo = :nombrePeriodo")
-    long countInscripcionesActivasPorNombrePeriodo(String nombrePeriodo);
+    long countInscripcionesActivasPorNombrePeriodo(@Param("nombrePeriodo") String nombrePeriodo);
 
     // ─── Queries para reportes estratégicos ───────────────────────────────────
 
@@ -88,13 +89,12 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
         JOIN grupo   g ON i.grupo_id   = g.id
         JOIN materia m ON g.materia_id = m.id
         JOIN periodo_escolar pe ON g.periodo_id = pe.id
-        WHERE g.estado_evaluacion = 'CERRADO'
-          AND pe.nombre = :nombrePeriodo
+        WHERE pe.nombre = :nombrePeriodo
           AND i.estado_academico IN ('APROBADO','REPROBADO')
         GROUP BY m.id, m.clave, m.nombre
         ORDER BY reprobados DESC
         """, nativeQuery = true)
-    List<Object[]> findMateriasConReprobacionRaw(String nombrePeriodo);
+    List<Object[]> findMateriasConReprobacionRaw(@Param("nombrePeriodo") String nombrePeriodo);
 
     @Query(value = """
         SELECT ma.id          AS maestro_id,
@@ -108,16 +108,15 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
                SUM(CASE WHEN i.estado_academico='REPROBADO' THEN 1 ELSE 0 END) AS reprobados
         FROM inscripcion i
         JOIN grupo   g  ON i.grupo_id    = g.id
-        JOIN maestro ma ON ma.maestro_id = ma.id
+        JOIN maestro ma ON g.maestro_id  = ma.id
         JOIN usuario u  ON ma.usuario_id = u.id
         JOIN periodo_escolar pe ON g.periodo_id = pe.id
-        WHERE g.estado_evaluacion = 'CERRADO'
-          AND pe.nombre = :nombrePeriodo
+        WHERE pe.nombre = :nombrePeriodo
           AND i.estado_academico IN ('APROBADO','REPROBADO')
         GROUP BY ma.id, u.nombre, u.apellido_paterno, u.apellido_materno, ma.num_empleado
         ORDER BY u.apellido_paterno ASC, u.apellido_materno ASC, u.nombre ASC
         """, nativeQuery = true)
-    List<Object[]> findMaestrosAprovechamientoRaw(String nombrePeriodo);
+    List<Object[]> findMaestrosAprovechamientoRaw(@Param("nombrePeriodo") String nombrePeriodo);
 
     @Query("""
         SELECT i FROM Inscripcion i
@@ -127,7 +126,7 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
         AND g.periodo.nombrePeriodo = :nombrePeriodo
         ORDER BY a.usuario.apellidoPaterno ASC, a.usuario.nombre ASC
         """)
-    List<Inscripcion> findReprobadosPorNombrePeriodo(String nombrePeriodo);
+    List<Inscripcion> findReprobadosPorNombrePeriodo(@Param("nombrePeriodo") String nombrePeriodo);
 
     @Query(value = """
         SELECT c.id                                                              AS carrera_id,
@@ -140,13 +139,12 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
         JOIN carrera c ON a.carrera_id   = c.id
         JOIN grupo   g ON i.grupo_id     = g.id
         JOIN periodo_escolar pe ON g.periodo_id = pe.id
-        WHERE g.estado_evaluacion = 'CERRADO'
-          AND pe.nombre = :nombrePeriodo
+        WHERE pe.nombre = :nombrePeriodo
           AND i.estado_academico IN ('APROBADO','REPROBADO')
         GROUP BY c.id, c.clave, c.nombre
         ORDER BY reprobados DESC
         """, nativeQuery = true)
-    List<Object[]> findCarrerasReprobacionRaw(String nombrePeriodo);
+    List<Object[]> findCarrerasReprobacionRaw(@Param("nombrePeriodo") String nombrePeriodo);
 
     boolean existsByAlumnoIdAndGrupoId(Integer alumnoId, Integer grupoId);
 

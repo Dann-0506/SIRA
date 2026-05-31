@@ -19,7 +19,7 @@ public class ReportesService {
 
     @Transactional(readOnly = true)
     public List<String> getSemestresDisponibles() {
-        return grupoRepository.findSemestresConActaCerrada();
+        return grupoRepository.findSemestresDisponibles();
     }
 
     @Transactional(readOnly = true)

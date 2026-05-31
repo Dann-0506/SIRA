@@ -61,11 +61,19 @@ public class PeriodoEscolarController {
      */
     @GetMapping("/configuracion-legacy")
     public ResponseEntity<Map<String, Object>> obtenerLegacy() {
-        PeriodoEscolar actual = periodoService.obtenerPeriodoVigente();
-        return ResponseEntity.ok(Map.of(
-                "minimaAprobatoria", actual.getCalificacionMinimaAprobatoria(),
-                "maxima", actual.getCalificacionMaximaPosible(),
-                "semestreActivo", actual.getNombrePeriodo()
-        ));
+        try {
+            PeriodoEscolar actual = periodoService.obtenerPeriodoVigente();
+            return ResponseEntity.ok(Map.of(
+                    "minimaAprobatoria", actual.getCalificacionMinimaAprobatoria(),
+                    "maxima", actual.getCalificacionMaximaPosible(),
+                    "semestreActivo", actual.getNombrePeriodo()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of(
+                    "minimaAprobatoria", 70,
+                    "maxima", 100,
+                    "semestreActivo", "SIN PERIODO ACTUAL"
+            ));
+        }
     }
 }

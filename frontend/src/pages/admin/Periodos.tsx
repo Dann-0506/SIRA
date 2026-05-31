@@ -189,7 +189,9 @@ export default function Periodos() {
                 type="number" 
                 value={form.calificacionMinimaAprobatoria} 
                 onChange={e => setForm(p => ({ ...p, calificacionMinimaAprobatoria: Number(e.target.value) }))}
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500/30 outline-none transition"
+                disabled={!!editTarget}
+                title={editTarget ? "No se puede editar después de creado para mantener integridad histórica" : ""}
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500/30 outline-none transition disabled:bg-slate-50 disabled:text-slate-500"
               />
             </div>
             <div>
@@ -198,7 +200,9 @@ export default function Periodos() {
                 type="number" 
                 value={form.calificacionMaximaPosible} 
                 onChange={e => setForm(p => ({ ...p, calificacionMaximaPosible: Number(e.target.value) }))}
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500/30 outline-none transition"
+                disabled={!!editTarget}
+                title={editTarget ? "No se puede editar después de creado para mantener integridad histórica" : ""}
+                className="w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500/30 outline-none transition disabled:bg-slate-50 disabled:text-slate-500"
               />
             </div>
           </div>

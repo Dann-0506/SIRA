@@ -243,11 +243,11 @@ export default function Inscripciones() {
                 <button
                   key={a.id}
                   type="button"
-                  onClick={() => { setSelectedAlumnoId(String(a.id)); setAlumnoSearch(`${a.numControl} — ${a.nombre}`) }}
+                  onClick={() => { setSelectedAlumnoId(String(a.id)); setAlumnoSearch(`${a.numControl} — ${a.apellidoPaterno} ${a.apellidoMaterno ?? ''} ${a.nombre}`) }}
                   className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${selectedAlumnoId === String(a.id) ? 'bg-blue-50 text-blue-700 font-medium' : 'text-slate-700 hover:bg-slate-50'}`}
                 >
                   <span className="font-medium">{a.numControl}</span>
-                  <span className="text-slate-500 ml-2">{a.nombre}</span>
+                  <span className="text-slate-500 ml-2">{a.apellidoPaterno} {a.apellidoMaterno ?? ''} {a.nombre}</span>
                 </button>
               ))}
             </div>
