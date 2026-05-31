@@ -9,6 +9,7 @@ import {
 } from '@/api/grupos'
 import { getMaterias } from '@/api/materias'
 import { getMaestros } from '@/api/maestros'
+import { getPeriodos } from '@/api/periodos'
 import type { GrupoResponse } from '@/types'
 import { estadoGrupo, estadoGrupoLabel, estadoGrupoColor } from '@/lib/utils'
 import { DataTable } from '@/components/shared/DataTable'
@@ -20,8 +21,7 @@ import { ErrorAlert } from '@/components/shared/ErrorAlert'
 import { DataError } from '@/components/shared/DataError'
 
 const emptyForm = {
-  clave: '', semestre: '', materiaId: '', maestroId: '',
-  calificacionMinimaAprobatoria: '60', calificacionMaxima: '100',
+  clave: '', periodoId: '', materiaId: '', maestroId: ''
 }
 type FormState = typeof emptyForm
 
@@ -104,8 +104,9 @@ export default function Grupos() {
   const { data: grupos = [], isLoading, error, refetch } = useQuery({ queryKey: ['grupos'], queryFn: getGrupos })
   const { data: materias = [] } = useQuery({ queryKey: ['materias'], queryFn: getMaterias })
   const { data: maestros = [] } = useQuery({ queryKey: ['maestros'], queryFn: getMaestros })
+  const { data: periodos = [] } = useQuery({ queryKey: ['periodos'], queryFn: getPeriodos })
 
-  // Opciones de semestres únicos
+  // Opciones de semestres únicos para el filtro (basado en el nombre del periodo)
   const semestres = Array.from(new Set(grupos.map(g => g.semestre))).sort().reverse()
 
   // Lógica de filtrado
@@ -137,43 +138,42 @@ export default function Grupos() {
   const cerrarDefMut = useMutation({ mutationFn: cerrarDefinitivamenteGrupo, onSuccess: () => { invalidate(); setCerrarDefTarget(null) } })
   const deleteMut = useMutation({ mutationFn: deleteGrupo, onSuccess: () => { invalidate(); setDeleteTarget(null) } })
 
-  const openCreate = () => { setEditTarget(null); setForm(emptyForm); setFormError(''); setModalOpen(true) }
+  const openCreate = () => { 
+    setEditTarget(null)
+    const vigente = periodos.find(p => p.esPeriodoActual)
+    setForm({ ...emptyForm, periodoId: vigente ? String(vigente.id) : '' })
+    setFormError('')
+    setModalOpen(true) 
+  }
   const openEdit = (g: GrupoResponse) => {
     setEditTarget(g)
-    setForm({ clave: g.clave, semestre: g.semestre, materiaId: String(g.materiaId), maestroId: String(g.maestroId),
-      calificacionMinimaAprobatoria: String(g.calificacionMinimaAprobatoria), calificacionMaxima: String(g.calificacionMaxima) })
+    setForm({ 
+      clave: g.clave, 
+      periodoId: String(g.periodoId), 
+      materiaId: String(g.materiaId), 
+      maestroId: String(g.maestroId)
+    })
     setFormError(''); setModalOpen(true)
   }
   const closeModal = () => { setModalOpen(false); setEditTarget(null); setForm(emptyForm); setFormError('') }
 
   const handleSubmit = () => {
-    if (!form.clave.trim()) { setFormError('La clave es requerida.'); return }
-    if (!form.semestre.trim()) { setFormError('El semestre es requerido.'); return }
-    if (!form.materiaId) { setFormError('Selecciona una materia.'); return }
-    if (!form.maestroId) { setFormError('Selecciona un maestro.'); return }
+    if (!form.clave.trim()) return setFormError('La clave es requerida.')
+    if (!form.periodoId) return setFormError('El periodo escolar es requerido.')
+    if (!form.materiaId) return setFormError('Selecciona una materia.')
+    if (!form.maestroId) return setFormError('Selecciona un maestro.')
+    
     const payload = {
-      clave: form.clave.trim(), semestre: form.semestre.trim(),
-      materiaId: Number(form.materiaId), maestroId: Number(form.maestroId),
-      calificacionMinimaAprobatoria: Number(form.calificacionMinimaAprobatoria),
-      calificacionMaxima: Number(form.calificacionMaxima),
+      clave: form.clave.trim(), 
+      periodoId: Number(form.periodoId),
+      materiaId: Number(form.materiaId), 
+      maestroId: Number(form.maestroId)
     }
     if (editTarget) updateMut.mutate({ id: editTarget.id, data: payload })
     else createMut.mutate(payload)
   }
 
-  if (error) {
-    return (
-      <div>
-        <PageHeader
-          title="Grupos"
-          description="Gestión de grupos académicos y su estado de evaluación."
-        />
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mt-6">
-          <DataError onRetry={() => refetch()} />
-        </div>
-      </div>
-    )
-  }
+  if (error) return <DataError onRetry={() => refetch()} />
 
   const inputClass = 'w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition'
   const isPending = createMut.isPending || updateMut.isPending
@@ -191,7 +191,7 @@ export default function Grupos() {
       <DataTable<GrupoResponse>
         data={filteredGrupos} isLoading={isLoading} keyExtractor={(g) => g.id} searchable
         searchKeys={['clave', 'materiaNombre', 'maestroNombre', 'semestre']}
-        searchPlaceholder="Buscar por clave, materia, maestro o semestre..."
+        searchPlaceholder="Buscar por clave, materia, maestro o periodo..."
         emptyMessage="No hay grupos registrados."
         filters={
           <FilterMenu
@@ -208,13 +208,13 @@ export default function Grupos() {
               (estadoFilter !== 'TODOS' ? 1 : 0)
             }
           >
-            <FilterSection label="Semestre">
+            <FilterSection label="Periodo">
               <select
                 value={semestreFilter}
                 onChange={(e) => setSemestreFilter(e.target.value)}
                 className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"
               >
-                <option value="TODOS">Todos los semestres</option>
+                <option value="TODOS">Todos los periodos</option>
                 {semestres.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </FilterSection>
@@ -259,7 +259,7 @@ export default function Grupos() {
           { header: 'Clave', accessor: 'clave' },
           { header: 'Materia', accessor: 'materiaNombre' },
           { header: 'Maestro', accessor: 'maestroNombre' },
-          { header: 'Semestre', accessor: 'semestre' },
+          { header: 'Periodo', accessor: 'semestre' },
           { header: 'Estado', accessor: (g) => <EstadoGrupoBadge grupo={g} /> },
         ]}
         rowActions={(g) => {
@@ -293,8 +293,15 @@ export default function Grupos() {
               <input type="text" value={form.clave} onChange={(e) => setForm(p => ({ ...p, clave: e.target.value }))} placeholder="Ej. GRP-A1" className={inputClass} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Semestre <span className="text-red-500">*</span></label>
-              <input type="text" value={form.semestre} onChange={(e) => setForm(p => ({ ...p, semestre: e.target.value }))} placeholder="Ej. 2025-1" className={inputClass} />
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Periodo Escolar <span className="text-red-500">*</span></label>
+              <select value={form.periodoId} onChange={(e) => setForm(p => ({ ...p, periodoId: e.target.value }))} className={inputClass}>
+                <option value="">Seleccionar periodo...</option>
+                {periodos.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.nombrePeriodo} {p.esPeriodoActual ? '(Actual)' : ''}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
           <div>
@@ -311,15 +318,11 @@ export default function Grupos() {
               {maestros.map(m => <option key={m.id} value={m.id}>{m.numEmpleado} — {m.nombre}</option>)}
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Cal. mínima aprobatoria</label>
-              <input type="number" min={0} max={100} value={form.calificacionMinimaAprobatoria} onChange={(e) => setForm(p => ({ ...p, calificacionMinimaAprobatoria: e.target.value }))} className={inputClass} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Calificación máxima</label>
-              <input type="number" min={0} max={100} value={form.calificacionMaxima} onChange={(e) => setForm(p => ({ ...p, calificacionMaxima: e.target.value }))} className={inputClass} />
-            </div>
+          
+          <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+            <p className="text-[11px] text-blue-700 leading-tight">
+              <strong>Nota:</strong> Los criterios de evaluación (mínimo aprobatorio y máximo) se heredan automáticamente del periodo seleccionado para garantizar la normalización académica.
+            </p>
           </div>
         </div>
       </FormModal>
