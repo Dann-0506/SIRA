@@ -9,6 +9,7 @@ import {
 } from '@/api/maestros'
 import type { MaestroResponse } from '@/types'
 import { DataTable } from '@/components/shared/DataTable'
+import { FilterMenu, FilterSection } from '@/components/shared/FilterMenu'
 import { FormModal } from '@/components/shared/FormModal'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { PageHeader } from '@/components/shared/PageHeader'
@@ -30,9 +31,17 @@ export default function Maestros() {
   const [toggleError, setToggleError] = useState('')
   const [togglingId, setTogglingId] = useState<number | null>(null)
 
+  // Filtros
+  const [estadoFilter, setEstadoFilter] = useState<'TODOS' | 'ACTIVO' | 'INACTIVO'>('TODOS')
+
   const { data: maestros = [], isLoading } = useQuery({
     queryKey: ['maestros'],
     queryFn: getMaestros,
+  })
+
+  // Lógica de filtrado
+  const filteredMaestros = maestros.filter(m => {
+    return estadoFilter === 'TODOS' || (estadoFilter === 'ACTIVO' ? m.activo : !m.activo)
   })
 
   const invalidate = () => {
@@ -132,13 +141,31 @@ export default function Maestros() {
       )}
 
       <DataTable<MaestroResponse>
-        data={maestros}
+        data={filteredMaestros}
         isLoading={isLoading}
         keyExtractor={(m) => m.id}
         searchable
         searchKeys={['nombre', 'numEmpleado', 'email']}
         searchPlaceholder="Buscar por nombre, núm. empleado o correo..."
         emptyMessage="No hay maestros registrados."
+        filters={
+          <FilterMenu
+            onClear={() => setEstadoFilter('TODOS')}
+            activeCount={estadoFilter !== 'TODOS' ? 1 : 0}
+          >
+            <FilterSection label="Estado">
+              <select
+                value={estadoFilter}
+                onChange={(e) => setEstadoFilter(e.target.value as any)}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"
+              >
+                <option value="TODOS">Todos los estados</option>
+                <option value="ACTIVO">Solo Activos</option>
+                <option value="INACTIVO">Solo Inactivos</option>
+              </select>
+            </FilterSection>
+          </FilterMenu>
+        }
         columns={[
           { header: 'Núm. Empleado', accessor: 'numEmpleado' },
           { header: 'Nombre', accessor: (m) => `${m.apellidoPaterno} ${m.apellidoMaterno ?? ''} ${m.nombre}`.trim() },
