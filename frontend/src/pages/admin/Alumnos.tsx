@@ -10,6 +10,7 @@ import {
 import { getCarrerasActivas } from '@/api/carreras'
 import type { AlumnoResponse, CarreraResponse } from '@/types'
 import { DataTable } from '@/components/shared/DataTable'
+import { FilterMenu, FilterSection } from '@/components/shared/FilterMenu'
 import { FormModal } from '@/components/shared/FormModal'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { PageHeader } from '@/components/shared/PageHeader'
@@ -35,6 +36,10 @@ export default function Alumnos() {
   const [toggleError, setToggleError] = useState('')
   const [togglingId, setTogglingId] = useState<number | null>(null)
 
+  // Filtros
+  const [estadoFilter, setEstadoFilter] = useState<'TODOS' | 'ACTIVO' | 'INACTIVO'>('TODOS')
+  const [carreraFilter, setCarreraFilter] = useState<string>('TODAS')
+
   const { data: alumnos = [], isLoading } = useQuery({
     queryKey: ['alumnos'],
     queryFn: getAlumnos,
@@ -43,6 +48,13 @@ export default function Alumnos() {
   const { data: carreras = [] } = useQuery<CarreraResponse[]>({
     queryKey: ['carreras-activas'],
     queryFn: getCarrerasActivas,
+  })
+
+  // Lógica de filtrado
+  const filteredAlumnos = alumnos.filter(a => {
+    const cumpleEstado = estadoFilter === 'TODOS' || (estadoFilter === 'ACTIVO' ? a.activo : !a.activo)
+    const cumpleCarrera = carreraFilter === 'TODAS' || String(a.carreraId) === carreraFilter
+    return cumpleEstado && cumpleCarrera
   })
 
   const invalidate = () => {
@@ -154,13 +166,44 @@ export default function Alumnos() {
       )}
 
       <DataTable<AlumnoResponse>
-        data={alumnos}
+        data={filteredAlumnos}
         isLoading={isLoading}
         keyExtractor={(a) => a.id}
         searchable
         searchKeys={['nombre', 'numControl', 'email']}
         searchPlaceholder="Buscar por nombre, núm. de control o correo..."
         emptyMessage="No hay alumnos registrados."
+        filters={
+          <FilterMenu
+            onClear={() => { setEstadoFilter('TODOS'); setCarreraFilter('TODAS') }}
+            activeCount={(estadoFilter !== 'TODOS' ? 1 : 0) + (carreraFilter !== 'TODAS' ? 1 : 0)}
+          >
+            <FilterSection label="Estado">
+              <select
+                value={estadoFilter}
+                onChange={(e) => setEstadoFilter(e.target.value as any)}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"
+              >
+                <option value="TODOS">Todos los estados</option>
+                <option value="ACTIVO">Solo Activos</option>
+                <option value="INACTIVO">Solo Inactivos</option>
+              </select>
+            </FilterSection>
+
+            <FilterSection label="Carrera">
+              <select
+                value={carreraFilter}
+                onChange={(e) => setCarreraFilter(e.target.value)}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"
+              >
+                <option value="TODAS">Todas las carreras</option>
+                {carreras.map((c) => (
+                  <option key={c.id} value={String(c.id)}>{c.nombre}</option>
+                ))}
+              </select>
+            </FilterSection>
+          </FilterMenu>
+        }
         columns={[
           { header: 'Núm. de control', accessor: 'numControl' },
           { header: 'Nombre', accessor: (a) => `${a.apellidoPaterno} ${a.apellidoMaterno ?? ''} ${a.nombre}`.trim() },
