@@ -12,10 +12,12 @@ import { getMaestros } from '@/api/maestros'
 import type { GrupoResponse } from '@/types'
 import { estadoGrupo, estadoGrupoLabel, estadoGrupoColor } from '@/lib/utils'
 import { DataTable } from '@/components/shared/DataTable'
+import { FilterMenu, FilterSection } from '@/components/shared/FilterMenu'
 import { FormModal } from '@/components/shared/FormModal'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
+import { DataError } from '@/components/shared/DataError'
 
 const emptyForm = {
   clave: '', semestre: '', materiaId: '', maestroId: '',
@@ -93,9 +95,29 @@ export default function Grupos() {
   const [reabrirTarget, setRreabrirTarget] = useState<GrupoResponse | null>(null)
   const [cerrarDefTarget, setCerrarDefTarget] = useState<GrupoResponse | null>(null)
 
-  const { data: grupos = [], isLoading } = useQuery({ queryKey: ['grupos'], queryFn: getGrupos })
+  // Filtros
+  const [semestreFilter, setSemestreFilter] = useState('TODOS')
+  const [materiaFilter, setMateriaFilter] = useState('TODAS')
+  const [maestroFilter, setMaestroFilter] = useState('TODOS')
+  const [estadoFilter, setEstadoFilter] = useState('TODOS')
+
+  const { data: grupos = [], isLoading, error, refetch } = useQuery({ queryKey: ['grupos'], queryFn: getGrupos })
   const { data: materias = [] } = useQuery({ queryKey: ['materias'], queryFn: getMaterias })
   const { data: maestros = [] } = useQuery({ queryKey: ['maestros'], queryFn: getMaestros })
+
+  // Opciones de semestres únicos
+  const semestres = Array.from(new Set(grupos.map(g => g.semestre))).sort().reverse()
+
+  // Lógica de filtrado
+  const filteredGrupos = grupos.filter(g => {
+    const cumpleSemestre = semestreFilter === 'TODOS' || g.semestre === semestreFilter
+    const cumpleMateria = materiaFilter === 'TODAS' || String(g.materiaId) === materiaFilter
+    const cumpleMaestro = maestroFilter === 'TODOS' || String(g.maestroId) === maestroFilter
+    const estadoActual = estadoGrupo(g.activo, g.estadoEvaluacion)
+    const cumpleEstado = estadoFilter === 'TODOS' || estadoActual === estadoFilter
+    return cumpleSemestre && cumpleMateria && cumpleMaestro && cumpleEstado
+  })
+
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['grupos'] })
     invalidateDashboard()
@@ -139,6 +161,20 @@ export default function Grupos() {
     else createMut.mutate(payload)
   }
 
+  if (error) {
+    return (
+      <div>
+        <PageHeader
+          title="Grupos"
+          description="Gestión de grupos académicos y su estado de evaluación."
+        />
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mt-6">
+          <DataError onRetry={() => refetch()} />
+        </div>
+      </div>
+    )
+  }
+
   const inputClass = 'w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition'
   const isPending = createMut.isPending || updateMut.isPending
 
@@ -153,10 +189,72 @@ export default function Grupos() {
       />
 
       <DataTable<GrupoResponse>
-        data={grupos} isLoading={isLoading} keyExtractor={(g) => g.id} searchable
+        data={filteredGrupos} isLoading={isLoading} keyExtractor={(g) => g.id} searchable
         searchKeys={['clave', 'materiaNombre', 'maestroNombre', 'semestre']}
         searchPlaceholder="Buscar por clave, materia, maestro o semestre..."
         emptyMessage="No hay grupos registrados."
+        filters={
+          <FilterMenu
+            onClear={() => {
+              setSemestreFilter('TODOS')
+              setMateriaFilter('TODAS')
+              setMaestroFilter('TODOS')
+              setEstadoFilter('TODOS')
+            }}
+            activeCount={
+              (semestreFilter !== 'TODOS' ? 1 : 0) +
+              (materiaFilter !== 'TODAS' ? 1 : 0) +
+              (maestroFilter !== 'TODOS' ? 1 : 0) +
+              (estadoFilter !== 'TODOS' ? 1 : 0)
+            }
+          >
+            <FilterSection label="Semestre">
+              <select
+                value={semestreFilter}
+                onChange={(e) => setSemestreFilter(e.target.value)}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"
+              >
+                <option value="TODOS">Todos los semestres</option>
+                {semestres.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </FilterSection>
+
+            <FilterSection label="Materia">
+              <select
+                value={materiaFilter}
+                onChange={(e) => setMateriaFilter(e.target.value)}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"
+              >
+                <option value="TODAS">Todas las materias</option>
+                {materias.map(m => <option key={m.id} value={String(m.id)}>{m.nombre}</option>)}
+              </select>
+            </FilterSection>
+
+            <FilterSection label="Maestro">
+              <select
+                value={maestroFilter}
+                onChange={(e) => setMaestroFilter(e.target.value)}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"
+              >
+                <option value="TODOS">Todos los maestros</option>
+                {maestros.map(m => <option key={m.id} value={String(m.id)}>{m.nombre}</option>)}
+              </select>
+            </FilterSection>
+
+            <FilterSection label="Estado">
+              <select
+                value={estadoFilter}
+                onChange={(e) => setEstadoFilter(e.target.value)}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"
+              >
+                <option value="TODOS">Todos los estados</option>
+                <option value="EN_CURSO">En curso</option>
+                <option value="ACTA_CERRADA">Acta cerrada</option>
+                <option value="FINALIZADO">Finalizado</option>
+              </select>
+            </FilterSection>
+          </FilterMenu>
+        }
         columns={[
           { header: 'Clave', accessor: 'clave' },
           { header: 'Materia', accessor: 'materiaNombre' },

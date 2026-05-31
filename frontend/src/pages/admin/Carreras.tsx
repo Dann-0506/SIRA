@@ -8,11 +8,13 @@ import {
 } from '@/api/carreras'
 import type { CarreraResponse } from '@/types'
 import { DataTable } from '@/components/shared/DataTable'
+import { FilterMenu, FilterSection } from '@/components/shared/FilterMenu'
 import { FormModal } from '@/components/shared/FormModal'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
+import { DataError } from '@/components/shared/DataError'
 
 const emptyForm = { clave: '', nombre: '' }
 
@@ -26,9 +28,17 @@ export default function Carreras() {
   const [toggleError, setToggleError] = useState('')
   const [togglingId, setTogglingId] = useState<number | null>(null)
 
-  const { data: carreras = [], isLoading } = useQuery({
+  // Filtros
+  const [estadoFilter, setEstadoFilter] = useState<'TODOS' | 'ACTIVO' | 'INACTIVO'>('TODOS')
+
+  const { data: carreras = [], isLoading, error, refetch } = useQuery({
     queryKey: ['carreras'],
     queryFn: getCarreras,
+  })
+
+  // Lógica de filtrado
+  const filteredCarreras = carreras.filter(c => {
+    return estadoFilter === 'TODOS' || (estadoFilter === 'ACTIVO' ? c.activa : !c.activa)
   })
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['carreras'] })
@@ -92,6 +102,20 @@ export default function Carreras() {
     else createMut.mutate(data)
   }
 
+  if (error) {
+    return (
+      <div>
+        <PageHeader
+          title="Carreras"
+          description="Catálogo de programas académicos disponibles en la institución."
+        />
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mt-6">
+          <DataError onRetry={() => refetch()} />
+        </div>
+      </div>
+    )
+  }
+
   const isPending = createMut.isPending || updateMut.isPending
 
   return (
@@ -114,13 +138,31 @@ export default function Carreras() {
       )}
 
       <DataTable<CarreraResponse>
-        data={carreras}
+        data={filteredCarreras}
         isLoading={isLoading}
         keyExtractor={(c) => c.id}
         searchable
         searchKeys={['clave', 'nombre']}
         searchPlaceholder="Buscar por clave o nombre..."
         emptyMessage="No hay carreras registradas."
+        filters={
+          <FilterMenu
+            onClear={() => setEstadoFilter('TODOS')}
+            activeCount={estadoFilter !== 'TODOS' ? 1 : 0}
+          >
+            <FilterSection label="Estado">
+              <select
+                value={estadoFilter}
+                onChange={(e) => setEstadoFilter(e.target.value as any)}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"
+              >
+                <option value="TODOS">Todos los estados</option>
+                <option value="ACTIVO">Solo Activas</option>
+                <option value="INACTIVO">Solo Inactivas</option>
+              </select>
+            </FilterSection>
+          </FilterMenu>
+        }
         columns={[
           { header: 'Clave', accessor: 'clave' },
           { header: 'Nombre', accessor: 'nombre' },

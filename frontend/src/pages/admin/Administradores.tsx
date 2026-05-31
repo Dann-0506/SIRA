@@ -9,11 +9,13 @@ import {
 import type { AdminResponse } from '@/types'
 import { useAuthStore } from '@/store/authStore'
 import { DataTable } from '@/components/shared/DataTable'
+import { FilterMenu, FilterSection } from '@/components/shared/FilterMenu'
 import { FormModal } from '@/components/shared/FormModal'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
+import { DataError } from '@/components/shared/DataError'
 
 const emptyForm = { nombre: '', apellidoPaterno: '', apellidoMaterno: '', email: '', numEmpleado: '', fechaNacimiento: '' }
 
@@ -31,9 +33,17 @@ export default function Administradores() {
   const [toggleError, setToggleError] = useState('')
   const [togglingId, setTogglingId] = useState<number | null>(null)
 
-  const { data: admins = [], isLoading } = useQuery({
+  // Filtros
+  const [estadoFilter, setEstadoFilter] = useState<'TODOS' | 'ACTIVO' | 'INACTIVO'>('TODOS')
+
+  const { data: admins = [], isLoading, error, refetch } = useQuery({
     queryKey: ['administradores'],
     queryFn: getAdmins,
+  })
+
+  // Lógica de filtrado
+  const filteredAdmins = admins.filter(a => {
+    return estadoFilter === 'TODOS' || (estadoFilter === 'ACTIVO' ? a.activo : !a.activo)
   })
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['administradores'] })
@@ -107,6 +117,20 @@ export default function Administradores() {
     else createMut.mutate(data)
   }
 
+  if (error) {
+    return (
+      <div>
+        <PageHeader
+          title="Administradores"
+          description="Gestión de cuentas de administrador del sistema."
+        />
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mt-6">
+          <DataError onRetry={() => refetch()} />
+        </div>
+      </div>
+    )
+  }
+
   const isPending = createMut.isPending || updateMut.isPending
 
   const isSelf = (admin: AdminResponse) => admin.email === usuario?.email
@@ -131,13 +155,31 @@ export default function Administradores() {
       )}
 
       <DataTable<AdminResponse>
-        data={admins}
+        data={filteredAdmins}
         isLoading={isLoading}
         keyExtractor={(a) => a.id}
         searchable
         searchKeys={['nombre', 'numEmpleado', 'email']}
         searchPlaceholder="Buscar por nombre, núm. empleado o correo..."
         emptyMessage="No hay administradores registrados."
+        filters={
+          <FilterMenu
+            onClear={() => setEstadoFilter('TODOS')}
+            activeCount={estadoFilter !== 'TODOS' ? 1 : 0}
+          >
+            <FilterSection label="Estado">
+              <select
+                value={estadoFilter}
+                onChange={(e) => setEstadoFilter(e.target.value as any)}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"
+              >
+                <option value="TODOS">Todos los estados</option>
+                <option value="ACTIVO">Solo Activos</option>
+                <option value="INACTIVO">Solo Inactivos</option>
+              </select>
+            </FilterSection>
+          </FilterMenu>
+        }
         columns={[
           { header: 'Núm. Empleado', accessor: 'numEmpleado' },
           {

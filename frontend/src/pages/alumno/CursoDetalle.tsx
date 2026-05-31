@@ -8,7 +8,7 @@ import type { ResultadoUnidadDto, ResultadoDto } from '@/types'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
-import { ErrorAlert } from '@/components/shared/ErrorAlert'
+import { DataError } from '@/components/shared/DataError'
 import { formatCalificacion } from '@/lib/utils'
 
 export default function CursoDetalle() {
@@ -16,7 +16,7 @@ export default function CursoDetalle() {
   const id = Number(grupoId)
   const [downloadLoading, setDownloadLoading] = useState(false)
 
-  const { data: reporte, isLoading, error } = useQuery({
+  const { data: reporte, isLoading, error, refetch } = useQuery({
     queryKey: ['misCalificaciones', id],
     queryFn: () => getMisCalificaciones(id),
     enabled: !!id,
@@ -35,7 +35,7 @@ export default function CursoDetalle() {
   }
 
   if (isLoading) return <LoadingSpinner className="py-20" size="lg" />
-  if (error || !reporte) return <ErrorAlert message="No se pudo cargar la información del curso." />
+  if (error || !reporte) return <DataError onRetry={() => refetch()} />
 
   const calFinal = reporte.calificacionFinal ?? reporte.calificacionConBonus ?? reporte.calificacionCalculada
 

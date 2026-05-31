@@ -5,10 +5,12 @@ import axios from 'axios'
 import { getMaterias, createMateria, updateMateria, deleteMateria } from '@/api/materias'
 import type { MateriaResponse } from '@/types'
 import { DataTable } from '@/components/shared/DataTable'
+import { FilterMenu, FilterSection } from '@/components/shared/FilterMenu'
 import { FormModal } from '@/components/shared/FormModal'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
+import { DataError } from '@/components/shared/DataError'
 
 const emptyCreateForm = { clave: '', nombre: '', totalUnidades: 1, nombresUnidades: [''] }
 const emptyEditForm = { nombre: '' }
@@ -24,9 +26,20 @@ export default function Materias() {
   const [editForm, setEditForm] = useState(emptyEditForm)
   const [formError, setFormError] = useState('')
 
-  const { data: materias = [], isLoading } = useQuery({
+  // Filtros
+  const [unidadesFilter, setUnidadesFilter] = useState('TODAS')
+
+  const { data: materias = [], isLoading, error, refetch } = useQuery({
     queryKey: ['materias'],
     queryFn: getMaterias,
+  })
+
+  // Obtener opciones de unidades únicas
+  const opcionesUnidades = Array.from(new Set(materias.map(m => m.totalUnidades))).sort((a, b) => a - b)
+
+  // Lógica de filtrado
+  const filteredMaterias = materias.filter(m => {
+    return unidadesFilter === 'TODAS' || String(m.totalUnidades) === unidadesFilter
   })
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['materias'] })
@@ -75,6 +88,20 @@ export default function Materias() {
     if (editTarget) updateMut.mutate({ id: editTarget.id, data: { nombre: editForm.nombre.trim() } })
   }
 
+  if (error) {
+    return (
+      <div>
+        <PageHeader
+          title="Materias"
+          description="Catálogo de materias con sus unidades temáticas."
+        />
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mt-6">
+          <DataError onRetry={() => refetch()} />
+        </div>
+      </div>
+    )
+  }
+
   const openEdit = (m: MateriaResponse) => {
     setEditTarget(m)
     setEditForm({ nombre: m.nombre })
@@ -98,13 +125,32 @@ export default function Materias() {
       />
 
       <DataTable<MateriaResponse>
-        data={materias}
+        data={filteredMaterias}
         isLoading={isLoading}
         keyExtractor={(m) => m.id}
         searchable
         searchKeys={['clave', 'nombre']}
         searchPlaceholder="Buscar por clave o nombre..."
         emptyMessage="No hay materias registradas."
+        filters={
+          <FilterMenu
+            onClear={() => setUnidadesFilter('TODAS')}
+            activeCount={unidadesFilter !== 'TODAS' ? 1 : 0}
+          >
+            <FilterSection label="Total de Unidades">
+              <select
+                value={unidadesFilter}
+                onChange={(e) => setUnidadesFilter(e.target.value)}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"
+              >
+                <option value="TODAS">Todas las unidades</option>
+                {opcionesUnidades.map(u => (
+                  <option key={u} value={String(u)}>{u} Unidades</option>
+                ))}
+              </select>
+            </FilterSection>
+          </FilterMenu>
+        }
         columns={[
           { header: 'Clave', accessor: 'clave' },
           { header: 'Nombre', accessor: 'nombre' },
