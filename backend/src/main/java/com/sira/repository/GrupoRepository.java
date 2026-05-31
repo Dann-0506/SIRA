@@ -16,16 +16,18 @@ public interface GrupoRepository extends JpaRepository<Grupo, Integer> {
         JOIN FETCH g.materia
         JOIN FETCH g.maestro m
         JOIN FETCH m.usuario
-        WHERE g.clave = :clave AND g.semestre = :semestre
+        JOIN FETCH g.periodo
+        WHERE g.clave = :clave AND g.periodo.nombrePeriodo = :nombrePeriodo
         """)
-    Optional<Grupo> findByClaveAndSemestre(String clave, String semestre);
+    Optional<Grupo> findByClaveAndNombrePeriodo(String clave, String nombrePeriodo);
 
     @Query("""
         SELECT g FROM Grupo g
         JOIN FETCH g.materia
         JOIN FETCH g.maestro m
         JOIN FETCH m.usuario
-        ORDER BY g.semestre DESC, g.materia.nombre ASC
+        JOIN FETCH g.periodo
+        ORDER BY g.periodo.fechaInicioPeriodo DESC, g.materia.nombre ASC
         """)
     List<Grupo> findAllWithDetails();
 
@@ -34,8 +36,9 @@ public interface GrupoRepository extends JpaRepository<Grupo, Integer> {
         JOIN FETCH g.materia
         JOIN FETCH g.maestro m
         JOIN FETCH m.usuario
+        JOIN FETCH g.periodo
         WHERE m.id = :maestroId AND g.activo = true
-        ORDER BY g.semestre DESC, g.materia.nombre ASC
+        ORDER BY g.periodo.fechaInicioPeriodo DESC, g.materia.nombre ASC
         """)
     List<Grupo> findByMaestroIdAbiertos(Integer maestroId);
 
@@ -44,9 +47,10 @@ public interface GrupoRepository extends JpaRepository<Grupo, Integer> {
         JOIN FETCH g.materia
         JOIN FETCH g.maestro m
         JOIN FETCH m.usuario
+        JOIN FETCH g.periodo
         JOIN Inscripcion i ON i.grupo = g
         WHERE i.alumno.id = :alumnoId
-        ORDER BY g.semestre DESC, g.materia.nombre ASC
+        ORDER BY g.periodo.fechaInicioPeriodo DESC, g.materia.nombre ASC
         """)
     List<Grupo> findByAlumnoId(Integer alumnoId);
 
@@ -55,40 +59,45 @@ public interface GrupoRepository extends JpaRepository<Grupo, Integer> {
         JOIN FETCH g.materia
         JOIN FETCH g.maestro m
         JOIN FETCH m.usuario
+        JOIN FETCH g.periodo
         WHERE g.id = :id
         """)
     Optional<Grupo> findByIdWithDetails(Integer id);
 
-    long countByActivoAndEstadoEvaluacionAndSemestre(boolean activo, String estadoEvaluacion, String semestre);
+    @Query("SELECT COUNT(g) FROM Grupo g WHERE g.activo = :activo AND g.estadoEvaluacion = :estadoEvaluacion AND g.periodo.nombrePeriodo = :nombrePeriodo")
+    long countByActivoAndEstadoEvaluacionAndNombrePeriodo(boolean activo, String estadoEvaluacion, String nombrePeriodo);
 
     @Query("""
         SELECT g FROM Grupo g
         JOIN FETCH g.materia
         JOIN FETCH g.maestro m
         JOIN FETCH m.usuario
-        WHERE g.estadoEvaluacion = 'ABIERTO' AND g.activo = true AND g.semestre = :semestre
+        JOIN FETCH g.periodo
+        WHERE g.estadoEvaluacion = 'ABIERTO' AND g.activo = true AND g.periodo.nombrePeriodo = :nombrePeriodo
         AND NOT EXISTS (SELECT a FROM ActividadGrupo a WHERE a.grupo = g)
         ORDER BY g.materia.nombre ASC
         """)
-    List<Grupo> findGruposSinActividades(String semestre);
+    List<Grupo> findGruposSinActividades(String nombrePeriodo);
 
     @Query("""
         SELECT g FROM Grupo g
         JOIN FETCH g.materia
         JOIN FETCH g.maestro m
         JOIN FETCH m.usuario
-        WHERE g.estadoEvaluacion = 'ABIERTO' AND g.activo = true AND g.semestre = :semestre
+        JOIN FETCH g.periodo
+        WHERE g.estadoEvaluacion = 'ABIERTO' AND g.activo = true AND g.periodo.nombrePeriodo = :nombrePeriodo
         AND g.materia.totalUnidades > 0
         AND (SELECT COUNT(eu) FROM EstadoUnidad eu WHERE eu.grupo = g AND eu.estado = 'CERRADA')
             = g.materia.totalUnidades
         ORDER BY g.materia.nombre ASC
         """)
-    List<Grupo> findGruposPendientesCierre(String semestre);
+    List<Grupo> findGruposPendientesCierre(String nombrePeriodo);
 
-    @Query("SELECT DISTINCT g.semestre FROM Grupo g WHERE g.estadoEvaluacion = 'CERRADO' ORDER BY g.semestre DESC")
+    @Query("SELECT DISTINCT g.periodo.nombrePeriodo FROM Grupo g WHERE g.estadoEvaluacion = 'CERRADO' ORDER BY g.periodo.fechaInicioPeriodo DESC")
     List<String> findSemestresConActaCerrada();
 
-    boolean existsByClaveAndMateriaIdAndSemestre(String clave, Integer materiaId, String semestre);
+    @Query("SELECT (COUNT(g) > 0) FROM Grupo g WHERE g.clave = :clave AND g.materia.id = :materiaId AND g.periodo.id = :periodoId")
+    boolean existsByClaveAndMateriaIdAndPeriodoId(String clave, Integer materiaId, Integer periodoId);
 
     boolean existsByMaestroId(Integer maestroId);
 }

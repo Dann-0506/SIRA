@@ -3,6 +3,8 @@ package com.sira.service;
 import com.opencsv.CSVReader;
 import com.sira.dto.CargaResultadoResponse;
 import com.sira.dto.CargaResultadoResponse.ErrorLinea;
+import com.sira.model.PeriodoEscolar;
+import com.sira.repository.PeriodoEscolarRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +27,7 @@ public class CargaDatosService {
     @Autowired private ActividadCatalogoService actividadCatalogoService;
     @Autowired private CarreraService carreraService;
     @Autowired private com.sira.repository.CarreraRepository carreraRepository;
+    @Autowired private PeriodoEscolarRepository periodoRepository;
 
     // Formato CSV alumnos: matricula, apellido_paterno, apellido_materno, nombre, correo, fecha_nacimiento, clave_carrera [, curp]
     public CargaResultadoResponse importarAlumnos(MultipartFile archivo) {
@@ -76,7 +79,10 @@ public class CargaDatosService {
             if (fila.length < 4) throw new IllegalArgumentException("Faltan columnas (Materia, Docente, Clave, Semestre).");
             Integer materiaId = materiaService.buscarPorClave(fila[0].trim()).getId();
             Integer maestroId = maestroService.buscarPorNumEmpleado(fila[1].trim()).getId();
-            grupoService.crear(materiaId, maestroId, fila[2].trim(), fila[3].trim(), null, null);
+            String nombrePeriodo = fila[3].trim();
+            PeriodoEscolar periodo = periodoRepository.findByNombrePeriodo(nombrePeriodo)
+                    .orElseThrow(() -> new java.util.NoSuchElementException("Periodo escolar no encontrado: " + nombrePeriodo));
+            grupoService.crear(materiaId, maestroId, fila[2].trim(), periodo.getId());
         });
     }
 
@@ -84,7 +90,7 @@ public class CargaDatosService {
         return procesar(archivo, (fila, num) -> {
             if (fila.length < 3) throw new IllegalArgumentException("Faltan columnas (Matrícula, Clave Grupo, Semestre).");
             Integer alumnoId = alumnoService.buscarPorMatricula(fila[0].trim()).getId();
-            Integer grupoId = grupoService.buscarPorClaveYSemestre(fila[1].trim(), fila[2].trim()).getId();
+            Integer grupoId = grupoService.buscarPorClaveYNombrePeriodo(fila[1].trim(), fila[2].trim()).getId();
             inscripcionService.inscribir(alumnoId, grupoId, LocalDate.now());
         });
     }
