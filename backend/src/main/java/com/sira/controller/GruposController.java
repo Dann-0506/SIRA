@@ -33,8 +33,7 @@ public class GruposController {
         GrupoResponse response = GrupoResponse.from(
                 grupoService.crear(
                         request.materiaId(), request.maestroId(),
-                        request.clave(), request.semestre(),
-                        request.calificacionMinimaAprobatoria(), request.calificacionMaxima()
+                        request.clave(), request.periodoId()
                 )
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -43,7 +42,7 @@ public class GruposController {
     @PutMapping("/{id}")
     public GrupoResponse actualizar(@PathVariable Integer id, @RequestBody GrupoRequest request) {
         return GrupoResponse.from(
-                grupoService.actualizar(id, request.materiaId(), request.maestroId(), request.clave(), request.semestre())
+                grupoService.actualizar(id, request.materiaId(), request.maestroId(), request.clave(), request.periodoId())
         );
     }
 

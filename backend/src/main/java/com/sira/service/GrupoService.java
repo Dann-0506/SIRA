@@ -5,6 +5,7 @@ import com.sira.model.Grupo;
 import com.sira.model.Inscripcion;
 import com.sira.model.Maestro;
 import com.sira.model.Materia;
+import com.sira.model.PeriodoEscolar;
 import com.sira.repository.GrupoRepository;
 import com.sira.repository.InscripcionRepository;
 import com.sira.repository.MaestroRepository;
@@ -25,7 +26,7 @@ public class GrupoService {
     @Autowired private MateriaRepository materiaRepository;
     @Autowired private MaestroRepository maestroRepository;
     @Autowired private InscripcionRepository inscripcionRepository;
-    @Autowired private ConfiguracionService configuracionService;
+    @Autowired private PeriodoEscolarService periodoService;
     @Lazy @Autowired private ReporteService reporteService;
     @Autowired private EstadoUnidadService estadoUnidadService;
     @Autowired private UnidadService unidadService;
@@ -52,47 +53,47 @@ public class GrupoService {
     }
 
     @Transactional(readOnly = true)
-    public Grupo buscarPorClaveYSemestre(String clave, String semestre) {
-        return grupoRepository.findByClaveAndSemestre(clave, semestre)
+    public Grupo buscarPorClaveYNombrePeriodo(String clave, String nombrePeriodo) {
+        return grupoRepository.findByClaveAndNombrePeriodo(clave, nombrePeriodo)
                 .orElseThrow(() -> new NoSuchElementException(
-                        "Grupo '" + clave + "' no encontrado para el semestre '" + semestre + "'"));
+                        "Grupo '" + clave + "' no encontrado para el periodo '" + nombrePeriodo + "'"));
     }
 
     @Transactional
-    public Grupo crear(Integer materiaId, Integer maestroId, String clave, String semestre,
-                       BigDecimal calMinima, BigDecimal calMaxima) {
-        validarCampos(materiaId, maestroId, clave, semestre);
+    public Grupo crear(Integer materiaId, Integer maestroId, String clave, Integer periodoId) {
+        validarCampos(materiaId, maestroId, clave, periodoId);
 
         Materia materia = materiaRepository.findById(materiaId)
                 .orElseThrow(() -> new NoSuchElementException("Materia no encontrada con id: " + materiaId));
         Maestro maestro = maestroRepository.findById(maestroId)
                 .orElseThrow(() -> new NoSuchElementException("Maestro no encontrado con id: " + maestroId));
+        PeriodoEscolar periodo = periodoService.obtenerPorId(periodoId);
 
-        if (grupoRepository.existsByClaveAndMateriaIdAndSemestre(clave, materiaId, semestre)) {
-            throw new IllegalStateException("Ya existe un grupo con esa clave para la misma materia y semestre.");
+        if (grupoRepository.existsByClaveAndMateriaIdAndPeriodoId(clave, materiaId, periodoId)) {
+            throw new IllegalStateException("Ya existe un grupo con esa clave para la misma materia y periodo escolar.");
         }
 
-        Grupo grupo = new Grupo(materia, maestro, clave.trim().toUpperCase(), semestre.trim());
-        grupo.setCalificacionMinimaAprobatoria(calMinima != null ? calMinima : configuracionService.obtenerCalificacionMinima());
-        grupo.setCalificacionMaxima(calMaxima != null ? calMaxima : configuracionService.obtenerCalificacionMaxima());
+        Grupo grupo = new Grupo(materia, maestro, clave.trim().toUpperCase(), periodo);
         Grupo saved = grupoRepository.save(grupo);
         return grupoRepository.findByIdWithDetails(saved.getId()).orElseThrow();
     }
 
     @Transactional
-    public Grupo actualizar(Integer id, Integer materiaId, Integer maestroId, String clave, String semestre) {
+    public Grupo actualizar(Integer id, Integer materiaId, Integer maestroId, String clave, Integer periodoId) {
         Grupo grupo = buscarPorId(id);
-        validarCampos(materiaId, maestroId, clave, semestre);
+        validarCampos(materiaId, maestroId, clave, periodoId);
 
         Materia materia = materiaRepository.findById(materiaId)
                 .orElseThrow(() -> new NoSuchElementException("Materia no encontrada con id: " + materiaId));
         Maestro maestro = maestroRepository.findById(maestroId)
                 .orElseThrow(() -> new NoSuchElementException("Maestro no encontrado con id: " + maestroId));
+        PeriodoEscolar periodo = periodoService.obtenerPorId(periodoId);
 
         grupo.setMateria(materia);
         grupo.setMaestro(maestro);
         grupo.setClave(clave.trim().toUpperCase());
-        grupo.setSemestre(semestre.trim());
+        grupo.setPeriodo(periodo);
+        
         grupoRepository.save(grupo);
         return grupoRepository.findByIdWithDetails(id).orElseThrow();
     }
@@ -177,7 +178,7 @@ public class GrupoService {
         grupoRepository.delete(grupo);
     }
 
-    private void validarCampos(Integer materiaId, Integer maestroId, String clave, String semestre) {
+    private void validarCampos(Integer materiaId, Integer maestroId, String clave, Integer periodoId) {
         if (materiaId == null || materiaId <= 0) {
             throw new IllegalArgumentException("Debe seleccionar una materia válida.");
         }
@@ -187,8 +188,8 @@ public class GrupoService {
         if (clave == null || clave.isBlank()) {
             throw new IllegalArgumentException("La clave del grupo es obligatoria.");
         }
-        if (semestre == null || semestre.isBlank()) {
-            throw new IllegalArgumentException("El semestre es obligatorio.");
+        if (periodoId == null || periodoId <= 0) {
+            throw new IllegalArgumentException("El periodo escolar es obligatorio.");
         }
     }
 }

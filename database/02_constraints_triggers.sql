@@ -21,15 +21,19 @@ ALTER TABLE materia
     ADD CONSTRAINT chk_materia_total_unidades
         CHECK (total_unidades >= 1);
 
+ALTER TABLE periodo_escolar
+    ADD CONSTRAINT chk_periodo_fechas
+        CHECK (fecha_inicio < fecha_fin),
+    ADD CONSTRAINT chk_periodo_minima_rango
+        CHECK (minima_aprobatoria BETWEEN 0 AND 100),
+    ADD CONSTRAINT chk_periodo_maxima_rango
+        CHECK (maxima BETWEEN 0 AND 100),
+    ADD CONSTRAINT chk_periodo_min_menor_max
+        CHECK (minima_aprobatoria < maxima);
+
 ALTER TABLE grupo
     ADD CONSTRAINT chk_grupo_estado_evaluacion
-        CHECK (estado_evaluacion IN ('ABIERTO', 'CERRADO')),
-    ADD CONSTRAINT chk_grupo_cal_minima_rango
-        CHECK (calificacion_minima_aprobatoria BETWEEN 0 AND 100),
-    ADD CONSTRAINT chk_grupo_cal_maxima_rango
-        CHECK (calificacion_maxima BETWEEN 0 AND 100),
-    ADD CONSTRAINT chk_grupo_cal_minima_menor_maxima
-        CHECK (calificacion_minima_aprobatoria < calificacion_maxima);
+        CHECK (estado_evaluacion IN ('ABIERTO', 'CERRADO'));
 
 ALTER TABLE inscripcion
     ADD CONSTRAINT chk_inscripcion_estado_academico
@@ -66,7 +70,26 @@ ALTER TABLE bonus
         CHECK (tipo <> 'unidad' OR unidad_id IS NOT NULL);
 
 -- -----------------------------------------------------------------------------
--- Trigger 1: Bloquear inscripción en grupo cerrado
+-- Trigger 1: Garantizar un único periodo actual
+-- -----------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION fn_unico_periodo_actual()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN
+    -- Si el nuevo periodo se marca como actual, desactivar el actual previo
+    IF NEW.actual = TRUE THEN
+        UPDATE periodo_escolar SET actual = FALSE WHERE actual = TRUE AND id <> NEW.id;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_unico_periodo_actual
+    BEFORE INSERT OR UPDATE ON periodo_escolar
+    FOR EACH ROW EXECUTE FUNCTION fn_unico_periodo_actual();
+
+-- -----------------------------------------------------------------------------
+-- Trigger 2: Bloquear inscripción en grupo cerrado
 -- -----------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION fn_bloquear_inscripcion_grupo_cerrado()
@@ -84,7 +107,7 @@ CREATE TRIGGER trg_bloquear_inscripcion_grupo_cerrado
     FOR EACH ROW EXECUTE FUNCTION fn_bloquear_inscripcion_grupo_cerrado();
 
 -- -----------------------------------------------------------------------------
--- Trigger 2: Bloquear eliminación de inscripción en grupo cerrado
+-- Trigger 3: Bloquear eliminación de inscripción en grupo cerrado
 -- -----------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION fn_bloquear_eliminar_inscripcion_cerrada()
@@ -102,7 +125,7 @@ CREATE TRIGGER trg_bloquear_eliminar_inscripcion_cerrada
     FOR EACH ROW EXECUTE FUNCTION fn_bloquear_eliminar_inscripcion_cerrada();
 
 -- -----------------------------------------------------------------------------
--- Trigger 3: Bloquear modificación de resultados en grupo cerrado
+-- Trigger 4: Bloquear modificación de resultados en grupo cerrado
 -- -----------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION fn_bloquear_resultado_grupo_cerrado()
@@ -134,7 +157,7 @@ CREATE TRIGGER trg_bloquear_resultado_delete_grupo_cerrado
     FOR EACH ROW EXECUTE FUNCTION fn_bloquear_resultado_grupo_cerrado();
 
 -- -----------------------------------------------------------------------------
--- Trigger 4: Validar que unidad_id de actividad_grupo pertenece a la materia del grupo
+-- Trigger 5: Validar que unidad_id de actividad_grupo pertenece a la materia del grupo
 -- -----------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION fn_validar_unidad_pertenece_a_materia_grupo()
@@ -158,7 +181,7 @@ CREATE TRIGGER trg_validar_unidad_actividad_grupo
     FOR EACH ROW EXECUTE FUNCTION fn_validar_unidad_pertenece_a_materia_grupo();
 
 -- -----------------------------------------------------------------------------
--- Trigger 5: Validar que unidad_id de estado_unidad pertenece a la materia del grupo
+-- Trigger 6: Validar que unidad_id de estado_unidad pertenece a la materia del grupo
 -- -----------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION fn_validar_unidad_pertenece_a_materia_estadounidad()
@@ -182,7 +205,7 @@ CREATE TRIGGER trg_validar_unidad_estado_unidad
     FOR EACH ROW EXECUTE FUNCTION fn_validar_unidad_pertenece_a_materia_estadounidad();
 
 -- -----------------------------------------------------------------------------
--- Trigger 6: Validar que resultado.calificacion no supera calificacion_maxima del grupo
+-- Trigger 7: Validar que resultado.calificacion no supera calificacion_maxima del periodo
 -- -----------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION fn_validar_calificacion_maxima()
@@ -194,13 +217,15 @@ BEGIN
         RETURN NEW;
     END IF;
 
-    SELECT g.calificacion_maxima INTO v_cal_maxima
-    FROM grupo g
+    -- Obtener la máxima del periodo asociado al grupo de la inscripción
+    SELECT pe.maxima INTO v_cal_maxima
+    FROM periodo_escolar pe
+    JOIN grupo g ON g.periodo_id = pe.id
     JOIN inscripcion i ON i.grupo_id = g.id
     WHERE i.id = NEW.inscripcion_id;
 
     IF NEW.calificacion > v_cal_maxima THEN
-        RAISE EXCEPTION 'La calificación (%) supera el máximo permitido para este grupo (%).', NEW.calificacion, v_cal_maxima;
+        RAISE EXCEPTION 'La calificación (%) supera el máximo permitido para este periodo escolar (%).', NEW.calificacion, v_cal_maxima;
     END IF;
     RETURN NEW;
 END;

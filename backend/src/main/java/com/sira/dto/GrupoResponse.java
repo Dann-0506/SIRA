@@ -7,7 +7,8 @@ import java.math.BigDecimal;
 public record GrupoResponse(
         Integer id,
         String clave,
-        String semestre,
+        Integer periodoId,
+        String semestre, // Mantenemos el nombre por compatibilidad con el frontend
         Integer materiaId,
         String materiaNombre,
         String materiaClave,
@@ -22,6 +23,7 @@ public record GrupoResponse(
         return new GrupoResponse(
                 g.getId(),
                 g.getClave(),
+                g.getPeriodo().getId(),
                 g.getSemestre(),
                 g.getMateria().getId(),
                 g.getMateria().getNombre(),

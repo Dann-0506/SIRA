@@ -4,8 +4,8 @@ import {
   Users, GraduationCap, School, ClipboardList,
   AlertTriangle, Clock, UserX, CheckCircle2, Settings,
 } from 'lucide-react'
-import { getDashboard } from '@/api/configuracion'
-import type { GrupoAlertaDto, AlumnoAlertaDto } from '@/types'
+import { getDashboard } from '@/api/periodos'
+import type { DashboardResponse, GrupoAlertaDto, AlumnoAlertaDto } from '@/types'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 
 // ─── KPI Card ────────────────────────────────────────────────────────────────
@@ -122,7 +122,7 @@ function AlertaAlumnos({ alumnos }: { alumnos: AlumnoAlertaDto[] }) {
 
 export default function Dashboard() {
   const navigate = useNavigate()
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<DashboardResponse>({
     queryKey: ['dashboard'],
     queryFn: getDashboard,
     staleTime: 0, // siempre obsoleto: refetch garantizado al montar el componente
@@ -139,11 +139,11 @@ export default function Dashboard() {
           <p className="mt-1 text-sm text-slate-500">Estado operativo del sistema.</p>
         </div>
         <button
-          onClick={() => navigate('/admin/configuracion')}
+          onClick={() => navigate('/admin/periodos')}
           className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 px-3 py-1.5 rounded-lg transition-colors"
         >
           <Settings className="h-3.5 w-3.5" />
-          Semestre activo: <strong>{data?.semestreActivo || '—'}</strong>
+          Periodo actual: <strong>{data?.semestreActivo || '—'}</strong>
         </button>
       </div>
 

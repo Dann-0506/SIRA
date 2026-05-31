@@ -23,20 +23,20 @@ public class ReportesService {
     }
 
     @Transactional(readOnly = true)
-    public ReportesResponse generarReportes(String semestre) {
+    public ReportesResponse generarReportes(String nombrePeriodo) {
         return new ReportesResponse(
-                semestre,
-                buildMateriasReprobacion(semestre),
-                buildAlumnosRiesgo(semestre),
-                buildMaestrosAprovechamiento(semestre),
-                buildCarrerasReprobacion(semestre)
+                nombrePeriodo,
+                buildMateriasReprobacion(nombrePeriodo),
+                buildAlumnosRiesgo(nombrePeriodo),
+                buildMaestrosAprovechamiento(nombrePeriodo),
+                buildCarrerasReprobacion(nombrePeriodo)
         );
     }
 
     // ─── Materias con mayor reprobación ──────────────────────────────────────
 
-    private List<MateriaReprobacionDto> buildMateriasReprobacion(String semestre) {
-        return inscripcionRepository.findMateriasConReprobacionRaw(semestre)
+    private List<MateriaReprobacionDto> buildMateriasReprobacion(String nombrePeriodo) {
+        return inscripcionRepository.findMateriasConReprobacionRaw(nombrePeriodo)
                 .stream()
                 .map(row -> {
                     long total = toLong(row[4]);
@@ -51,8 +51,8 @@ public class ReportesService {
 
     // ─── Alumnos en riesgo académico ──────────────────────────────────────────
 
-    private List<AlumnoRiesgoDto> buildAlumnosRiesgo(String semestre) {
-        List<Inscripcion> reprobadas = inscripcionRepository.findReprobadosPorSemestre(semestre);
+    private List<AlumnoRiesgoDto> buildAlumnosRiesgo(String nombrePeriodo) {
+        List<Inscripcion> reprobadas = inscripcionRepository.findReprobadosPorNombrePeriodo(nombrePeriodo);
 
         Map<Integer, List<Inscripcion>> porAlumno = reprobadas.stream()
                 .collect(Collectors.groupingBy(i -> i.getAlumno().getId()));
@@ -83,8 +83,8 @@ public class ReportesService {
 
     // ─── Índice de aprovechamiento por maestro ────────────────────────────────
 
-    private List<MaestroAprovechamientoDto> buildMaestrosAprovechamiento(String semestre) {
-        return inscripcionRepository.findMaestrosAprovechamientoRaw(semestre)
+    private List<MaestroAprovechamientoDto> buildMaestrosAprovechamiento(String nombrePeriodo) {
+        return inscripcionRepository.findMaestrosAprovechamientoRaw(nombrePeriodo)
                 .stream()
                 .map(row -> {
                     long alumnosEval = toLong(row[4]);
@@ -99,8 +99,8 @@ public class ReportesService {
 
     // ─── Reprobación por carrera ──────────────────────────────────────────────
 
-    private List<CarreraReprobacionDto> buildCarrerasReprobacion(String semestre) {
-        return inscripcionRepository.findCarrerasReprobacionRaw(semestre)
+    private List<CarreraReprobacionDto> buildCarrerasReprobacion(String nombrePeriodo) {
+        return inscripcionRepository.findCarrerasReprobacionRaw(nombrePeriodo)
                 .stream()
                 .map(row -> {
                     long total = toLong(row[3]);

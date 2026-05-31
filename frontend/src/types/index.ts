@@ -37,6 +37,18 @@ export interface CarreraResponse {
   activa: boolean
 }
 
+// ─── Periodo Escolar ──────────────────────────────────────────────────────────
+
+export interface PeriodoEscolarResponse {
+  id: number
+  nombrePeriodo: string
+  fechaInicioPeriodo: string
+  fechaFinPeriodo: string
+  calificacionMinimaAprobatoria: number
+  calificacionMaximaPosible: number
+  esPeriodoActual: boolean
+}
+
 // ─── Admin ────────────────────────────────────────────────────────────────────
 export interface AdminResponse {
   id: number
@@ -93,7 +105,8 @@ export interface UnidadDto {
 export interface GrupoResponse {
   id: number
   clave: string
-  semestre: string
+  periodoId: number
+  semestre: string // Nombre del periodo (vía getSemestre en backend)
   materiaId: number
   materiaNombre: string
   materiaClave: string

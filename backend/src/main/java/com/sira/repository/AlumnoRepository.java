@@ -50,11 +50,11 @@ public interface AlumnoRepository extends JpaRepository<Alumno, Integer> {
         AND NOT EXISTS (
             SELECT i FROM Inscripcion i
             WHERE i.alumno = a
-            AND i.grupo.semestre = :semestre
+            AND i.grupo.periodo.nombrePeriodo = :nombrePeriodo
             AND i.grupo.estadoEvaluacion = 'ABIERTO'
             AND i.grupo.activo = true
         )
         ORDER BY a.usuario.apellidoPaterno ASC, a.usuario.apellidoMaterno ASC, a.usuario.nombre ASC
         """)
-    List<Alumno> findAlumnosSinInscripcionesEnSemestre(String semestre);
+    List<Alumno> findAlumnosSinInscripcionesEnSemestre(String nombrePeriodo);
 }

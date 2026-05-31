@@ -91,23 +91,23 @@ const FORMATOS: Record<string, FormatoTipo> = {
   grupos: {
     label: 'Grupos',
     columnas: [
-      { nombre: 'clave_materia', requerida: true, descripcion: 'Clave de materia existente (ej. MAT101)' },
-      { nombre: 'num_empleado',  requerida: true, descripcion: 'Número de empleado del maestro asignado' },
-      { nombre: 'clave_grupo',   requerida: true, descripcion: 'Clave del grupo (ej. G-01)' },
-      { nombre: 'semestre',      requerida: true, descripcion: 'Período académico (ej. 2026-1)' },
+      { nombre: 'clave_materia', requerida: true,  descripcion: 'Clave de materia existente (ej. MAT101)' },
+      { nombre: 'num_empleado',  requerida: true,  descripcion: 'Número de empleado del maestro asignado' },
+      { nombre: 'clave_grupo',   requerida: true,  descripcion: 'Clave del grupo (ej. G-01)' },
+      { nombre: 'periodo',       requerida: false, descripcion: 'Nombre del periodo escolar (dejar vacío para usar el Periodo Actual)' },
     ],
-    ejemplo: 'MAT101,EMP-001,G-01,2026-1',
-    notas: 'La materia y el maestro deben existir previamente en el sistema.',
+    ejemplo: 'MAT101,EMP-001,G-01,ENERO - JUNIO 2026',
+    notas: 'Si no se especifica el periodo, se asignará automáticamente al periodo marcado como ACTUAL. La materia y el maestro deben existir previamente.',
   },
   inscripciones: {
     label: 'Inscripciones',
     columnas: [
-      { nombre: 'num_control', requerida: true, descripcion: 'Número de control del alumno existente' },
-      { nombre: 'clave_grupo', requerida: true, descripcion: 'Clave del grupo existente' },
-      { nombre: 'semestre',    requerida: true, descripcion: 'Semestre del grupo (ej. 2026-1)' },
+      { nombre: 'num_control', requerida: true,  descripcion: 'Número de control del alumno existente' },
+      { nombre: 'clave_grupo', requerida: true,  descripcion: 'Clave del grupo existente' },
+      { nombre: 'periodo',       requerida: false, descripcion: 'Nombre del periodo escolar (dejar vacío para usar el Periodo Actual)' },
     ],
-    ejemplo: 'A12345678,G-01,2026-1',
-    notas: 'El alumno y el grupo deben existir previamente. No se permiten inscripciones duplicadas.',
+    ejemplo: 'A12345678,G-01,ENERO - JUNIO 2026',
+    notas: 'El sistema buscará el grupo dentro del periodo especificado. Si se deja vacío, lo buscará en el periodo marcado como ACTUAL.',
   },
 }
 
