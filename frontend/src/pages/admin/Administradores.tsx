@@ -15,6 +15,7 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
+import { DataError } from '@/components/shared/DataError'
 
 const emptyForm = { nombre: '', apellidoPaterno: '', apellidoMaterno: '', email: '', numEmpleado: '', fechaNacimiento: '' }
 
@@ -35,7 +36,7 @@ export default function Administradores() {
   // Filtros
   const [estadoFilter, setEstadoFilter] = useState<'TODOS' | 'ACTIVO' | 'INACTIVO'>('TODOS')
 
-  const { data: admins = [], isLoading } = useQuery({
+  const { data: admins = [], isLoading, error, refetch } = useQuery({
     queryKey: ['administradores'],
     queryFn: getAdmins,
   })
@@ -114,6 +115,20 @@ export default function Administradores() {
     }
     if (editTarget) updateMut.mutate({ id: editTarget.id, data })
     else createMut.mutate(data)
+  }
+
+  if (error) {
+    return (
+      <div>
+        <PageHeader
+          title="Administradores"
+          description="Gestión de cuentas de administrador del sistema."
+        />
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mt-6">
+          <DataError onRetry={() => refetch()} />
+        </div>
+      </div>
+    )
   }
 
   const isPending = createMut.isPending || updateMut.isPending

@@ -16,6 +16,7 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
+import { DataError } from '@/components/shared/DataError'
 
 const emptyForm = {
   nombre: '', apellidoPaterno: '', apellidoMaterno: '',
@@ -40,7 +41,7 @@ export default function Alumnos() {
   const [estadoFilter, setEstadoFilter] = useState<'TODOS' | 'ACTIVO' | 'INACTIVO'>('TODOS')
   const [carreraFilter, setCarreraFilter] = useState<string>('TODAS')
 
-  const { data: alumnos = [], isLoading } = useQuery({
+  const { data: alumnos = [], isLoading, error, refetch } = useQuery({
     queryKey: ['alumnos'],
     queryFn: getAlumnos,
   })
@@ -142,6 +143,20 @@ export default function Alumnos() {
     }
     if (editTarget) updateMut.mutate({ id: editTarget.id, data })
     else createMut.mutate(data)
+  }
+
+  if (error) {
+    return (
+      <div>
+        <PageHeader
+          title="Alumnos"
+          description="Gestión de alumnos registrados en el sistema."
+        />
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mt-6">
+          <DataError onRetry={() => refetch()} />
+        </div>
+      </div>
+    )
   }
 
   const isPending = createMut.isPending || updateMut.isPending

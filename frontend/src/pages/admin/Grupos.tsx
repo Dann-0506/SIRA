@@ -17,6 +17,7 @@ import { FormModal } from '@/components/shared/FormModal'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
+import { DataError } from '@/components/shared/DataError'
 
 const emptyForm = {
   clave: '', semestre: '', materiaId: '', maestroId: '',
@@ -100,7 +101,7 @@ export default function Grupos() {
   const [maestroFilter, setMaestroFilter] = useState('TODOS')
   const [estadoFilter, setEstadoFilter] = useState('TODOS')
 
-  const { data: grupos = [], isLoading } = useQuery({ queryKey: ['grupos'], queryFn: getGrupos })
+  const { data: grupos = [], isLoading, error, refetch } = useQuery({ queryKey: ['grupos'], queryFn: getGrupos })
   const { data: materias = [] } = useQuery({ queryKey: ['materias'], queryFn: getMaterias })
   const { data: maestros = [] } = useQuery({ queryKey: ['maestros'], queryFn: getMaestros })
 
@@ -158,6 +159,20 @@ export default function Grupos() {
     }
     if (editTarget) updateMut.mutate({ id: editTarget.id, data: payload })
     else createMut.mutate(payload)
+  }
+
+  if (error) {
+    return (
+      <div>
+        <PageHeader
+          title="Grupos"
+          description="Gestión de grupos académicos y su estado de evaluación."
+        />
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mt-6">
+          <DataError onRetry={() => refetch()} />
+        </div>
+      </div>
+    )
   }
 
   const inputClass = 'w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition'

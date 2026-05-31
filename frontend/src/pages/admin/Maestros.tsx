@@ -15,6 +15,7 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
+import { DataError } from '@/components/shared/DataError'
 
 const emptyForm = { nombre: '', apellidoPaterno: '', apellidoMaterno: '', email: '', numEmpleado: '', fechaNacimiento: '' }
 
@@ -34,7 +35,7 @@ export default function Maestros() {
   // Filtros
   const [estadoFilter, setEstadoFilter] = useState<'TODOS' | 'ACTIVO' | 'INACTIVO'>('TODOS')
 
-  const { data: maestros = [], isLoading } = useQuery({
+  const { data: maestros = [], isLoading, error, refetch } = useQuery({
     queryKey: ['maestros'],
     queryFn: getMaestros,
   })
@@ -117,6 +118,20 @@ export default function Maestros() {
     }
     if (editTarget) updateMut.mutate({ id: editTarget.id, data })
     else createMut.mutate(data)
+  }
+
+  if (error) {
+    return (
+      <div>
+        <PageHeader
+          title="Maestros"
+          description="Gestión de maestros registrados en el sistema."
+        />
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mt-6">
+          <DataError onRetry={() => refetch()} />
+        </div>
+      </div>
+    )
   }
 
   const isPending = createMut.isPending || updateMut.isPending

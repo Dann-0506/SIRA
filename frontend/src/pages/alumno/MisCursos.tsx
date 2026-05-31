@@ -1,21 +1,33 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, ChevronRight } from 'lucide-react'
+import { BookOpen, ChevronRight, Library } from 'lucide-react'
 import { getMisInscripciones } from '@/api/inscripciones'
 import type { InscripcionResponse } from '@/types'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
-import { ErrorAlert } from '@/components/shared/ErrorAlert'
+import { DataError } from '@/components/shared/DataError'
+import { EmptyState } from '@/components/shared/EmptyState'
 import { formatCalificacion } from '@/lib/utils'
 
 export default function MisCursos() {
   const navigate = useNavigate()
 
-  const { data: inscripciones = [], isLoading, error } = useQuery({
+  const { data: inscripciones = [], isLoading, error, refetch } = useQuery({
     queryKey: ['misInscripciones'],
     queryFn: getMisInscripciones,
   })
+
+  if (error) {
+    return (
+      <div>
+        <PageHeader title="Mis Cursos" description="Cursos en los que estás inscrito este período." />
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mt-6">
+          <DataError onRetry={() => refetch()} />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -24,16 +36,18 @@ export default function MisCursos() {
         description="Cursos en los que estás inscrito este período."
       />
 
-      {error && <ErrorAlert message="No se pudieron cargar tus cursos." />}
-
       {isLoading ? (
         <LoadingSpinner className="py-20" size="lg" />
       ) : inscripciones.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm py-20 text-center text-slate-400 text-sm">
-          No tienes cursos inscritos en este momento.
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mt-6">
+          <EmptyState 
+            title="Sin cursos inscritos" 
+            description="No apareces registrado en ninguna materia para el periodo actual."
+            icon={Library}
+          />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
           {inscripciones.map((i: InscripcionResponse) => {
             const calFinal = i.calificacionFinalOverride ?? i.calificacionFinalCalculada
 

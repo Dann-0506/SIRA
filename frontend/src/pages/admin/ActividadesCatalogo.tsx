@@ -13,6 +13,7 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
+import { DataError } from '@/components/shared/DataError'
 
 const emptyForm = { nombre: '', descripcion: '' }
 
@@ -29,7 +30,7 @@ export default function ActividadesCatalogo() {
   // Filtros
   const [estadoFilter, setEstadoFilter] = useState<'TODOS' | 'ACTIVO' | 'INACTIVO'>('TODOS')
 
-  const { data: actividades = [], isLoading } = useQuery({
+  const { data: actividades = [], isLoading, error, refetch } = useQuery({
     queryKey: ['catalogo-actividades'],
     queryFn: getCatalogo,
   })
@@ -85,6 +86,20 @@ export default function ActividadesCatalogo() {
     const descripcion = form.descripcion.trim()
     if (editTarget) updateMut.mutate({ id: editTarget.id, data: { nombre, descripcion } })
     else createMut.mutate({ nombre, descripcion: descripcion || undefined })
+  }
+
+  if (error) {
+    return (
+      <div>
+        <PageHeader
+          title="Actividades"
+          description="Define las actividades válidas que los maestros pueden asignar a sus grupos."
+        />
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mt-6">
+          <DataError onRetry={() => refetch()} />
+        </div>
+      </div>
+    )
   }
 
   const inputClass = 'w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition'

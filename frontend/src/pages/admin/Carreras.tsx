@@ -14,6 +14,7 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
+import { DataError } from '@/components/shared/DataError'
 
 const emptyForm = { clave: '', nombre: '' }
 
@@ -30,7 +31,7 @@ export default function Carreras() {
   // Filtros
   const [estadoFilter, setEstadoFilter] = useState<'TODOS' | 'ACTIVO' | 'INACTIVO'>('TODOS')
 
-  const { data: carreras = [], isLoading } = useQuery({
+  const { data: carreras = [], isLoading, error, refetch } = useQuery({
     queryKey: ['carreras'],
     queryFn: getCarreras,
   })
@@ -99,6 +100,20 @@ export default function Carreras() {
     const data = { clave: form.clave.trim(), nombre: form.nombre.trim() }
     if (editTarget) updateMut.mutate({ id: editTarget.id, data })
     else createMut.mutate(data)
+  }
+
+  if (error) {
+    return (
+      <div>
+        <PageHeader
+          title="Carreras"
+          description="Catálogo de programas académicos disponibles en la institución."
+        />
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mt-6">
+          <DataError onRetry={() => refetch()} />
+        </div>
+      </div>
+    )
   }
 
   const isPending = createMut.isPending || updateMut.isPending

@@ -10,6 +10,7 @@ import { FormModal } from '@/components/shared/FormModal'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
+import { DataError } from '@/components/shared/DataError'
 
 const emptyCreateForm = { clave: '', nombre: '', totalUnidades: 1, nombresUnidades: [''] }
 const emptyEditForm = { nombre: '' }
@@ -28,7 +29,7 @@ export default function Materias() {
   // Filtros
   const [unidadesFilter, setUnidadesFilter] = useState('TODAS')
 
-  const { data: materias = [], isLoading } = useQuery({
+  const { data: materias = [], isLoading, error, refetch } = useQuery({
     queryKey: ['materias'],
     queryFn: getMaterias,
   })
@@ -85,6 +86,20 @@ export default function Materias() {
   const handleEdit = () => {
     if (!editForm.nombre.trim()) { setFormError('El nombre es requerido.'); return }
     if (editTarget) updateMut.mutate({ id: editTarget.id, data: { nombre: editForm.nombre.trim() } })
+  }
+
+  if (error) {
+    return (
+      <div>
+        <PageHeader
+          title="Materias"
+          description="Catálogo de materias con sus unidades temáticas."
+        />
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mt-6">
+          <DataError onRetry={() => refetch()} />
+        </div>
+      </div>
+    )
   }
 
   const openEdit = (m: MateriaResponse) => {
