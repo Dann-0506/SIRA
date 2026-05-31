@@ -76,21 +76,39 @@ public class CargaDatosService {
 
     public CargaResultadoResponse importarGrupos(MultipartFile archivo) {
         return procesar(archivo, (fila, num) -> {
-            if (fila.length < 4) throw new IllegalArgumentException("Faltan columnas (Materia, Docente, Clave, Semestre).");
+            if (fila.length < 3) throw new IllegalArgumentException("Faltan columnas (Clave Materia, Num. Empleado Maestro, Clave Grupo).");
             Integer materiaId = materiaService.buscarPorClave(fila[0].trim()).getId();
             Integer maestroId = maestroService.buscarPorNumEmpleado(fila[1].trim()).getId();
-            String nombrePeriodo = fila[3].trim();
-            PeriodoEscolar periodo = periodoRepository.findByNombrePeriodo(nombrePeriodo)
-                    .orElseThrow(() -> new java.util.NoSuchElementException("Periodo escolar no encontrado: " + nombrePeriodo));
+            
+            PeriodoEscolar periodo;
+            if (fila.length >= 4 && !fila[3].isBlank()) {
+                String nombrePeriodo = fila[3].trim();
+                periodo = periodoRepository.findByNombrePeriodo(nombrePeriodo)
+                        .orElseThrow(() -> new java.util.NoSuchElementException("Periodo escolar no encontrado: " + nombrePeriodo));
+            } else {
+                periodo = periodoRepository.findByEsPeriodoActualTrue()
+                        .orElseThrow(() -> new IllegalStateException("No se especificó un periodo y no hay un periodo marcado como actual."));
+            }
+
             grupoService.crear(materiaId, maestroId, fila[2].trim(), periodo.getId());
         });
     }
 
     public CargaResultadoResponse importarInscripciones(MultipartFile archivo) {
         return procesar(archivo, (fila, num) -> {
-            if (fila.length < 3) throw new IllegalArgumentException("Faltan columnas (Matrícula, Clave Grupo, Semestre).");
+            if (fila.length < 2) throw new IllegalArgumentException("Faltan columnas (Matrícula, Clave Grupo).");
             Integer alumnoId = alumnoService.buscarPorMatricula(fila[0].trim()).getId();
-            Integer grupoId = grupoService.buscarPorClaveYNombrePeriodo(fila[1].trim(), fila[2].trim()).getId();
+            
+            String nombrePeriodo;
+            if (fila.length >= 3 && !fila[2].isBlank()) {
+                nombrePeriodo = fila[2].trim();
+            } else {
+                nombrePeriodo = periodoRepository.findByEsPeriodoActualTrue()
+                        .map(PeriodoEscolar::getNombrePeriodo)
+                        .orElseThrow(() -> new IllegalStateException("No se especificó un periodo y no hay un periodo marcado como actual."));
+            }
+
+            Integer grupoId = grupoService.buscarPorClaveYNombrePeriodo(fila[1].trim(), nombrePeriodo).getId();
             inscripcionService.inscribir(alumnoId, grupoId, LocalDate.now());
         });
     }
