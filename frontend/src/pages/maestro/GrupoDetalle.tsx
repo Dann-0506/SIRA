@@ -2,7 +2,7 @@ import { useInvalidateDashboard } from '@/hooks/useInvalidateDashboard'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Pencil, Trash2, Lock, LockOpen, FileDown, Gift, AlertTriangle } from 'lucide-react'
+import { Plus, Pencil, Trash2, Lock, LockOpen, FileDown, Gift, AlertTriangle, Search } from 'lucide-react'
 import axios from 'axios'
 import { getMiGrupo, cerrarGrupoMaestro } from '@/api/grupos'
 import { getUnidadesByGrupo } from '@/api/materias'
@@ -536,6 +536,7 @@ function BonusTab({ grupo }: { grupo: GrupoResponse }) {
   const [selectedInscripcionId, setSelectedInscripcionId] = useState<number | null>(null)
   const [bonusForm, setBonusForm] = useState({ tipo: 'unidad', unidadId: '', puntos: '', justificacion: '' })
   const [bonusError, setBonusError] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
 
   const { data: reporte = [], isLoading: reporteLoading } = useQuery({
     queryKey: ['reporte', grupoId],
@@ -547,6 +548,11 @@ function BonusTab({ grupo }: { grupo: GrupoResponse }) {
     queryFn: () => getBonus(selectedInscripcionId!),
     enabled: !!selectedInscripcionId,
   })
+
+  const filteredAlumnos = reporte.filter(r =>
+    r.alumnoNombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    r.alumnoNumControl.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   const invBonus = () => qc.invalidateQueries({ queryKey: ['bonus', selectedInscripcionId] })
 
@@ -580,21 +586,39 @@ function BonusTab({ grupo }: { grupo: GrupoResponse }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
       {/* Left: alumno list */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
         <div className="px-5 py-3 border-b border-slate-100 bg-slate-50">
           <h4 className="font-semibold text-slate-800">Alumnos</h4>
         </div>
-        <div className="divide-y divide-slate-100">
-          {reporte.map((r) => (
-            <button
-              key={r.inscripcionId}
-              onClick={() => setSelectedInscripcionId(r.inscripcionId)}
-              className={`w-full text-left px-5 py-3 transition-colors ${selectedInscripcionId === r.inscripcionId ? 'bg-blue-50 border-l-2 border-blue-500' : 'hover:bg-slate-50'}`}
-            >
-              <p className="text-sm font-medium text-slate-800">{r.alumnoNombre}</p>
-              <p className="text-xs text-slate-400">{r.alumnoNumControl}</p>
-            </button>
-          ))}
+        <div className="p-3 border-b border-slate-100 bg-white">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar alumno..."
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+            />
+          </div>
+        </div>
+        <div className="divide-y divide-slate-100 overflow-y-auto max-h-[500px]">
+          {filteredAlumnos.length === 0 ? (
+            <div className="px-5 py-10 text-center text-slate-400 text-xs italic">
+              No se encontraron alumnos.
+            </div>
+          ) : (
+            filteredAlumnos.map((r) => (
+              <button
+                key={r.inscripcionId}
+                onClick={() => setSelectedInscripcionId(r.inscripcionId)}
+                className={`w-full text-left px-5 py-3 transition-colors ${selectedInscripcionId === r.inscripcionId ? 'bg-blue-50 border-l-2 border-blue-500' : 'hover:bg-slate-50'}`}
+              >
+                <p className="text-sm font-medium text-slate-800">{r.alumnoNombre}</p>
+                <p className="text-xs text-slate-400">{r.alumnoNumControl}</p>
+              </button>
+            ))
+          )}
         </div>
       </div>
 
@@ -692,6 +716,7 @@ function ReporteTab({ grupo }: { grupo: GrupoResponse }) {
   const [overrideError, setOverrideError] = useState('')
   const [cerrarOpen, setCerrarOpen] = useState(false)
   const [downloadLoading, setDownloadLoading] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
 
   const { data: reporte = [], isLoading } = useQuery({
     queryKey: ['reporte', grupoId],
@@ -702,6 +727,11 @@ function ReporteTab({ grupo }: { grupo: GrupoResponse }) {
     queryKey: ['estadosUnidades', grupoId],
     queryFn: () => getEstadosUnidades(grupoId),
   })
+
+  const filteredReporte = reporte.filter(r =>
+    r.alumnoNombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    r.alumnoNumControl.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   const invReporte = () => qc.invalidateQueries({ queryKey: ['reporte', grupoId] })
   const invGrupo = () => qc.invalidateQueries({ queryKey: ['miGrupo', grupoId] })
@@ -748,8 +778,20 @@ function ReporteTab({ grupo }: { grupo: GrupoResponse }) {
           : undefined
         return (
           <div className="flex items-center gap-3 flex-wrap">
+            {/* Search bar */}
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar por nombre o núm. control..."
+                className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-slate-200 bg-white text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition"
+              />
+            </div>
+
             {grupo.estadoEvaluacion === 'ABIERTO' && (
-              <div className="flex items-center gap-2">
+              <>
                 <button
                   onClick={() => setCerrarOpen(true)}
                   disabled={bloqueado}
@@ -764,8 +806,9 @@ function ReporteTab({ grupo }: { grupo: GrupoResponse }) {
                     {motivoBloqueo}
                   </span>
                 )}
-              </div>
+              </>
             )}
+
             <button
               onClick={handleDownloadActa}
               disabled={downloadLoading}
@@ -798,30 +841,38 @@ function ReporteTab({ grupo }: { grupo: GrupoResponse }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {reporte.map((r) => (
-                  <tr key={r.inscripcionId} className="hover:bg-slate-50/60">
-                    <td className="px-4 py-3 font-medium text-slate-800">{r.alumnoNombre}</td>
-                    <td className="px-4 py-3 text-slate-500">{r.alumnoNumControl}</td>
-                    {r.unidades.map((u: ResultadoUnidadDto) => (
-                      <td key={u.unidadId} className="px-4 py-3 text-center text-slate-700">{formatCalificacion(u.resultadoFinal)}</td>
-                    ))}
-                    <td className="px-4 py-3 text-center font-semibold text-slate-900">{formatCalificacion(r.calificacionFinal)}</td>
-                    <td className="px-4 py-3 text-center"><StatusBadge estado={r.estado} /></td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => {
-                          setOverrideTarget(r)
-                          setOverrideForm({ calificacion: r.calificacionFinal != null ? String(r.calificacionFinal) : '', justificacion: r.overrideJustificacion ?? '' })
-                          setOverrideError('')
-                        }}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-colors"
-                        title="Aplicar override"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
+                {filteredReporte.length === 0 ? (
+                  <tr>
+                    <td colSpan={6 + (reporte[0]?.unidades.length || 0)} className="px-4 py-10 text-center text-slate-400 italic">
+                      No se encontraron resultados para "{searchTerm}".
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredReporte.map((r) => (
+                    <tr key={r.inscripcionId} className="hover:bg-slate-50/60">
+                      <td className="px-4 py-3 font-medium text-slate-800">{r.alumnoNombre}</td>
+                      <td className="px-4 py-3 text-slate-500">{r.alumnoNumControl}</td>
+                      {r.unidades.map((u: ResultadoUnidadDto) => (
+                        <td key={u.unidadId} className="px-4 py-3 text-center text-slate-700">{formatCalificacion(u.resultadoFinal)}</td>
+                      ))}
+                      <td className="px-4 py-3 text-center font-semibold text-slate-900">{formatCalificacion(r.calificacionFinal)}</td>
+                      <td className="px-4 py-3 text-center"><StatusBadge estado={r.estado} /></td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => {
+                            setOverrideTarget(r)
+                            setOverrideForm({ calificacion: r.calificacionFinal != null ? String(r.calificacionFinal) : '', justificacion: r.overrideJustificacion ?? '' })
+                            setOverrideError('')
+                          }}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-colors"
+                          title="Aplicar override"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

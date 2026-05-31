@@ -7,11 +7,13 @@ import {
 } from '@/api/actividadesCatalogo'
 import type { ActividadCatalogoResponse } from '@/types'
 import { DataTable } from '@/components/shared/DataTable'
+import { FilterMenu, FilterSection } from '@/components/shared/FilterMenu'
 import { FormModal } from '@/components/shared/FormModal'
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { ErrorAlert } from '@/components/shared/ErrorAlert'
+import { DataError } from '@/components/shared/DataError'
 
 const emptyForm = { nombre: '', descripcion: '' }
 
@@ -25,10 +27,19 @@ export default function ActividadesCatalogo() {
   const [toggleError, setToggleError] = useState('')
   const [togglingId, setTogglingId] = useState<number | null>(null)
 
-  const { data: actividades = [], isLoading } = useQuery({
+  // Filtros
+  const [estadoFilter, setEstadoFilter] = useState<'TODOS' | 'ACTIVO' | 'INACTIVO'>('TODOS')
+
+  const { data: actividades = [], isLoading, error, refetch } = useQuery({
     queryKey: ['catalogo-actividades'],
     queryFn: getCatalogo,
   })
+
+  // Lógica de filtrado
+  const filteredActividades = actividades.filter(a => {
+    return estadoFilter === 'TODOS' || (estadoFilter === 'ACTIVO' ? a.activo : !a.activo)
+  })
+
   const invalidate = () => qc.invalidateQueries({ queryKey: ['catalogo-actividades'] })
 
   const createMut = useMutation({
@@ -77,6 +88,20 @@ export default function ActividadesCatalogo() {
     else createMut.mutate({ nombre, descripcion: descripcion || undefined })
   }
 
+  if (error) {
+    return (
+      <div>
+        <PageHeader
+          title="Actividades"
+          description="Define las actividades válidas que los maestros pueden asignar a sus grupos."
+        />
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mt-6">
+          <DataError onRetry={() => refetch()} />
+        </div>
+      </div>
+    )
+  }
+
   const inputClass = 'w-full px-4 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition'
   const isPending = createMut.isPending || updateMut.isPending
 
@@ -95,13 +120,31 @@ export default function ActividadesCatalogo() {
       {toggleError && <div className="mb-4"><ErrorAlert message={toggleError} onClose={() => setToggleError('')} /></div>}
 
       <DataTable<ActividadCatalogoResponse>
-        data={actividades}
+        data={filteredActividades}
         isLoading={isLoading}
         keyExtractor={(a) => a.id}
         searchable
         searchKeys={['nombre']}
         searchPlaceholder="Buscar actividad..."
         emptyMessage="No hay actividades en el catálogo."
+        filters={
+          <FilterMenu
+            onClear={() => setEstadoFilter('TODOS')}
+            activeCount={estadoFilter !== 'TODOS' ? 1 : 0}
+          >
+            <FilterSection label="Estado">
+              <select
+                value={estadoFilter}
+                onChange={(e) => setEstadoFilter(e.target.value as any)}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"
+              >
+                <option value="TODOS">Todos los estados</option>
+                <option value="ACTIVO">Solo Activas</option>
+                <option value="INACTIVO">Solo Inactivas</option>
+              </select>
+            </FilterSection>
+          </FilterMenu>
+        }
         columns={[
           { header: 'Nombre', accessor: 'nombre' },
           { header: 'Descripción', accessor: (a) => a.descripcion ?? '—' },

@@ -1,20 +1,32 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, ChevronRight } from 'lucide-react'
+import { BookOpen, ChevronRight, GraduationCap } from 'lucide-react'
 import { getMisGrupos } from '@/api/grupos'
 import type { GrupoResponse } from '@/types'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
-import { ErrorAlert } from '@/components/shared/ErrorAlert'
+import { DataError } from '@/components/shared/DataError'
+import { EmptyState } from '@/components/shared/EmptyState'
 
 export default function MisGrupos() {
   const navigate = useNavigate()
 
-  const { data: grupos = [], isLoading, error } = useQuery({
+  const { data: grupos = [], isLoading, error, refetch } = useQuery({
     queryKey: ['misGrupos'],
     queryFn: getMisGrupos,
   })
+
+  if (error) {
+    return (
+      <div>
+        <PageHeader title="Mis Grupos" description="Grupos académicos asignados a tu cuenta." />
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mt-6">
+          <DataError onRetry={() => refetch()} />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -23,16 +35,18 @@ export default function MisGrupos() {
         description="Grupos académicos asignados a tu cuenta."
       />
 
-      {error && <ErrorAlert message="No se pudieron cargar tus grupos." />}
-
       {isLoading ? (
         <LoadingSpinner className="py-20" size="lg" />
       ) : grupos.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm py-20 text-center text-slate-400 text-sm">
-          No tienes grupos asignados en este momento.
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm mt-6">
+          <EmptyState 
+            title="Sin grupos asignados" 
+            description="Actualmente no tienes grupos registrados bajo tu cuenta para este periodo."
+            icon={GraduationCap}
+          />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
           {grupos.map((g: GrupoResponse) => (
             <button
               key={g.id}
