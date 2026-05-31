@@ -20,7 +20,7 @@ const CATALOGOS = [
 
 const UTILIDADES = [
   { label: 'Reportes',        to: '/admin/reportes' },
-  { label: 'Configuración',   to: '/admin/configuracion' },
+  { label: 'Periodos',        to: '/admin/periodos' },
   { label: 'Herramientas',    to: '/admin/herramientas' },
   { label: 'Respaldos',       to: '/admin/respaldos' },
 ]

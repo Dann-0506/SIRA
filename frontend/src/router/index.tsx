@@ -11,7 +11,7 @@ import Administradores from '@/pages/admin/Administradores'
 import Materias from '@/pages/admin/Materias'
 import Grupos from '@/pages/admin/Grupos'
 import Inscripciones from '@/pages/admin/Inscripciones'
-import Configuracion from '@/pages/admin/Configuracion'
+import Periodos from '@/pages/admin/Periodos'
 import Herramientas from '@/pages/admin/Herramientas'
 import ActividadesCatalogo from '@/pages/admin/ActividadesCatalogo'
 import Carreras from '@/pages/admin/Carreras'
@@ -49,7 +49,7 @@ export const router = createBrowserRouter([
           { path: '/admin/materias', element: <Materias /> },
           { path: '/admin/grupos', element: <Grupos /> },
           { path: '/admin/inscripciones', element: <Inscripciones /> },
-          { path: '/admin/configuracion', element: <Configuracion /> },
+          { path: '/admin/periodos', element: <Periodos /> },
           { path: '/admin/reportes', element: <Reportes /> },
           { path: '/admin/actividades-catalogo', element: <ActividadesCatalogo /> },
           { path: '/admin/carreras', element: <Carreras /> },
