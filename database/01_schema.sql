@@ -70,7 +70,7 @@ CREATE TABLE alumno (
 );
 
 -- -----------------------------------------------------------------------------
--- Catálogo académico
+-- Catálogo académico y Periodos
 -- -----------------------------------------------------------------------------
 
 CREATE TABLE materia (
@@ -101,6 +101,18 @@ CREATE TABLE actividad_catalogo (
     CONSTRAINT uq_actividad_catalogo_nombre UNIQUE (nombre)
 );
 
+CREATE TABLE periodo_escolar (
+    id                  SERIAL          PRIMARY KEY,
+    nombre              VARCHAR(100)    NOT NULL,
+    fecha_inicio        DATE            NOT NULL,
+    fecha_fin           DATE            NOT NULL,
+    minima_aprobatoria  NUMERIC(5,2)    NOT NULL DEFAULT 70.00,
+    maxima              NUMERIC(5,2)    NOT NULL DEFAULT 100.00,
+    actual              BOOLEAN         NOT NULL DEFAULT FALSE,
+
+    CONSTRAINT uq_periodo_nombre UNIQUE (nombre)
+);
+
 -- -----------------------------------------------------------------------------
 -- Grupos e inscripciones
 -- -----------------------------------------------------------------------------
@@ -109,23 +121,22 @@ CREATE TABLE grupo (
     id                              SERIAL          PRIMARY KEY,
     materia_id                      INTEGER         NOT NULL,
     maestro_id                      INTEGER         NOT NULL,
+    periodo_id                      INTEGER         NOT NULL,
     clave                           VARCHAR(20)     NOT NULL,
-    semestre                        VARCHAR(50)     NOT NULL,
     activo                          BOOLEAN         NOT NULL DEFAULT TRUE,
     estado_evaluacion               VARCHAR(20)     NOT NULL DEFAULT 'ABIERTO',
-    calificacion_minima_aprobatoria NUMERIC(5,2)    NOT NULL DEFAULT 70.00,
-    calificacion_maxima             NUMERIC(5,2)    NOT NULL DEFAULT 100.00,
 
-    CONSTRAINT uq_grupo_clave_materia_semestre  UNIQUE (clave, materia_id, semestre),
+    CONSTRAINT uq_grupo_clave_materia_periodo   UNIQUE (clave, materia_id, periodo_id),
     CONSTRAINT fk_grupo_materia                 FOREIGN KEY (materia_id)  REFERENCES materia  (id),
-    CONSTRAINT fk_grupo_maestro                 FOREIGN KEY (maestro_id)  REFERENCES maestro  (id)
+    CONSTRAINT fk_grupo_maestro                 FOREIGN KEY (maestro_id)  REFERENCES maestro  (id),
+    CONSTRAINT fk_grupo_periodo                 FOREIGN KEY (periodo_id)  REFERENCES periodo_escolar (id)
 );
 
 CREATE TABLE inscripcion (
     id                          SERIAL          PRIMARY KEY,
     alumno_id                   INTEGER         NOT NULL,
     grupo_id                    INTEGER         NOT NULL,
-    fecha                       DATE            NOT NULL,
+    fecha                       DATE            NOT NULL DEFAULT CURRENT_DATE,
     calificacion_final_calculada    NUMERIC(5,2),
     estado_academico            VARCHAR(20)     NOT NULL DEFAULT 'PENDIENTE',
     calificacion_final_override NUMERIC(5,2),
@@ -189,16 +200,6 @@ CREATE TABLE bonus (
 );
 
 -- -----------------------------------------------------------------------------
--- Configuración del sistema
--- -----------------------------------------------------------------------------
-
-CREATE TABLE configuracion (
-    clave       VARCHAR(50)     PRIMARY KEY,
-    valor       VARCHAR(100),
-    descripcion TEXT
-);
-
--- -----------------------------------------------------------------------------
 -- Índices de rendimiento
 -- -----------------------------------------------------------------------------
 
@@ -212,5 +213,6 @@ CREATE INDEX idx_estadounidad_grupo    ON estado_unidad     (grupo_id);
 CREATE INDEX idx_bonus_inscripcion     ON bonus             (inscripcion_id);
 CREATE INDEX idx_grupo_maestro         ON grupo             (maestro_id);
 CREATE INDEX idx_grupo_materia         ON grupo             (materia_id);
+CREATE INDEX idx_grupo_periodo         ON grupo             (periodo_id);
 CREATE INDEX idx_alumno_carrera        ON alumno            (carrera_id);
 CREATE INDEX idx_usuario_apellido      ON usuario           (apellido_paterno, apellido_materno);
