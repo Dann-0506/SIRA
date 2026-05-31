@@ -1,7 +1,7 @@
 package com.sira.controller;
 
 import com.sira.dto.ReportesResponse;
-import com.sira.service.ConfiguracionService;
+import com.sira.service.PeriodoEscolarService;
 import com.sira.service.ReportesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,7 +15,7 @@ import java.util.List;
 public class ReportesController {
 
     @Autowired private ReportesService reportesService;
-    @Autowired private ConfiguracionService configuracionService;
+    @Autowired private PeriodoEscolarService periodoService;
 
     @GetMapping("/semestres")
     public List<String> getSemestres() {
@@ -26,7 +26,7 @@ public class ReportesController {
     public ReportesResponse getReportes(@RequestParam(required = false) String semestre) {
         String sem = (semestre != null && !semestre.isBlank())
                 ? semestre
-                : configuracionService.obtenerSemestreActivo();
+                : periodoService.obtenerNombrePeriodoActual();
         return reportesService.generarReportes(sem);
     }
 }

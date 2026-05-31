@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "grupo", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"clave", "materia_id", "semestre"})
+    @UniqueConstraint(columnNames = {"clave", "materia_id", "periodo_id"})
 })
 @Getter @Setter @NoArgsConstructor
 public class Grupo {
@@ -26,11 +26,12 @@ public class Grupo {
     @JoinColumn(name = "maestro_id", nullable = false)
     private Maestro maestro;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "periodo_id", nullable = false)
+    private PeriodoEscolar periodo;
+
     @Column(name = "clave", length = 20, nullable = false)
     private String clave;
-
-    @Column(name = "semestre", length = 50, nullable = false)
-    private String semestre;
 
     @Column(name = "activo", nullable = false)
     private boolean activo = true;
@@ -38,17 +39,33 @@ public class Grupo {
     @Column(name = "estado_evaluacion", length = 20, nullable = false)
     private String estadoEvaluacion = "ABIERTO";
 
-    @Column(name = "calificacion_minima_aprobatoria", precision = 5, scale = 2)
-    private BigDecimal calificacionMinimaAprobatoria = new BigDecimal("70.00");
-
-    @Column(name = "calificacion_maxima", precision = 5, scale = 2)
-    private BigDecimal calificacionMaxima = new BigDecimal("100.00");
-
-    public Grupo(Materia materia, Maestro maestro, String clave, String semestre) {
+    public Grupo(Materia materia, Maestro maestro, String clave, PeriodoEscolar periodo) {
         this.materia = materia;
         this.maestro = maestro;
         this.clave = clave;
-        this.semestre = semestre;
+        this.periodo = periodo;
+    }
+
+    /**
+     * Devuelve el nombre del periodo al que pertenece este grupo.
+     * Mantenido por compatibilidad con lógica que espera el String del semestre.
+     */
+    public String getSemestre() {
+        return periodo != null ? periodo.getNombrePeriodo() : null;
+    }
+
+    /**
+     * Obtiene la calificación mínima aprobatoria configurada para el periodo de este grupo.
+     */
+    public BigDecimal getCalificacionMinimaAprobatoria() {
+        return periodo != null ? periodo.getCalificacionMinimaAprobatoria() : new BigDecimal("70.00");
+    }
+
+    /**
+     * Obtiene la calificación máxima posible configurada para el periodo de este grupo.
+     */
+    public BigDecimal getCalificacionMaxima() {
+        return periodo != null ? periodo.getCalificacionMaximaPosible() : new BigDecimal("100.00");
     }
 
     public boolean isCerrado() {
@@ -57,6 +74,6 @@ public class Grupo {
 
     @Override
     public String toString() {
-        return "[" + clave + "] " + (materia != null ? materia.getNombre() : "") + " (" + semestre + ")";
+        return "[" + clave + "] " + (materia != null ? materia.getNombre() : "") + " (" + getSemestre() + ")";
     }
 }
