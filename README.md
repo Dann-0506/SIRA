@@ -2,6 +2,14 @@
 
 Sistema web para gestionar el ciclo completo de evaluación académica: alumnos, maestros, materias, grupos, actividades, calificaciones y reportes.
 
+## Características Principales
+
+- **Gestión Centralizada de Periodos:** Control total sobre los ciclos académicos, fechas de vigencia y criterios de evaluación normalizados (calificaciones mínimas y máximas por periodo).
+- **Filtrado Avanzado:** Sistema de búsqueda y filtrado dinámico en todos los catálogos administrativos mediante un menú de filtros profesional.
+- **Experiencia de Usuario Resiliente:** Manejo estético de estados de error con capacidad de reintento y pantallas informativas para listas vacías.
+- **Seguridad y Triggers:** Integridad de datos garantizada mediante disparadores a nivel base de datos para bloqueos de actas, validación de periodos y promedios.
+- **Importación Inteligente:** Carga masiva mediante CSV con detección automática del periodo escolar vigente.
+
 ## Arquitectura
 
 ```
@@ -17,7 +25,7 @@ El backend expone una API REST protegida con JWT. El frontend consume esa API y 
 | Capa | Tecnología |
 |---|---|
 | API | Spring Boot 4 · Spring Security · Spring Data JPA |
-| Base de datos | PostgreSQL 14+ |
+| Base de datos | PostgreSQL 16+ |
 | Autenticación | JWT (JJWT 0.12) · BCrypt |
 | Frontend | React 19 · TypeScript · Vite · Tailwind CSS |
 | Estado cliente | TanStack Query · Zustand |
@@ -26,9 +34,9 @@ El backend expone una API REST protegida con JWT. El frontend consume esa API y 
 
 | Rol | Acceso |
 |---|---|
-| **Administrador** | Gestión completa: alumnos, maestros, materias, grupos, inscripciones, configuración, carga CSV y análisis. Puede reabrir grupos y cerrar definitivamente. |
-| **Maestro** | Operación de sus grupos activos: actividades y rúbrica por unidad, registro de calificaciones, bonus, reporte y cierre de evaluación. |
-| **Alumno** | Consulta de sus cursos y calificaciones. Solo lectura. |
+| **Administrador** | Gestión completa: alumnos, maestros, materias, grupos, inscripciones, periodos escolares, carga CSV y análisis operativo. |
+| **Maestro** | Operación de sus grupos activos: rúbrica por unidad, registro de calificaciones con búsqueda rápida, bonus, reporte y cierre de evaluación. |
+| **Alumno** | Consulta de sus cursos, histórico de calificaciones y boletas de periodos anteriores. |
 
 ## Flujo de evaluación
 
@@ -45,7 +53,7 @@ Grupo FINALIZADO
 
 ## Instalación y Ejecución
 
-La forma más rápida y segura de levantar el sistema es utilizando contenedores, ya que automatiza la creación de la base de datos, aplica los triggers de integridad de forma transparente y sirve el frontend preconfigurado.
+La forma más rápida y segura de levantar el sistema es utilizando contenedores.
 
 ### 1. Clonar el repositorio
 
@@ -56,12 +64,11 @@ cd SIRA
 
 ### 2. Variables de entorno
 
-Copia el archivo de ejemplo para configurar el entorno de Docker:
+Copia el archivo de ejemplo para configurar el entorno:
 
 ```bash
 cp .env.example .env
 ```
-*(Edita el `.env` en la raíz si deseas cambiar la contraseña de PostgreSQL o el secreto JWT).*
 
 ### 3. Iniciar el sistema
 
@@ -74,65 +81,30 @@ El sistema estará disponible en:
 - **App:** `http://localhost:8888`
 - **API Backend:** `http://localhost:8080`
 
-> **Nota sobre la Base de Datos:** Al levantar los contenedores por primera vez, PostgreSQL ejecutará automáticamente los scripts `database/01_schema.sql` y `database/02_constraints_triggers.sql`. Esto es **crítico para la integridad del sistema** (bloqueo de calificaciones en grupos cerrados, etc.).
+> **Nota Crítica:** Debido a la normalización de la base de datos, si estás actualizando desde una versión anterior, debes limpiar los volúmenes antiguos con `podman compose down -v` para permitir que el nuevo esquema de periodos se aplique correctamente.
 
 ---
 
-## Instalación Manual
-
-Si necesitas ejecutar los servicios por separado para desarrollar:
-
-**Requisitos:** Java 21+, Node.js 20+, PostgreSQL 14+
-
-1. **Variables de entorno (Backend)**: 
-   Copia el archivo de configuración dentro de la carpeta del backend.
-   ```bash
-   cp .env.example backend/.env
-   ```
-2. **Base de datos**: Crea la base `sira` en tu PostgreSQL local.
-3. **Scripts SQL**: **ANTES** de iniciar el backend por primera vez, ejecuta manualmente los scripts de la carpeta `database/` para asegurar la correcta estructura y los triggers de integridad.
-   ```bash
-   psql -U postgres -d sira -f database/01_schema.sql
-   psql -U postgres -d sira -f database/02_constraints_triggers.sql
-   ```
-4. **Backend**: 
-   ```bash
-   cd backend
-   mvn spring-boot:run
-   ```
-5. **Frontend**:
-   ```bash
-   cd frontend
-   npm install
-   npm run dev  # Disponible en http://localhost:5173
-   ```
-
 ## Flujo Óptimo de Captura de Datos
 
-Para probar el sistema desde cero (ya sea de forma manual o utilizando la herramienta de importación CSV), se recomienda crear los catálogos en el siguiente orden lógico de dependencia:
+Para probar el sistema desde cero se recomienda seguir este orden:
 
-1. **Carreras**: Base necesaria para registrar alumnos.
-2. **Administradores**: Personal de gestión.
-3. **Maestros**: Necesarios para asignar a los grupos.
-4. **Alumnos**: Requieren una carrera existente.
-5. **Materias**: Base para crear grupos.
-6. **Actividades**: Catálogo de tipos de evaluación.
-7. **Grupos**: Requieren una materia y un maestro.
-8. **Inscripciones**: Requieren un alumno y un grupo.
+1. **Periodos**: Definir el ciclo escolar actual y sus límites de calificación.
+2. **Carreras**: Base para registrar alumnos.
+3. **Maestros / Administradores**: Personal operativo.
+4. **Materias**: Definición de carga académica.
+5. **Grupos**: Vinculación de materia, maestro y periodo.
+6. **Inscripciones**: Registro de alumnos en grupos.
 
-*(Puedes encontrar archivos CSV de muestra listos para importar en la carpeta `database/csv-samples/`)*.
+*(Puedes encontrar archivos CSV de muestra actualizados en `database/csv-samples/`)*.
 
 ## Credenciales por defecto
-
-Al arrancar con una base de datos vacía, el sistema genera automáticamente un administrador inicial:
 
 | Campo | Valor |
 |---|---|
 | Email | `admin@escuela.edu` |
 | Contraseña | `123456` |
 | Rol | Administrador |
-
-> Los usuarios nuevos (alumnos y maestros importados/creados) reciben como contraseña temporal su **fecha de nacimiento en formato `DDMMYYYY`** (ej. `14052003`). Al iniciar sesión por primera vez se les solicita cambiarla obligatoriamente.
 
 ## Colaboradores
 
