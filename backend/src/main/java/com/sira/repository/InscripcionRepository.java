@@ -21,6 +21,7 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
         JOIN FETCH g.materia
         JOIN FETCH g.maestro m
         JOIN FETCH m.usuario
+        JOIN FETCH g.periodo
         WHERE i.id = :id
         """)
     Optional<Inscripcion> findByIdWithDetails(Integer id);
@@ -35,6 +36,7 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
         JOIN FETCH g.materia
         JOIN FETCH g.maestro m
         JOIN FETCH m.usuario
+        JOIN FETCH g.periodo
         WHERE i.grupo.id = :grupoId
         ORDER BY a.usuario.nombre ASC
         """)
@@ -62,6 +64,7 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
         JOIN FETCH g.materia
         JOIN FETCH g.maestro m
         JOIN FETCH m.usuario
+        JOIN FETCH g.periodo
         ORDER BY a.usuario.nombre ASC
         """)
     List<Inscripcion> findAllWithDetails();
@@ -105,7 +108,7 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
                SUM(CASE WHEN i.estado_academico='REPROBADO' THEN 1 ELSE 0 END) AS reprobados
         FROM inscripcion i
         JOIN grupo   g  ON i.grupo_id    = g.id
-        JOIN maestro ma ON g.maestro_id  = ma.id
+        JOIN maestro ma ON ma.maestro_id = ma.id
         JOIN usuario u  ON ma.usuario_id = u.id
         JOIN periodo_escolar pe ON g.periodo_id = pe.id
         WHERE g.estado_evaluacion = 'CERRADO'
@@ -119,7 +122,7 @@ public interface InscripcionRepository extends JpaRepository<Inscripcion, Intege
     @Query("""
         SELECT i FROM Inscripcion i
         JOIN FETCH i.alumno a JOIN FETCH a.usuario LEFT JOIN FETCH a.carrera
-        JOIN FETCH i.grupo g JOIN FETCH g.materia
+        JOIN FETCH i.grupo g JOIN FETCH g.materia JOIN FETCH g.periodo
         WHERE i.estadoAcademico = 'REPROBADO'
         AND g.periodo.nombrePeriodo = :nombrePeriodo
         ORDER BY a.usuario.apellidoPaterno ASC, a.usuario.nombre ASC
